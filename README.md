@@ -1,4 +1,5 @@
 # transcendence
+<<<<<<< HEAD
 
 # Intro
 # Description
@@ -54,3 +55,5 @@ Note:
 ## Features List
 ## Module list/point breakdown
 ## Individual Contributions
+=======
+>>>>>>> 16c4825 (chore: adapted .gitignore)
