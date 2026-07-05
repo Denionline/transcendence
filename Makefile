@@ -41,3 +41,10 @@ RM								= rm -rf
 # 	docker system prune -af
 
 # re: clean all
+
+lint:
+	cd srcs/frontend && npm run lint && cd -
+	cd srcs/backend && npm run lint && cd -
+
+format:
+	npx prettier --write "src/**/*.{ts,tsx,js,json,css}"
