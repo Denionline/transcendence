@@ -17,5 +17,6 @@ build/
 Testing/
 .cache/
 
+# Node files
 node_modules/
 package-lock.json
