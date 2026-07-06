@@ -1,3 +1,7 @@
+# References
+*.env
+*.pdf
+
 # Prerequisites
 *.d
 
