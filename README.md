@@ -75,15 +75,15 @@ The magic happens whem both swipe right, unlocking a private conversation. Nothi
 ## Project Management (org, tools, comms)
 ## Technical Stack (justifications)
 ## Database Schema
-|              |                |               |              |              |              |
-| :---         |     :---:      | :---  | :---         | :---         | :---         |
-| USER         | id | login | role (artist/contractor) |
-| ARTIST       | id | category (musician/comedian/painter) | bio | availability(yes/no) |
-| CONTRACTOR   | id | category (band, venue, collab) | bio | availability(yes/no) |
-| FILES        | id | type(audio/video/image) | location |
-| SWIPE        | id | swiper_id | swiped_id |
-| MATCH/CHAT   | id | artist_id | contractor_id |
-| CHAT_MESSAGE | match_id | sender_id | content | time |
+|              |    |      |      |      |      |
+| :---         | :--- | :--- | :--- | :--- | :--- |
+| USER         | uuid | login | role (artist/contractor) |
+| ARTIST       | uuid | category (musician/comedian/painter) | bio | availability(yes/no) |
+| CONTRACTOR   | uuid | category (band, venue, collab) | bio | availability(yes/no) |
+| FILES        | uuid | type(audio/video/image) | location |
+| SWIPE        | uuid | swiper_id | swiped_id |
+| MATCH/CHAT   | uuid | artist_id | contractor_id |
+| CHAT_MESSAGE | uuid | match_id | sender_id | content | time |
 
 Note:
  - when a USER swipes another it creates a SWIPE entry;
@@ -93,4 +93,3 @@ Note:
 ## Features List
 ## Module list/point breakdown
 ## Individual Contributions
-
