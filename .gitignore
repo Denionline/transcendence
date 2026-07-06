@@ -1,8 +1,6 @@
 # References
 *.env
 *.pdf
-*.md
-!README.md
 
 # Prerequisites
 *.d
