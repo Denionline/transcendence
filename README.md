@@ -73,7 +73,26 @@ The magic happens whem both swipe right, unlocking a private conversation. Nothi
 # Additional Sections
 ## Team Information (roles)
 ## Project Management (org, tools, comms)
-## Technical Stack (justifications)
+## Technical Stack
+Frontend: React + Vite
+Backend: Express
+Database: PrismORM + Posgres
+Realtime: socker.io
+```
+┌─────────┐     ┌──────────┐     ┌────────────┐
+│  Nginx  │────▶│  React   │     │  Express   │
+│  :443   │     │  :3000   │     │  :9000     │
+│  :80    │     │ (CSS)    │     │            │
+└────┬────┘     └──────────┘     └──────┬─────┘
+     │                                  │
+     │  ┌───────────────────────────────┘
+     │  │
+     ▼  ▼       ┌────────────┐
+  ┌──────────┐  │ PostgreSQL │
+  │ /uploads │  │  :5432     │
+  │ (volume) │  └────────────┘
+  └──────────┘                
+```
 ## Database Schema
 |              |    |      |      |      |      |
 | :---         | :--- | :--- | :--- | :--- | :--- |
