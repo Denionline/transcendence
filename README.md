@@ -7,6 +7,27 @@ This is a matchmaking platform for artists. Connecting musicians, painters, come
 
 The magic happens whem both swipe right, unlocking a private conversation. Nothing is sent until both parties have said yes.
 
+## Files structure
+
+```
+.
+├── Makefile
+├── package.json
+├── README.md
+└── srcs
+    ├── backend
+    │   ├── Dockerfile
+    │   ├── eslint.config.js
+    │   └── package.json
+    ├── database
+    │   └── Dockerfile
+    ├── docker-compose.yml
+    └── frontend
+        ├── Dockerfile
+        ├── eslint.config.js
+        └── package.json
+```
+
 # Instructions
 ## Prerequisites
 ## Compilation
