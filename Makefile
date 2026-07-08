@@ -38,7 +38,7 @@ down:
 
 clean:
 	docker compose -f $(COMPOSE_FILE) down -v
-	docker system prune -af
+	docker compose -f $(COMPOSE_FILE) rm -f
 
 fclean: clean
 
@@ -50,3 +50,14 @@ lint:
 
 format:
 	npx prettier --write "src/**/*.{ts,tsx,js,json,css}"
+
+
+# Commands to check docker
+logs:
+	docker compose -f $(COMPOSE_FILE) logs -f
+
+ps:
+	docker compose -f $(COMPOSE_FILE) ps
+
+status:
+	docker compose -f $(COMPOSE_FILE) ps --status running
