@@ -37,10 +37,12 @@ down:
 	docker compose -f $(COMPOSE_FILE) down
 
 clean:
-	docker compose -f $(COMPOSE_FILE) down -v
+	docker compose -f $(COMPOSE_FILE) down
 	docker compose -f $(COMPOSE_FILE) rm -f
 
-fclean: clean
+fclean:
+	docker compose -f $(COMPOSE_FILE) down -v
+	docker compose -f $(COMPOSE_FILE) rm -f
 
 re: clean all
 
