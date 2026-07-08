@@ -23,24 +23,26 @@ RM								= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-# .PHONY: all build up down clean fclean re
+.PHONY: all build up down clean fclean re
 
-# all: build up
+all: build up
 
-# build: $(DATABASE_PATH) $(FRONTEND_PATH)
-# 	docker compose -f $(COMPOSE_FILE) build
+build:
+	docker compose -f $(COMPOSE_FILE) build
 
-# up:
-# 	docker compose -f $(COMPOSE_FILE) up -d
+up:
+	docker compose -f $(COMPOSE_FILE) up -d
 
-# down:
-# 	docker compose -f $(COMPOSE_FILE) down
+down:
+	docker compose -f $(COMPOSE_FILE) down
 
-# clean:
-# 	docker compose -f $(COMPOSE_FILE) down
-# 	docker system prune -af
+clean:
+	docker compose -f $(COMPOSE_FILE) down -v
+	docker system prune -af
 
-# re: clean all
+fclean: clean
+
+re: clean all
 
 lint:
 	cd srcs/frontend && npm run lint && cd -

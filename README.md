@@ -67,7 +67,7 @@ Realtime: socker.io
 └──────────────────────────────────────────┘
 ```
 ## Database Schema
-|              |    |      |      |      |      |
+|              |      |      |      |      |      |
 | :---         | :--- | :--- | :--- | :--- | :--- |
 | USER         | uuid | login | role (artist/contractor) |
 | ARTIST       | uuid | category (musician/comedian/painter) | bio | availability(yes/no) |
