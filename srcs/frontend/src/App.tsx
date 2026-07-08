@@ -1,3 +1,6 @@
+import LoginPage from "./pages/LoginPage";
+// import RegisterPage from "./pages/RegisterPage";
+
 export default function App() {
-	return <h1>Hi</h1>;
+	return <LoginPage />;
 }
