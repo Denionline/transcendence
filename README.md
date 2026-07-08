@@ -112,6 +112,10 @@ The magic happens whem both swipe right, unlocking a private conversation. Nothi
 ## Compilation
 ## Execution
 # Resources: Documentation/tutorials used.
+Database:
+https://db-engines.com/en/ranking
+Container:
+https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/
 # Additional Sections
 ## Team Information (roles)
 ## Project Management (org, tools, comms)
@@ -121,19 +125,25 @@ Backend: Express
 Database: PrismORM + Posgres
 Realtime: socker.io
 ```
-┌─────────┐     ┌──────────┐     ┌────────────┐
-│  Nginx  │────▶│  React   │     │  Express   │
-│  :443   │     │  :3000   │     │  :9000     │
-│  :80    │     │ (CSS)    │     │            │
-└────┬────┘     └──────────┘     └──────┬─────┘
-     │                                  │
-     │  ┌───────────────────────────────┘
-     │  │
-     ▼  ▼       ┌────────────┐
-  ┌──────────┐  │ PostgreSQL │
-  │ /uploads │  │  :5432     │
-  │ (volume) │  └────────────┘
-  └──────────┘                
+                ┌───────────┐               
+                |  Browser  |               
+                └────┬──────┘               
+                https| ▲                    
+┌──────────────────────────────────────────┐
+│  Docker            | |                   |
+|                    ▼ |:443               |
+│                ┌─────────┐               |
+|                |  NginX  |               |
+|                └─────────┘               |
+|            :3000|       |:9000           |
+|  ┌────────────────┐    ┌───────────┐     |
+|  |  React + Vite  |    |  Express  |     |
+|  └────────────────┘    └───────────┘     |
+|                         |:5432           |
+|                     ┌──────────────┐     |
+|                     |  PosgresSQL  |     |
+|                     └──────────────┘     |
+└──────────────────────────────────────────┘
 ```
 ## Database Schema
 |              |    |      |      |      |      |
