@@ -28,23 +28,23 @@ RM								= rm -rf
 all: build up
 
 build:
-	docker compose -f $(COMPOSE_FILE) build
+	docker compose --env-file .env -f $(COMPOSE_FILE) build
 
 up:
-	docker compose -f $(COMPOSE_FILE) up -d
+	docker compose --env-file .env -f $(COMPOSE_FILE) up -d
 
 down:
-	docker compose -f $(COMPOSE_FILE) down
+	docker compose --env-file .env -f $(COMPOSE_FILE) down
 
 clean:
-	docker compose -f $(COMPOSE_FILE) down
-	docker compose -f $(COMPOSE_FILE) rm -f
+	docker compose --env-file .env -f $(COMPOSE_FILE) down
+	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
 
 fclean:
-	docker compose -f $(COMPOSE_FILE) down -v
-	docker compose -f $(COMPOSE_FILE) rm -f
+	docker compose --env-file .env -f $(COMPOSE_FILE) down -v
+	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
 
-re: clean all
+re: fclean all
 
 lint:
 	cd srcs/frontend && npm run lint && cd -
@@ -63,3 +63,27 @@ ps:
 
 status:
 	docker compose -f $(COMPOSE_FILE) ps --status running
+
+# Development
+test: rebuild
+	curl -s http://localhost:9000
+	@echo "INFO also check curl -s http://localhost:3000"
+
+report:
+	@\
+	echo "    Containers:" ; docker ps -a ; \
+	echo "    Images:" ; docker image ls ; \
+	echo "    Volumes:" ; docker volume ls ; \
+	echo "    Networks:" ; docker network ls
+
+rebuild: fclean build up
+
+oblivion: fclean
+	@echo "WARNING: This will delete ALL Docker data on this system!"
+	@echo "Press Ctrl+C within 5 seconds to cancel..."
+	@sleep 5
+	docker system prune --all --volumes --force
+
+dbaccess:
+	@echo "INDO type '\\q' to quit"
+	docker exec -it transcendence-db psql -U abess -d maria_teresa
