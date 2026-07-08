@@ -56,18 +56,19 @@ format:
 
 # Commands to check docker
 logs:
-	docker compose -f $(COMPOSE_FILE) logs -f
+	docker compose --env-file .env -f $(COMPOSE_FILE) logs -f
 
 ps:
-	docker compose -f $(COMPOSE_FILE) ps
+	docker compose --env-file .env -f $(COMPOSE_FILE) ps
 
 status:
-	docker compose -f $(COMPOSE_FILE) ps --status running
+	docker compose --env-file .env -f $(COMPOSE_FILE) ps --status running
 
 # Development
 test: rebuild
 	curl -s http://localhost:9000
 	@echo "INFO also check curl -s http://localhost:3000"
+	@echo "INFO access db with 'make dbaccess'"
 
 report:
 	@\
@@ -85,5 +86,5 @@ oblivion: fclean
 	docker system prune --all --volumes --force
 
 dbaccess:
-	@echo "INDO type '\\q' to quit"
+	@echo "INFO type '\\q' to quit"
 	docker exec -it transcendence-db psql -U abess -d maria_teresa
