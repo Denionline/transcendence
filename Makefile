@@ -23,15 +23,15 @@ RM								= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re
+.PHONY: all build up down clean fclean re lint format logs ps status test oblivion dbaccess
 
-all: build up
+all: up
 
 build:
 	docker compose --env-file .env -f $(COMPOSE_FILE) build
 
 up:
-	docker compose --env-file .env -f $(COMPOSE_FILE) up -d
+	docker compose --env-file .env -f $(COMPOSE_FILE) up --build -d
 
 down:
 	docker compose --env-file .env -f $(COMPOSE_FILE) down
@@ -44,7 +44,7 @@ fclean:
 	docker compose --env-file .env -f $(COMPOSE_FILE) down -v
 	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
 
-re: fclean all
+re: down up
 
 lint:
 	cd srcs/frontend && npm run lint && cd -
