@@ -1,5 +1,6 @@
-import { ArrowRight, GraduationCap } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
+import LoginForm from "../features/auth/components/LoginForm";
 
 export default function LoginPage() {
 	return (
@@ -13,37 +14,7 @@ export default function LoginPage() {
 				Continue with 42
 			</button>
 			<div className="divider text-xs opacity-80">OR</div>
-			<form className="fieldset w-full">
-				<fieldset className="fieldset">
-					<label className="label">Email</label>
-					<input
-						type="email"
-						className="input validator w-full"
-						placeholder="you@email.com"
-						required
-					/>
-					<p className="validator-hint hidden">Required</p>
-				</fieldset>
-
-				<label className="fieldset">
-					<div className="flex justify-between">
-						<span className="label">Password</span>
-						<a className="text-primary font-semibold hover:underline">Forgot?</a>
-					</div>
-					<input
-						type="password"
-						className="input validator w-full"
-						placeholder="••••••••"
-						required
-					/>
-					<span className="validator-hint hidden">Required</span>
-				</label>
-
-				<button className="btn btn-primary mt-4" type="submit">
-					Log in
-					<ArrowRight size={14} className="my-auto" />
-				</button>
-			</form>
+			<LoginForm />
 			<div className="text-sm text-center mt-8">
 				<span>New to Artmate? </span>
 				<Link to="/register" className="text-primary hover:underline">
