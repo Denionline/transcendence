@@ -1,6 +1,6 @@
-import LoginPage from "./pages/LoginPage";
-// import RegisterPage from "./pages/RegisterPage";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./Router";
 
 export default function App() {
-	return <LoginPage />;
+	return <RouterProvider router={router} />;
 }
