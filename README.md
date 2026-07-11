@@ -223,4 +223,4 @@ Each team member reviewed and validated any AI-assisted code or content before i
 
 ## License
 
-\<Add license info if applicable\>
+ *PolyForm Noncommercial License 1.0.0*
