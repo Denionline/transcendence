@@ -1,6 +1,7 @@
 *This project has been created as part of the 42 curriculum by abessa-m, dximenes, carlaugu, mreinald, leoaguia.*
 
 # ArtMate
+[![CI](https://github.com/Denionline/transcendence/actions/workflows/ci.yml/badge.svg)](https://github.com/Denionline/transcendence/actions/workflows/ci.yml)
 
 ## Description
 
@@ -37,7 +38,6 @@ The magic happens when both parties swipe right, unlocking a private conversatio
         ├── eslint.config.js
         └── package.json
 ```
-
 ---
 
 ## Instructions

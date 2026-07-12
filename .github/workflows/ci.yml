@@ -1,0 +1,77 @@
+name: CI
+
+# Runs on every push to main and on every pull request targeting main so that
+# broken code cannot be merged. Configure these jobs as required status checks
+# in the branch protection rules for `main` (see docs/ci.md).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same branch/PR to save CI minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [frontend, backend]
+    defaults:
+      run:
+        working-directory: srcs/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run ESLint
+        run: npm run lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Frontend: produce the production Vite bundle.
+      - name: Install frontend dependencies
+        working-directory: srcs/frontend
+        run: npm install --no-audit --no-fund
+      - name: Build frontend
+        working-directory: srcs/frontend
+        run: npm run build
+
+      # Backend: no bundler, so validate that the entrypoint at least parses.
+      - name: Install backend dependencies
+        working-directory: srcs/backend
+        run: npm install --no-audit --no-fund
+      - name: Check backend syntax
+        working-directory: srcs/backend
+        run: node --check index.js
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: srcs/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run tests
+        run: npm test
