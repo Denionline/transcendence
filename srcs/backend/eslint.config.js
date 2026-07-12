@@ -9,7 +9,7 @@ export default tseslint.config(
 	prettier, // must be last — disables rules that conflict with Prettier
 	{
 		languageOptions: {
-			globals: { process: "readonly", console: "readonly" },
+			globals: { process: "readonly", console: "readonly", fetch: "readonly" },
 		},
 		plugins: { prettier: prettierPlugin },
 		rules: {
