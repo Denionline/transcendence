@@ -1,5 +1,7 @@
 # transcendence
 
+[![CI](https://github.com/Denionline/transcendence/actions/workflows/ci.yml/badge.svg)](https://github.com/Denionline/transcendence/actions/workflows/ci.yml)
+
 # Intro
 # Description
 ## Overview
