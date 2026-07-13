@@ -168,8 +168,8 @@ export default function NotFoundPage() {
 					This canvas is blank.
 				</h1>
 				<p className="rise rise-4 mt-4 max-w-md text-base-content/60">
-					The page you're looking for was moved, renamed, or never framed in the first place. Let's
-					get you back to the work.
+					The page you&apos;re looking for was moved, renamed, or never framed in the first place.
+					Let&apos;s get you back to the work.
 				</p>
 
 				{/* Actions */}

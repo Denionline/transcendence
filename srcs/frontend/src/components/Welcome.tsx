@@ -14,7 +14,8 @@ export default function Welcome() {
 						Where good work finds <span className="text-primary">good people.</span>
 					</h2>
 					<span className="mt-2 opacity-80">
-						The home for muralists, illustrators and set-makers — and the people who commission them.
+						The home for muralists, illustrators and set-makers — and the people who commission
+						them.
 					</span>
 					<div className="mt-4 h-44.75 w-full">
 						<div className="grid grid-cols-2 grid-rows-2 gap-4 h-full">
@@ -34,7 +35,9 @@ export default function Welcome() {
 			<div className="relative z-10 w-full max-w-108 mx-auto flex items-center gap-3">
 				<div className="h-11 w-11 rounded-full border border-primary/40 shrink-0" />
 				<div>
-					<p className="font-bold text-sm">&ldquo;I booked three murals in my first month here.&rdquo;</p>
+					<p className="font-bold text-sm">
+						&ldquo;I booked three murals in my first month here.&rdquo;
+					</p>
 					<p className="text-xs opacity-60">Nélida R. · muralist, Porto</p>
 				</div>
 			</div>
