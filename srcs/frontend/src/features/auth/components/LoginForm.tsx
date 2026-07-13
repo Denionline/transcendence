@@ -1,21 +1,50 @@
 import { ArrowRight } from "lucide-react";
-// Implement Zod
+import { useState } from "react";
+import type { ChangeEvent, SubmitEvent } from "react";
+import { flattenError } from "zod";
+import { loginSchema, type LoginFormValues } from "../schemas";
+
+type FieldErrors = Partial<Record<keyof LoginFormValues, string>>;
+
 export default function LoginForm() {
-	function handleSubmit(e: any) {
-		e.preventDefault();
-		console.log(e.target)
+	const [values, setValues] = useState<LoginFormValues>({ email: "", password: "" });
+	const [errors, setErrors] = useState<FieldErrors>({});
+
+	function handleChange(e: ChangeEvent<HTMLInputElement>) {
+		const { name, value } = e.target;
+		setValues((prev) => ({ ...prev, [name]: value }));
 	}
+
+	function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+		e.preventDefault();
+
+		const result = loginSchema.safeParse(values);
+		if (!result.success) {
+			const fieldErrors = flattenError(result.error).fieldErrors;
+			setErrors({
+				email: fieldErrors.email?.[0],
+				password: fieldErrors.password?.[0],
+			});
+			return;
+		}
+
+		setErrors({});
+		console.log(result.data);
+	}
+
 	return (
-		<form className="fieldset w-full" onSubmit={handleSubmit}>
+		<form className="fieldset w-full" onSubmit={handleSubmit} noValidate>
 			<fieldset className="fieldset">
 				<label className="label">Email</label>
 				<input
 					type="email"
+					name="email"
 					className="input validator w-full"
 					placeholder="you@email.com"
-					required
+					value={values.email}
+					onChange={handleChange}
 				/>
-				<p className="validator-hint hidden">Required</p>
+				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
 			</fieldset>
 
 			<label className="fieldset">
@@ -23,8 +52,17 @@ export default function LoginForm() {
 					<span className="label">Password</span>
 					<a className="text-primary font-semibold hover:underline">Forgot?</a>
 				</div>
-				<input type="password" className="input validator w-full" placeholder="••••••••" required />
-				<span className="validator-hint hidden">Required</span>
+				<input
+					type="password"
+					name="password"
+					className="input validator w-full"
+					placeholder="••••••••"
+					value={values.password}
+					onChange={handleChange}
+				/>
+				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
+					{errors.password}
+				</span>
 			</label>
 
 			<button className="btn btn-primary mt-4" type="submit">
