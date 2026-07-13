@@ -1,8 +1,12 @@
 import { ArrowRight } from "lucide-react";
-
+// Implement Zod
 export default function LoginForm() {
+	function handleSubmit(e: any) {
+		e.preventDefault();
+		console.log(e.target)
+	}
 	return (
-		<form className="fieldset w-full">
+		<form className="fieldset w-full" onSubmit={handleSubmit}>
 			<fieldset className="fieldset">
 				<label className="label">Email</label>
 				<input
