@@ -1,5 +1,4 @@
 # transcendence
-<<<<<<< HEAD
 
 [![CI](https://github.com/Denionline/transcendence/actions/workflows/ci.yml/badge.svg)](https://github.com/Denionline/transcendence/actions/workflows/ci.yml)
 
@@ -40,46 +39,102 @@ The magic happens whem both swipe right, unlocking a private conversation. Nothi
 ## Team Information (roles)
 ## Project Management (org, tools, comms)
 ## Technical Stack
-Frontend: React + Vite
-Backend: Express
-Database: PrismORM + Posgres
-Realtime: socker.io
-```
-┌─────────┐     ┌──────────┐     ┌────────────┐
-│  Nginx  │────▶│  React   │     │  Express   │
-│  :443   │     │  :3000   │     │  :9000     │
-│  :80    │     │ (CSS)    │     │            │
-└────┬────┘     └──────────┘     └──────┬─────┘
-     │                                  │
-     │  ┌───────────────────────────────┘
-     │  │
-     ▼  ▼       ┌────────────┐
-  ┌──────────┐  │ PostgreSQL │
-  │ /uploads │  │  :5432     │
-  │ (volume) │  └────────────┘
-  └──────────┘                
-```
-## Database Schema
-|              |    |      |      |      |      |
-| :---         | :--- | :--- | :--- | :--- | :--- |
-| USER         | uuid | login | role (artist/contractor) |
-| ARTIST       | uuid | category (musician/comedian/painter) | bio | availability(yes/no) |
-| CONTRACTOR   | uuid | category (band, venue, collab) | bio | availability(yes/no) |
-| FILES        | uuid | type(audio/video/image) | location |
-| SWIPE        | uuid | swiper_id | swiped_id |
-| MATCH/CHAT   | uuid | artist_id | contractor_id |
-| CHAT_MESSAGE | uuid | match_id | sender_id | content | time |
 
-Note:
- - when a USER swipes another it creates a SWIPE entry;
- - when two USER have a mutial SWIPE, them a MATCH is set up with its own CHAT;
- - CHAT_MESSAGE is each message on the CHAT
+- **Frontend**: React + Vite
+- **Backend**: Express
+- **Database**: PostgreSQL, accessed via Prisma ORM
+- **Realtime**: Socket.io
+- **Reverse proxy**: NginX (handles HTTPS termination on port 443, routes to frontend on `:3000` and backend on `:9000`)
+- **Containerization**: Docker / Docker Compose
+
+### Architecture
+
+```
+                ┌───────────┐
+                |  Browser  |
+                └────┬──────┘
+                https| ▲
+┌──────────────────────────────────────────┐
+│  Docker            | |                   |
+|                    ▼ |:443               |
+│                ┌─────────┐               |
+|                |  NginX  |               |
+|                └─────────┘               |
+|            :3000|       |:9000           |
+|  ┌────────────────┐    ┌───────────┐     |
+|  |  React + Vite  |    |  Express  |     |
+|  └────────────────┘    └───────────┘     |
+|                         |:5432           |
+|                     ┌──────────────┐     |
+|                     |  PostgreSQL  |     |
+|                     └──────────────┘     |
+└──────────────────────────────────────────┘
+```
+
+### Justification for major technical choices
+- **PostgreSQL** was chosen after comparing options via DB-Engines Ranking, for its strong relational guarantees (important for match/chat integrity) and wide community support.
+- **Prisma** provides type-safe queries and migrations on top of PostgreSQL, satisfying the ORM minor module.
+- **Socket.io** handles real-time chat and match notifications with graceful reconnection handling.
+- **NginX** acts as the single HTTPS entry point into the Docker network, terminating TLS and routing to the frontend and backend containers.
+
+---
+
+## Database Schema
+
+| Table | Fields |
+| :--- | :--- |
+| **USER** | `uuid`, `login`, `role` (artist/contractor) |
+| **ARTIST** | `uuid`, `category` (musician/comedian/painter), `bio`, `availability` (yes/no) |
+| **CONTRACTOR** | `uuid`, `category` (band/venue/collab), `bio`, `availability` (yes/no) |
+| **FILES** | `uuid`, `type` (audio/video/image), `location` |
+| **SWIPE** | `uuid`, `swiper_id`, `swiped_id` |
+| **MATCH/CHAT** | `uuid`, `artist_id`, `contractor_id` |
+| **CHAT_MESSAGE** | `uuid`, `match_id`, `sender_id`, `content`, `time` |
+
+**Notes:**
+- When a USER swipes another, it creates a SWIPE entry.
+- When two USERs have a mutual SWIPE, a MATCH is set up along with its own CHAT.
+- CHAT_MESSAGE represents each individual message sent within a CHAT.
+
+> Add primary/foreign key details and an ER diagram image once the schema is fully implemented.
+
+---
 
 ## Features List
-## Module list/point breakdown
+
+| Feature | Description | Implemented by |
+|---|---|---|
+| User signup/login | Email + password auth with hashed/salted passwords | \<name\> |
+| Artist/Contractor profiles | Create and edit profile (category, bio, availability) | \<name\> |
+| Swipe & match system | Swipe on other users, auto-create match on mutual swipe | \<name\> |
+| Private chat | Send/receive messages within a match | \<name\> |
+| File uploads | Attach audio/video/image files to a profile | \<name\> |
+| Notifications | Alerts for new matches and messages | \<name\> |
+| Privacy Policy / Terms of Service | Accessible legal pages with relevant content | \<name\> |
+
+> Expand this table as features are completed.
+
+---
+
+## Module list / point breakdown
+
+| Module | Type | Points | Justification |
+|---|---|---|---|
+| Use a framework (frontend + backend) | Major | 2 | React + Vite frontend, Express backend. |
+| Implement real-time features (Socket.io) | Major | 2 | Needed for instant chat and match notifications. |
+| Allow users to interact (chat, profile, friends/swipes) | Major | 2 | Core to the swipe/match/chat experience. |
+| Standard user management | Major | 2 | Profile editing, avatar/file upload, availability status. |
+| Use an ORM for the database | Minor | 1 | Prisma on top of PostgreSQL. |
+| File upload and management system | Minor | 1 | Audio/video/image attachments on profiles. |
+| \<Add more modules chosen\> | \<Major/Minor\> | \<2/1\> | \<Why this module fits ArtMate\> |
+
+**Total points targeted:** 10 / 14 minimum required *(add more modules to close the gap)*
+
+> Fill in the full list of chosen modules, how each was implemented, and which team member(s) worked on it. Remember: custom "Modules of choice" require detailed justification (why it was chosen, what challenge it solves, why it deserves Major/Minor status).
+
+---
+
 ## Individual Contributions
-=======
->>>>>>> 16c4825 (chore: adapted .gitignore)
 
 # Intro
 # Description
