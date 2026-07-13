@@ -3,19 +3,22 @@ import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { flattenError } from "zod";
 import { loginSchema, type LoginFormValues } from "../schemas";
+import { useAuth } from "../AuthContext";
 
 type FieldErrors = Partial<Record<keyof LoginFormValues, string>>;
 
 export default function LoginForm() {
+	const { login, isLoading } = useAuth();
 	const [values, setValues] = useState<LoginFormValues>({ email: "", password: "" });
 	const [errors, setErrors] = useState<FieldErrors>({});
+	const [formError, setFormError] = useState<string | null>(null);
 
 	function handleChange(e: ChangeEvent<HTMLInputElement>) {
 		const { name, value } = e.target;
 		setValues((prev) => ({ ...prev, [name]: value }));
 	}
 
-	function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+	async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
 		e.preventDefault();
 
 		const result = loginSchema.safeParse(values);
@@ -29,7 +32,12 @@ export default function LoginForm() {
 		}
 
 		setErrors({});
-		console.log(result.data);
+		setFormError(null);
+		try {
+			await login(result.data);
+		} catch (error) {
+			setFormError(error instanceof Error ? error.message : "Failed to log in");
+		}
 	}
 
 	return (
@@ -65,8 +73,10 @@ export default function LoginForm() {
 				</span>
 			</label>
 
-			<button className="btn btn-primary mt-4" type="submit">
-				Log in
+			{formError && <p className="text-error text-sm mt-2">{formError}</p>}
+
+			<button className="btn btn-primary mt-4" type="submit" disabled={isLoading}>
+				{isLoading ? "Logging in…" : "Log in"}
 				<ArrowRight size={14} className="my-auto" />
 			</button>
 		</form>

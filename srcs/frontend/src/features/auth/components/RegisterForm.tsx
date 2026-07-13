@@ -3,19 +3,22 @@ import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
+import { useAuth } from "../AuthContext";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
 export default function RegisterForm() {
+	const { register, isLoading } = useAuth();
 	const [values, setValues] = useState<RegisterFormValues>({ name: "", email: "", password: "" });
 	const [errors, setErrors] = useState<FieldErrors>({});
+	const [formError, setFormError] = useState<string | null>(null);
 
 	function handleChange(e: ChangeEvent<HTMLInputElement>) {
 		const { name, value } = e.target;
 		setValues((prev) => ({ ...prev, [name]: value }));
 	}
 
-	function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+	async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
 		e.preventDefault();
 
 		const result = registerSchema.safeParse(values);
@@ -30,7 +33,12 @@ export default function RegisterForm() {
 		}
 
 		setErrors({});
-		console.log(result.data);
+		setFormError(null);
+		try {
+			await register(result.data);
+		} catch (error) {
+			setFormError(error instanceof Error ? error.message : "Failed to create account");
+		}
 	}
 
 	return (
@@ -76,8 +84,10 @@ export default function RegisterForm() {
 				</span>
 			</label>
 
-			<button className="btn btn-primary mt-4" type="submit">
-				Create account
+			{formError && <p className="text-error text-sm mt-2">{formError}</p>}
+
+			<button className="btn btn-primary mt-4" type="submit" disabled={isLoading}>
+				{isLoading ? "Creating account…" : "Create account"}
 				<ArrowRight size={14} className="my-auto" />
 			</button>
 			<span className="text-center opacity-80">
