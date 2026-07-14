@@ -89,7 +89,7 @@ report:
 	echo "    Volumes:" ; docker volume ls ; \
 	echo "    Networks:" ; docker network ls
 
-rebuild: fclean build up
+rebuild: fclean up
 
 oblivion: fclean
 	@echo "WARNING: This will delete ALL Docker data on this system!"
