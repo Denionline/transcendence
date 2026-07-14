@@ -27,8 +27,8 @@ RM								= rm -rf
 
 all: up
 
-# build:
-# 	docker compose --env-file .env -f $(COMPOSE_FILE) build
+build:
+	docker compose --env-file .env -f $(COMPOSE_FILE) build
 
 up: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
 	docker compose --env-file .env -f $(COMPOSE_FILE) up --build -d
