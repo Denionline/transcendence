@@ -106,3 +106,35 @@ export async function logoutRequest(): Promise<void> {
 	await delay(undefined, 300);
 	localStorage.removeItem(SESSION_KEY);
 }
+
+export async function updateProfileRequest(
+	id: string,
+	updates: { username: string; email: string },
+): Promise<User> {
+	await delay(undefined, 400);
+	const users = readUsers();
+	const index = users.findIndex((u) => u.id === id);
+	if (index === -1) throw new Error("User not found");
+	if (users.some((u) => u.id !== id && u.email === updates.email)) {
+		throw new Error("Email already in use");
+	}
+	users[index] = { ...users[index], ...updates };
+	writeUsers(users);
+	return toPublicUser(users[index]);
+}
+
+export async function updatePasswordRequest(
+	id: string,
+	currentPassword: string,
+	newPassword: string,
+): Promise<void> {
+	await delay(undefined, 400);
+	const users = readUsers();
+	const index = users.findIndex((u) => u.id === id);
+	if (index === -1) throw new Error("User not found");
+	if (users[index].password !== currentPassword) {
+		throw new Error("Current password is incorrect");
+	}
+	users[index] = { ...users[index], password: newPassword };
+	writeUsers(users);
+}
