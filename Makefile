@@ -30,7 +30,7 @@ all: up
 build:
 	docker compose --env-file .env -f $(COMPOSE_FILE) build
 
-up:
+up: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
 	docker compose --env-file .env -f $(COMPOSE_FILE) up --build -d
 
 down:
@@ -65,7 +65,19 @@ status:
 	docker compose --env-file .env -f $(COMPOSE_FILE) ps --status running
 
 # Development
-test: rebuild
+srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
+	cd srcs/backend && npm ci ; cd - touch $@
+
+srcs/backend/package-lock.json:
+	cd srcs/backend; npm install; cd -
+
+srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/frontend/package-lock.json
+	cd srcs/frontend && npm ci ; cd - touch $@
+
+srcs/frontend/package-lock.json:
+	cd srcs/frontend; npm install; cd -
+
+test: up
 	curl -s http://localhost:9000
 	@echo "INFO also check curl -s http://localhost:3000"
 	@echo "INFO access db with 'make dbaccess'"
@@ -77,7 +89,7 @@ report:
 	echo "    Volumes:" ; docker volume ls ; \
 	echo "    Networks:" ; docker network ls
 
-rebuild: fclean build up
+rebuild: fclean up
 
 oblivion: fclean
 	@echo "WARNING: This will delete ALL Docker data on this system!"
