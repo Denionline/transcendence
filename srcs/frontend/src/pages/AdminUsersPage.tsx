@@ -2,27 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, CircleCheck, SearchIcon, Trash2 } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
-import type { User, UserRole } from "../features/auth/types";
+import UsersTable from "../features/admin/components/UsersTable";
 
 const PAGE_SIZE = 8;
-
-const ROLE_BADGE: Record<UserRole, string> = {
-	admin: "badge-primary",
-	hirer: "badge-secondary",
-	artist: "badge-accent",
-};
-
-function formatDate(iso: string): string {
-	return new Date(iso).toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
-}
-
-function initials(username: string): string {
-	return username.slice(0, 2).toUpperCase();
-}
 
 export default function AdminUsersPage() {
 	const { user: currentUser } = useAuth();
@@ -34,7 +16,6 @@ export default function AdminUsersPage() {
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(null);
 
 	const deleteDialogRef = useRef<HTMLDialogElement>(null);
-	const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
 		if (pendingDeleteIds) deleteDialogRef.current?.showModal();
@@ -54,38 +35,6 @@ export default function AdminUsersPage() {
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
 	const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-	const pageSelectableIds = paginated.filter((u) => u.id !== currentUser?.id).map((u) => u.id);
-	const allPageSelected =
-		pageSelectableIds.length > 0 && pageSelectableIds.every((id) => selectedIds.has(id));
-	const somePageSelected = pageSelectableIds.some((id) => selectedIds.has(id));
-
-	useEffect(() => {
-		if (headerCheckboxRef.current) {
-			headerCheckboxRef.current.indeterminate = somePageSelected && !allPageSelected;
-		}
-	}, [somePageSelected, allPageSelected]);
-
-	function toggleSelectAllOnPage() {
-		setSelectedIds((prev) => {
-			const next = new Set(prev);
-			if (allPageSelected) {
-				pageSelectableIds.forEach((id) => next.delete(id));
-			} else {
-				pageSelectableIds.forEach((id) => next.add(id));
-			}
-			return next;
-		});
-	}
-
-	function toggleSelectRow(id: string) {
-		setSelectedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-	}
 
 	async function handleBulkSetActive(isActive: boolean) {
 		await setActive(Array.from(selectedIds), isActive);
@@ -161,57 +110,15 @@ export default function AdminUsersPage() {
 			)}
 
 			<div className="overflow-x-auto rounded-box border border-base-content/10 bg-base-100">
-				<table className="table">
-					<thead>
-						<tr>
-							<th>
-								<input
-									ref={headerCheckboxRef}
-									type="checkbox"
-									className="checkbox"
-									checked={allPageSelected}
-									disabled={pageSelectableIds.length === 0}
-									onChange={toggleSelectAllOnPage}
-								/>
-							</th>
-							<th>User</th>
-							<th>Role</th>
-							<th>Status</th>
-							<th>Joined</th>
-							<th className="text-right">Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						{isLoading && (
-							<tr>
-								<td colSpan={6} className="py-10 text-center">
-									<span className="loading loading-spinner loading-md" />
-								</td>
-							</tr>
-						)}
-
-						{!isLoading && paginated.length === 0 && (
-							<tr>
-								<td colSpan={6} className="py-10 text-center text-base-content/60">
-									No users match your search.
-								</td>
-							</tr>
-						)}
-
-						{!isLoading &&
-							paginated.map((u) => (
-								<UserRow
-									key={u.id}
-									user={u}
-									isSelf={u.id === currentUser?.id}
-									selected={selectedIds.has(u.id)}
-									onToggleSelect={() => toggleSelectRow(u.id)}
-									onToggleActive={() => setActive([u.id], !u.isActive)}
-									onDelete={() => setPendingDeleteIds([u.id])}
-								/>
-							))}
-					</tbody>
-				</table>
+				<UsersTable
+					users={paginated}
+					isLoading={isLoading}
+					currentUserId={currentUser?.id}
+					selectedIds={selectedIds}
+					setSelectedIds={setSelectedIds}
+					onToggleActive={(id, isActive) => setActive([id], isActive)}
+					onDelete={(id) => setPendingDeleteIds([id])}
+				/>
 			</div>
 
 			{!isLoading && filtered.length > 0 && (
@@ -268,86 +175,5 @@ export default function AdminUsersPage() {
 				</form>
 			</dialog>
 		</div>
-	);
-}
-
-function UserRow({
-	user,
-	isSelf,
-	selected,
-	onToggleSelect,
-	onToggleActive,
-	onDelete,
-}: {
-	user: User;
-	isSelf: boolean;
-	selected: boolean;
-	onToggleSelect: () => void;
-	onToggleActive: () => void;
-	onDelete: () => void;
-}) {
-	return (
-		<tr className={selected ? "bg-base-200" : undefined}>
-			<th>
-				<input
-					type="checkbox"
-					className="checkbox"
-					checked={selected}
-					disabled={isSelf}
-					onChange={onToggleSelect}
-				/>
-			</th>
-			<td>
-				<div className="flex items-center gap-3">
-					<div className="avatar avatar-placeholder">
-						<div className="w-10 rounded-full bg-neutral text-neutral-content">
-							<span className="text-xs">{initials(user.username)}</span>
-						</div>
-					</div>
-					<div>
-						<div className="font-bold">
-							{user.username}
-							{isSelf && <span className="badge badge-ghost badge-sm ml-2">You</span>}
-						</div>
-						<div className="text-sm opacity-50">{user.email}</div>
-					</div>
-				</div>
-			</td>
-			<td>
-				<span className={`badge badge-sm ${ROLE_BADGE[user.role]}`}>{user.role}</span>
-			</td>
-			<td>
-				<span className={`badge badge-sm ${user.isActive ? "badge-success" : "badge-error"}`}>
-					{user.isActive ? "active" : "disabled"}
-				</span>
-			</td>
-			<td>{formatDate(user.createdAt)}</td>
-			<td>
-				<div className="flex justify-end gap-1">
-					<button
-						className={`btn btn-ghost btn-xs tooltip ${isSelf ? "tooltip-left" : ""}`}
-						data-tip={
-							isSelf
-								? "You can't modify your own account"
-								: user.isActive
-									? "Disable user"
-									: "Enable user"
-						}
-						disabled={isSelf}
-						onClick={onToggleActive}
-					>
-						{user.isActive ? <Ban className="size-4" /> : <CircleCheck className="size-4" />}
-					</button>
-					<button
-						className="btn btn-ghost btn-xs text-error tooltip tooltip-left"
-						data-tip={isSelf ? "You can't delete your own account" : "Delete user"}
-						disabled={isSelf}
-						onClick={onDelete}
-					>
-						<Trash2 className="size-4" />
-					</button>
-				</div>
-			</td>
-		</tr>
 	);
 }
