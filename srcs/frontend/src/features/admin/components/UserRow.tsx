@@ -1,23 +1,7 @@
 import { Ban, CircleCheck, Pencil, Trash2 } from "lucide-react";
-import type { User, UserRole } from "../../auth/types";
-
-const ROLE_BADGE: Record<UserRole, string> = {
-	admin: "badge-primary",
-	hirer: "badge-secondary",
-	artist: "badge-accent",
-};
-
-function formatDate(iso: string): string {
-	return new Date(iso).toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
-}
-
-function initials(username: string): string {
-	return username.slice(0, 2).toUpperCase();
-}
+import type { User } from "../../auth/types";
+import { formatDate, initials } from "../../../lib/format";
+import { ROLE_BADGE } from "../constants";
 
 export default function UserRow({
 	user,

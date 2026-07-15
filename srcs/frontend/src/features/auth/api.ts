@@ -1,4 +1,5 @@
 import type { Credentials, RegisterData, User } from "./types";
+import { delay } from "../../lib/delay";
 
 const DB_KEY = "artmate_db_users";
 const SESSION_KEY = "artmate_session";
@@ -56,10 +57,6 @@ export function writeUsers(users: StoredUser[]): void {
 export function toPublicUser(user: StoredUser): User {
 	const { id, email, username, role, avatarUrl, createdAt, isActive } = user;
 	return { id, email, username, role, avatarUrl, createdAt, isActive };
-}
-
-function delay<T>(value: T, ms: number): Promise<T> {
-	return new Promise((resolve) => setTimeout(() => resolve(value), ms));
 }
 
 export async function registerRequest(data: RegisterData): Promise<User> {
