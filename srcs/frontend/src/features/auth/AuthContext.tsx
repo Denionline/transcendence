@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		async function checkSession() {
 			try {
 				const me = await fetchMe();
-				console.log(me);
 				if (!cancelled) setUser(me);
 			} catch {
 				if (!cancelled) setUser(null); // no session, that's fine

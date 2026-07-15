@@ -16,7 +16,6 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 		return null;
 	}
 
-	console.log(user);
 	if (!user) {
 		// remember the intended destination for post-login redirect
 		return <Navigate to="/login" state={{ from: location }} replace />;
