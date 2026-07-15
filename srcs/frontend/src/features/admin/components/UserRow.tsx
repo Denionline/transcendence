@@ -58,11 +58,7 @@ export default function UserRow({
 			<td>{formatDate(user.createdAt)}</td>
 			<td>
 				<div className="flex justify-end gap-1">
-					<button
-						className="btn btn-ghost btn-xs tooltip"
-						data-tip="Edit user"
-						onClick={onEdit}
-					>
+					<button className="btn btn-ghost btn-xs tooltip" data-tip="Edit user" onClick={onEdit}>
 						<Pencil className="size-4" />
 					</button>
 					<button
