@@ -6,6 +6,7 @@ import prettier from "eslint-config-prettier";
 import prettierPlugin from "eslint-plugin-prettier";
 
 export default tseslint.config(
+	{ ignores: ["dist"] },
 	js.configs.recommended,
 	...tseslint.configs.recommended,
 	react.configs.flat.recommended,
