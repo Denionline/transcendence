@@ -11,6 +11,7 @@ import type { UserRole } from "./features/auth/types";
 import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 
 export function defaultPathForRole(role: UserRole): string {
 	return role === "admin" ? "/admin" : "/discover";
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
 		children: [
 			{ path: "/admin", element: <AdminDashboardPage /> },
 			{ path: "/admin/users", element: <AdminUsersPage /> },
+			{ path: "/admin/settings", element: <AdminSettingsPage /> },
 		],
 	},
 	{ path: "*", element: <NotFoundPage /> },
