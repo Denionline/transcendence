@@ -6,15 +6,30 @@ import NotFoundPage from "./pages/NotFoundPage";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import type { UserRole } from "./features/auth/types";
+import AppLayout from "./layouts/AppLayout";
+import DiscoverPage from "./pages/DiscoverPage";
+
+export function defaultPathForRole(role: UserRole): string {
+	return role === "admin" ? "/admin" : "/discover";
+}
 
 export const router = createBrowserRouter([
-	{ path: "/", element: <Navigate to="/login" replace /> },
+	{ path: "/", element: <Navigate to="/discover" replace /> },
 	{
 		element: <AuthLayout />,
 		children: [
 			{ path: "/login", element: <LoginPage /> },
 			{ path: "/register", element: <RegisterPage /> },
 		],
+	},
+	{
+		element: (
+			<ProtectedRoute>
+				<AppLayout />
+			</ProtectedRoute>
+		),
+		children: [{ path: "/discover", element: <DiscoverPage /> }],
 	},
 	{
 		element: (
