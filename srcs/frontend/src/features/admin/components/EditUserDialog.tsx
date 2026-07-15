@@ -21,12 +21,19 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 	const [error, setError] = useState<string | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
-	useEffect(() => {
+	const [dialogUser, setDialogUser] = useState<User | null>(null);
+	if (user !== dialogUser) {
+		setDialogUser(user);
 		if (user) {
 			setUsername(user.username);
 			setEmail(user.email);
 			setRole(user.role);
 			setError(null);
+		}
+	}
+
+	useEffect(() => {
+		if (user) {
 			dialogRef.current?.showModal();
 		} else {
 			dialogRef.current?.close();
