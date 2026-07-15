@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 

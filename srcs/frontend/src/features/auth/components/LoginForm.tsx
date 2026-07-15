@@ -3,7 +3,7 @@ import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { flattenError } from "zod";
 import { loginSchema, type LoginFormValues } from "../schemas";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 type FieldErrors = Partial<Record<keyof LoginFormValues, string>>;
 
