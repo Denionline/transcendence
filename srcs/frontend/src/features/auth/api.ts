@@ -3,7 +3,7 @@ import type { Credentials, RegisterData, User } from "./types";
 const DB_KEY = "artmate_db_users";
 const SESSION_KEY = "artmate_session";
 
-interface StoredUser extends User {
+export interface StoredUser extends User {
 	password: string;
 }
 
@@ -15,6 +15,7 @@ const seedUsers: StoredUser[] = [
 		role: "artist",
 		avatarUrl: null,
 		createdAt: "2024-01-01T00:00:00.000Z",
+		isActive: true,
 		password: "artist",
 	},
 	{
@@ -24,6 +25,7 @@ const seedUsers: StoredUser[] = [
 		role: "hirer",
 		avatarUrl: null,
 		createdAt: "2024-01-01T00:00:00.000Z",
+		isActive: true,
 		password: "hirer",
 	},
 	{
@@ -33,11 +35,12 @@ const seedUsers: StoredUser[] = [
 		role: "admin",
 		avatarUrl: null,
 		createdAt: "2024-01-01T00:00:00.000Z",
+		isActive: true,
 		password: "admin",
 	},
 ];
 
-function readUsers(): StoredUser[] {
+export function readUsers(): StoredUser[] {
 	const raw = localStorage.getItem(DB_KEY);
 	if (!raw) {
 		localStorage.setItem(DB_KEY, JSON.stringify(seedUsers));
@@ -46,13 +49,13 @@ function readUsers(): StoredUser[] {
 	return JSON.parse(raw) as StoredUser[];
 }
 
-function writeUsers(users: StoredUser[]): void {
+export function writeUsers(users: StoredUser[]): void {
 	localStorage.setItem(DB_KEY, JSON.stringify(users));
 }
 
-function toPublicUser(user: StoredUser): User {
-	const { id, email, username, role, avatarUrl, createdAt } = user;
-	return { id, email, username, role, avatarUrl, createdAt };
+export function toPublicUser(user: StoredUser): User {
+	const { id, email, username, role, avatarUrl, createdAt, isActive } = user;
+	return { id, email, username, role, avatarUrl, createdAt, isActive };
 }
 
 function delay<T>(value: T, ms: number): Promise<T> {
@@ -72,6 +75,7 @@ export async function registerRequest(data: RegisterData): Promise<User> {
 		role: "artist",
 		avatarUrl: null,
 		createdAt: new Date().toISOString(),
+		isActive: true,
 		password: data.password,
 	};
 	writeUsers([...users, user]);
