@@ -40,10 +40,7 @@ export function useUsers() {
 		setUsers((prev) => prev.filter((u) => !idSet.has(u.id)));
 	}
 
-	async function update(
-		id: string,
-		updates: { username: string; email: string; role: UserRole },
-	) {
+	async function update(id: string, updates: { username: string; email: string; role: UserRole }) {
 		const updated = await updateUser(id, updates);
 		setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
 	}
