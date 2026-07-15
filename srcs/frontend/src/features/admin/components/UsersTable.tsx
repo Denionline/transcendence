@@ -9,6 +9,7 @@ interface UsersTableProps {
 	selectedIds: Set<string>;
 	setSelectedIds: Dispatch<SetStateAction<Set<string>>>;
 	onToggleActive: (id: string, isActive: boolean) => void;
+	onEdit: (id: string) => void;
 	onDelete: (id: string) => void;
 }
 
@@ -19,6 +20,7 @@ export default function UsersTable({
 	selectedIds,
 	setSelectedIds,
 	onToggleActive,
+	onEdit,
 	onDelete,
 }: UsersTableProps) {
 	const headerCheckboxRef = useRef<HTMLInputElement>(null);
@@ -102,6 +104,7 @@ export default function UsersTable({
 							selected={selectedIds.has(u.id)}
 							onToggleSelect={() => toggleSelectRow(u.id)}
 							onToggleActive={() => onToggleActive(u.id, !u.isActive)}
+							onEdit={() => onEdit(u.id)}
 							onDelete={() => onDelete(u.id)}
 						/>
 					))}

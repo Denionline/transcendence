@@ -1,4 +1,4 @@
-import { Ban, CircleCheck, Trash2 } from "lucide-react";
+import { Ban, CircleCheck, Pencil, Trash2 } from "lucide-react";
 import type { User, UserRole } from "../../auth/types";
 
 const ROLE_BADGE: Record<UserRole, string> = {
@@ -25,6 +25,7 @@ export default function UserRow({
 	selected,
 	onToggleSelect,
 	onToggleActive,
+	onEdit,
 	onDelete,
 }: {
 	user: User;
@@ -32,6 +33,7 @@ export default function UserRow({
 	selected: boolean;
 	onToggleSelect: () => void;
 	onToggleActive: () => void;
+	onEdit: () => void;
 	onDelete: () => void;
 }) {
 	return (
@@ -72,6 +74,13 @@ export default function UserRow({
 			<td>{formatDate(user.createdAt)}</td>
 			<td>
 				<div className="flex justify-end gap-1">
+					<button
+						className="btn btn-ghost btn-xs tooltip"
+						data-tip="Edit user"
+						onClick={onEdit}
+					>
+						<Pencil className="size-4" />
+					</button>
 					<button
 						className={`btn btn-ghost btn-xs tooltip ${isSelf ? "tooltip-left" : ""}`}
 						data-tip={
