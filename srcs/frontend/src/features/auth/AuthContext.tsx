@@ -5,7 +5,7 @@ import { loginRequest, registerRequest, logoutRequest, fetchMe } from "./api";
 interface AuthContextValue {
 	user: User | null;
 	isLoading: boolean;
-	login: (credentials: Credentials) => Promise<void>;
+	login: (credentials: Credentials) => Promise<User>;
 	register: (data: RegisterData) => Promise<void>;
 	logout: () => Promise<void>;
 }
@@ -14,7 +14,7 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
-	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		async function checkSession() {
 			try {
 				const me = await fetchMe();
+				console.log(me);
 				if (!cancelled) setUser(me);
 			} catch {
 				if (!cancelled) setUser(null); // no session, that's fine
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await loginRequest(credentials);
 			setUser(user);
 			console.log("Logged in as:", user);
+			return user;
 		} finally {
 			setIsLoading(false);
 		}
