@@ -1,6 +1,13 @@
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import type { User, Credentials, RegisterData } from "./types";
-import { loginRequest, registerRequest, logoutRequest, fetchMe } from "./api";
+import {
+	loginRequest,
+	registerRequest,
+	logoutRequest,
+	fetchMe,
+	updateProfileRequest,
+	updatePasswordRequest,
+} from "./api";
 
 interface AuthContextValue {
 	user: User | null;
@@ -8,6 +15,8 @@ interface AuthContextValue {
 	login: (credentials: Credentials) => Promise<User>;
 	register: (data: RegisterData) => Promise<void>;
 	logout: () => Promise<void>;
+	updateProfile: (updates: { username: string; email: string }) => Promise<User>;
+	updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -71,8 +80,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
+	async function updateProfile(updates: { username: string; email: string }) {
+		if (!user) throw new Error("Not authenticated");
+		const updated = await updateProfileRequest(user.id, updates);
+		setUser(updated);
+		return updated;
+	}
+
+	async function updatePassword(currentPassword: string, newPassword: string) {
+		if (!user) throw new Error("Not authenticated");
+		await updatePasswordRequest(user.id, currentPassword, newPassword);
+	}
+
 	return (
-		<AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+		<AuthContext.Provider
+			value={{ user, isLoading, login, register, logout, updateProfile, updatePassword }}
+		>
 			{children}
 		</AuthContext.Provider>
 	);
