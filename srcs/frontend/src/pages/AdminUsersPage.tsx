@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Ban, CircleCheck, SearchIcon, Trash2 } from "lucide-react";
+import type { User } from "../features/auth/types";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
 import UsersTable from "../features/admin/components/UsersTable";
+import EditUserDialog from "../features/admin/components/EditUserDialog";
 
 const PAGE_SIZE = 8;
 
 export default function AdminUsersPage() {
 	const { user: currentUser } = useAuth();
-	const { users, isLoading, error, setActive, remove } = useUsers();
+	const { users, isLoading, error, setActive, update, remove } = useUsers();
 
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(null);
+	const [editingUser, setEditingUser] = useState<User | null>(null);
 
 	const deleteDialogRef = useRef<HTMLDialogElement>(null);
 
@@ -117,6 +120,7 @@ export default function AdminUsersPage() {
 					selectedIds={selectedIds}
 					setSelectedIds={setSelectedIds}
 					onToggleActive={(id, isActive) => setActive([id], isActive)}
+					onEdit={(id) => setEditingUser(users.find((u) => u.id === id) ?? null)}
 					onDelete={(id) => setPendingDeleteIds([id])}
 				/>
 			</div>
@@ -174,6 +178,8 @@ export default function AdminUsersPage() {
 					<button>close</button>
 				</form>
 			</dialog>
+
+			<EditUserDialog user={editingUser} onClose={() => setEditingUser(null)} onSave={update} />
 		</div>
 	);
 }

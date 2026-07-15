@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import type { User } from "../../auth/types";
-import { deleteUsers, fetchUsers, setUsersActive } from "../api";
+import type { User, UserRole } from "../../auth/types";
+import { deleteUsers, fetchUsers, setUsersActive, updateUser } from "../api";
 
 export function useUsers() {
 	const [users, setUsers] = useState<User[]>([]);
@@ -40,5 +40,13 @@ export function useUsers() {
 		setUsers((prev) => prev.filter((u) => !idSet.has(u.id)));
 	}
 
-	return { users, isLoading, error, setActive, remove };
+	async function update(
+		id: string,
+		updates: { username: string; email: string; role: UserRole },
+	) {
+		const updated = await updateUser(id, updates);
+		setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+	}
+
+	return { users, isLoading, error, setActive, remove, update };
 }
