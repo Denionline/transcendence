@@ -2,25 +2,8 @@ import { useMemo } from "react";
 import { Ban, CircleCheck, ShieldCheck, Users2 } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
-import type { UserRole } from "../features/auth/types";
-
-const ROLE_BADGE: Record<UserRole, string> = {
-	admin: "badge-primary",
-	hirer: "badge-secondary",
-	artist: "badge-accent",
-};
-
-function initials(username: string): string {
-	return username.slice(0, 2).toUpperCase();
-}
-
-function formatDate(iso: string): string {
-	return new Date(iso).toLocaleDateString(undefined, {
-		year: "numeric",
-		month: "short",
-		day: "numeric",
-	});
-}
+import { ROLE_BADGE } from "../features/admin/constants";
+import { formatDate, initials } from "../lib/format";
 
 export default function AdminDashboardPage() {
 	const { user } = useAuth();

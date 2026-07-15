@@ -1,23 +1,10 @@
 import type { User, UserRole } from "../auth/types";
 import { readUsers, writeUsers, toPublicUser } from "../auth/api";
-
-function delay<T>(value: T, ms = 400): Promise<T> {
-	return new Promise((resolve) => setTimeout(() => resolve(value), ms));
-}
+import { delay } from "../../lib/delay";
 
 export async function fetchUsers(): Promise<User[]> {
 	await delay(undefined);
 	return readUsers().map(toPublicUser);
-}
-
-export async function setUserActive(id: string, isActive: boolean): Promise<User> {
-	await delay(undefined);
-	const users = readUsers();
-	const index = users.findIndex((u) => u.id === id);
-	if (index === -1) throw new Error("User not found");
-	users[index] = { ...users[index], isActive };
-	writeUsers(users);
-	return toPublicUser(users[index]);
 }
 
 export async function setUsersActive(ids: string[], isActive: boolean): Promise<User[]> {

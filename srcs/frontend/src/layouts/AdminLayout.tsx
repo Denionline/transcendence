@@ -1,16 +1,13 @@
 import { HomeIcon, LogOutIcon, SettingsIcon, SidebarIcon, UsersIcon } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
+import { initials } from "../lib/format";
 
 const NAV_ITEMS = [
 	{ to: "/admin", label: "Dashboard", icon: HomeIcon, end: true },
 	{ to: "/admin/users", label: "Users", icon: UsersIcon, end: false },
 	{ to: "/admin/settings", label: "Settings", icon: SettingsIcon, end: false },
 ];
-
-function initials(username: string): string {
-	return username.slice(0, 2).toUpperCase();
-}
 
 export default function AdminLayout() {
 	const navigate = useNavigate();
