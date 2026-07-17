@@ -26,7 +26,10 @@ The magic happens when both parties swipe right, unlocking a private conversatio
     ├── backend
     │   ├── Dockerfile
     │   ├── eslint.config.js
-    │   └── package.json
+    │   ├── package.json
+    │   └── prisma
+    │       ├── migrations
+    │       └── schema.prisma
     ├── database
     │   └── Dockerfile
     ├── docker-compose.yml
