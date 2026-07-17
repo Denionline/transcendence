@@ -99,4 +99,4 @@ oblivion: fclean
 
 dbaccess:
 	@echo "INFO type '\\q' to quit"
-	docker exec -it transcendence-db psql -U abess -d maria_teresa
+	docker exec -it transcendence-db psql -U henry -d teresa
