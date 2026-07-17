@@ -22,3 +22,6 @@ Testing/
 node_modules/
 package-lock.json
 nodesource_setup.sh
+
+# Prisma
+srcs/backend/generated/prisma
