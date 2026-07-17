@@ -212,7 +212,8 @@ docker compose -f srcs/docker-compose.yml down
 **Container:**
 - [How to Use the Postgres Docker Official Image](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/) — used to set up the PostgreSQL container.
 
-- \<Add any other docs/tutorials used, e.g. NginX reverse proxy config, socket.io, Prisma, React + Vite setup\>
+**Prisma**
+- https://pris.ly/d/prisma-schema
 
 ### AI usage disclosure
 AI assistance (Claude) was used during this project for:
