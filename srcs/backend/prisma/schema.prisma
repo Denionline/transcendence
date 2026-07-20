@@ -31,6 +31,8 @@ model User {
   swipesReceived      Swipe[]   @relation("SwipesReceived")
   matchesAsArtist     Match[]   @relation("MatchesAsArtist")
   matchesAsHirer      Match[]   @relation("MatchesAsHirer")
+
+  chatMessages        ChatMessage[]
 }
 
 model ArtistProfile {
@@ -86,7 +88,7 @@ model Swipe {
 }
 
 model Match {
-  id                  String    @id        @default(uuid())
+  id                  String    @id       @default(uuid())
   artistId            String
   artist              User      @relation("MatchesAsArtist", fields: [artistId], references: [id])
   hirerId             String
@@ -94,4 +96,17 @@ model Match {
   createdAt           DateTime  @default(now())
 
   @@unique([artistId, hirerId])
+
+  messages            ChatMessage[]
+}
+
+
+model ChatMessage {
+  id                  String    @id       @default(uuid())
+  matchID             String
+  match               Match     @relation(fields: [matchID], references: [id])
+  senderId            String
+  sender              User      @relation(fields: [senderId], references: [id])
+  content             String
+  createdAt           DateTime  @default(now())
 }
