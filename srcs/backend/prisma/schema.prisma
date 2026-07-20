@@ -18,9 +18,22 @@ enum UserRole{
 model User {
   id                  String    @id       @default(uuid())
   email               String    @unique
-  username            String    
+  username            String
   password_hash       String
   role                UserRole            @default(artist)
   avatar_url          String?
   created_at          DateTime            @default(now())
+  artistProfile       ArtistProfile
+}
+
+model ArtistProfile {
+  id                  String    @id       @default(uuid())
+  userID              String    @unique
+  user                User      @relation(fields: [userID], references: [id])
+  category            String
+  bio                 String?
+  location            String?
+  rate                String?
+  availability        Boolean   @default(true)
+  createdAt           DateTime  @default(now())
 }
