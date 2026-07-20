@@ -58,6 +58,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: validate Prisma schema
         working-directory: srcs/backend
+        env:
+          DATABASE_URL: "postgresql://user:password@localhost:5432/db"
         run: npx prisma validate
       - name: Check backend syntax
         working-directory: srcs/backend
