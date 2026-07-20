@@ -151,20 +151,20 @@ AI assistance (Claude) was used during this project for:
 
 ## Database Schema
 
-| Table | Status | Purpose |
-| :--- | :--- | :--- |
-| **User** | Implemented | Account identity: email, username, password hash, role (`artist` / `hirer` / `admin`) |
-| **ArtistProfile** | Planned | Artist-specific fields (category, bio, rate, availability); 1:1 with User |
-| **HirerProfile** | Planned | Hirer-specific fields (category, org name, bio, availability); 1:1 with User |
-| **Tag** | Planned | Genre/skill tags; many-to-many with ArtistProfile |
-| **File** | Planned | Portfolio uploads (image/audio/video/document); belongs to a User |
-| **Swipe** | Planned | One row per swipe (like or pass), between two Users |
-| **Match** | Planned | Artist ↔ Hirer match; also serves as the friend/connection relationship |
-| **ChatMessage** | Planned | Messages within a Match's chat |
+| Table | Purpose |
+| :--- | :--- |
+| **User** | Account identity: email, username, password hash, role (`artist` / `hirer` / `admin`), avatar |
+| **ArtistProfile** | Artist-specific fields (category, bio, location, rate, availability); 1:1 with User |
+| **HirerProfile** | Hirer-specific fields (category, organization name, bio, location, availability); 1:1 with User |
+| **File** | Portfolio uploads (image/audio/video/document); belongs to a User |
+| **Swipe** | One row per swipe (like or pass), between two Users |
+| **Match** | Artist ↔ Hirer match; also serves as the friend/connection relationship |
+| **ChatMessage** | Messages within a Match's chat |
 
 **Notes:**
 - A mutual `Swipe` (both sides `liked: true`) creates a `Match`.
 - `Match` doubles as the friends/connections relationship — no separate `Friend` table.
+- Artists and hirers are classified only by `category` (e.g. musician, painter, venue) — no separate tags/genres table.
 - Online/offline status is intentionally not persisted — it's runtime Socket.io connection state, not a database column.
 
 ---
