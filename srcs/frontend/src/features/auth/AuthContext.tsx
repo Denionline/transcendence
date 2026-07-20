@@ -1,20 +1,50 @@
-import { type ReactNode, createContext, useContext, useState } from "react";
+import { type ReactNode, createContext, useEffect, useState } from "react";
 import type { User, Credentials, RegisterData } from "./types";
-import { loginRequest, registerRequest, logoutRequest } from "./api";
+import {
+	loginRequest,
+	registerRequest,
+	logoutRequest,
+	fetchMe,
+	updateProfileRequest,
+	updatePasswordRequest,
+} from "./api";
 
 interface AuthContextValue {
 	user: User | null;
 	isLoading: boolean;
-	login: (credentials: Credentials) => Promise<void>;
+	login: (credentials: Credentials) => Promise<User>;
 	register: (data: RegisterData) => Promise<void>;
 	logout: () => Promise<void>;
+	updateProfile: (updates: { username: string; email: string }) => Promise<User>;
+	updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
-	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		async function checkSession() {
+			try {
+				const me = await fetchMe();
+				if (!cancelled) setUser(me);
+			} catch {
+				if (!cancelled) setUser(null); // no session, that's fine
+			} finally {
+				if (!cancelled) setIsLoading(false);
+			}
+		}
+
+		checkSession();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	async function login(credentials: Credentials) {
 		setIsLoading(true);
@@ -22,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await loginRequest(credentials);
 			setUser(user);
 			console.log("Logged in as:", user);
+			return user;
 		} finally {
 			setIsLoading(false);
 		}
@@ -49,17 +80,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
+	async function updateProfile(updates: { username: string; email: string }) {
+		if (!user) throw new Error("Not authenticated");
+		const updated = await updateProfileRequest(user.id, updates);
+		setUser(updated);
+		return updated;
+	}
+
+	async function updatePassword(currentPassword: string, newPassword: string) {
+		if (!user) throw new Error("Not authenticated");
+		await updatePasswordRequest(user.id, currentPassword, newPassword);
+	}
+
 	return (
-		<AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+		<AuthContext.Provider
+			value={{ user, isLoading, login, register, logout, updateProfile, updatePassword }}
+		>
 			{children}
 		</AuthContext.Provider>
 	);
-}
-
-export function useAuth() {
-	const context = useContext(AuthContext);
-	if (!context) {
-		throw new Error("useAuth must be used within an AuthProvider");
-	}
-	return context;
 }
