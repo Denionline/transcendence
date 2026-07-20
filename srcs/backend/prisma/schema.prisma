@@ -24,6 +24,7 @@ model User {
   avatarUrl           String?
   createdAt           DateTime            @default(now())
   artistProfile       ArtistProfile?
+  hirerProfile        HirerProfile?
 }
 
 model ArtistProfile {
@@ -34,6 +35,18 @@ model ArtistProfile {
   bio                 String?
   location            String?
   rate                String?
+  availability        Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+}
+
+model HirerProfile {
+  id                  String    @id       @default(uuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id])
+  category            String
+  organizationName    String?
+  bio                 String?
+  location            String?
   availability        Boolean   @default(true)
   createdAt           DateTime  @default(now())
 }
