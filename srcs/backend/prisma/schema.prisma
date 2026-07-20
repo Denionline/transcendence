@@ -23,7 +23,7 @@ model User {
   role                UserRole            @default(artist)
   avatar_url          String?
   created_at          DateTime            @default(now())
-  artistProfile       ArtistProfile
+  artistProfile       ArtistProfile?
 }
 
 model ArtistProfile {
