@@ -87,11 +87,11 @@ model Swipe {
 
 model Match {
   id                  String    @id        @default(uuid())
-  artistID            String
-  artist              User      @relation("MatchesAsArtist", fields: [artistID], references: [id])
-  hirerID             String
-  hirer               User      @relation("MatchesAsHirer", fields: [hirerID], references: [id])
+  artistId            String
+  artist              User      @relation("MatchesAsArtist", fields: [artistId], references: [id])
+  hirerId             String
+  hirer               User      @relation("MatchesAsHirer", fields: [hirerId], references: [id])
   createdAt           DateTime  @default(now())
 
-  @@unique([artistID, hirerID])
+  @@unique([artistId, hirerId])
 }
