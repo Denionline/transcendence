@@ -29,6 +29,8 @@ model User {
   files               File[]
   swipesMade          Swipe[]   @relation("SwipesMade")
   swipesReceived      Swipe[]   @relation("SwipesReceived")
+  matchesAsArtist     Match[]   @relation("MatchesAsArtist")
+  matchesAsHirer      Match[]   @relation("MatchesAsHirer")
 }
 
 model ArtistProfile {
@@ -81,4 +83,15 @@ model Swipe {
   liked               Boolean
   createdAt           DateTime  @default(now())
   @@unique([swiperId, swipedId])
+}
+
+model Match {
+  id                  String    @id        @default(uuid())
+  artistID            String
+  artist              User      @relation("MatchesAsArtist", fields: [artistID], references: [id])
+  hirerID             String
+  hirer               User      @relation("MatchesAsHirer", fields: [hirerID], references: [id])
+  createdAt           DateTime  @default(now())
+
+  @@unique([artistID, hirerID])
 }
