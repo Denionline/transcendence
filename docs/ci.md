@@ -16,7 +16,7 @@ Superseded runs on the same branch/PR are cancelled automatically.
 | Job     | What it does                                                                 |
 | ------- | --------------------------------------------------------------------------- |
 | `lint`  | Runs ESLint (with the shared Prettier rules) on `frontend` and `backend`.   |
-| `build` | Builds the frontend production bundle (`vite build`) and syntax-checks the backend entrypoint (`node --check`). |
+| `build` | Builds the frontend production bundle (`vite build`), validates thge Prisma schema (`prisma validate`) and syntax-checks the backend entrypoint (`node --check`). |
 | `test`  | Runs the backend test suite (`node --test`).                                |
 
 All jobs use Node 22, matching the `node:22-alpine` base image used by the
