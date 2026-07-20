@@ -21,3 +21,6 @@ Testing/
 # Node files
 node_modules/
 nodesource_setup.sh
+
+# Prisma
+srcs/backend/generated/prisma

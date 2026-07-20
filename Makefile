@@ -23,7 +23,7 @@ RM								= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test oblivion dbaccess
+.PHONY: all build up down clean fclean re lint format logs ps status test report rebuild oblivion dbaccess
 
 all: up
 
@@ -47,11 +47,11 @@ fclean:
 re: down up
 
 lint:
-	cd srcs/frontend && npm run lint && cd -
-	cd srcs/backend && npm run lint && cd -
+	npm run lint --prefix srcs/frontend
+	npm run lint --prefix srcs/backend
 
 format:
-	npx prettier --write "src/**/*.{ts,tsx,js,json,css}"
+	npx prettier --write "srcs/**/*.{ts,tsx,js,json,css}"
 
 
 # Commands to check docker
@@ -66,16 +66,16 @@ status:
 
 # Development
 srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
-	cd srcs/backend && npm ci ; cd - touch $@
+	npm ci --prefix srcs/backend && touch $@
 
-srcs/backend/package-lock.json:
-	cd srcs/backend; npm install; cd -
+srcs/backend/package-lock.json: srcs/backend/package.json
+	npm install --prefix srcs/backend
 
 srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/frontend/package-lock.json
-	cd srcs/frontend && npm ci ; cd - touch $@
+	npm ci --prefix srcs/frontend && touch $@
 
-srcs/frontend/package-lock.json:
-	cd srcs/frontend; npm install; cd -
+srcs/frontend/package-lock.json: srcs/frontend/package.json
+	npm install --prefix srcs/frontend
 
 test: up
 	curl -s http://localhost:9000
@@ -91,12 +91,14 @@ report:
 
 rebuild: fclean up
 
-oblivion: fclean
-	@echo "WARNING: This will delete ALL Docker data on this system!"
-	@echo "Press Ctrl+C within 5 seconds to cancel..."
+oblivion:
+	@echo "\n\n    WARNING: This will delete ALL Docker data on this system!"
+	@echo "    Press Ctrl+C within 5 seconds to cancel..."
 	@sleep 5
-	docker system prune --all --volumes --force
+	$(MAKE) fclean
+	docker system prune --all --force
+	$(RM) srcs/backend/node_modules srcs/frontend/node_modules srcs/backend/generated/prisma
 
 dbaccess:
 	@echo "INFO type '\\q' to quit"
-	docker exec -it transcendence-db psql -U abess -d maria_teresa
+	docker exec -it transcendence-db psql -U $$(grep -oP '(?<=^POSTGRES_USER=).*' .env) -d $$(grep -oP '(?<=^POSTGRES_DB=).*' .env)
