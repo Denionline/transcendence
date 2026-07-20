@@ -44,7 +44,7 @@ model HirerProfile {
   userId              String    @unique
   user                User      @relation(fields: [userId], references: [id])
   category            String
-  organizationName    String?
+  organizationName    String
   bio                 String?
   location            String?
   availability        Boolean   @default(true)
