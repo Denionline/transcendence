@@ -91,11 +91,13 @@ report:
 
 rebuild: fclean up
 
-oblivion: fclean
-	@echo "WARNING: This will delete ALL Docker data on this system!"
-	@echo "Press Ctrl+C within 5 seconds to cancel..."
+oblivion:
+	@echo "\n\n    WARNING: This will delete ALL Docker data on this system!"
+	@echo "    Press Ctrl+C within 5 seconds to cancel..."
 	@sleep 5
-	docker system prune --all --volumes --force
+	$(MAKE) fclean
+	docker system prune --all --force
+	$(RM) srcs/backend/node_modules srcs/frontend/node_modules srcs/backend/generated/prisma
 
 dbaccess:
 	@echo "INFO type '\\q' to quit"
