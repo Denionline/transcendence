@@ -23,8 +23,10 @@ model User {
   role                UserRole            @default(artist)
   avatarUrl           String?
   createdAt           DateTime            @default(now())
+
   artistProfile       ArtistProfile?
   hirerProfile        HirerProfile?
+  files File[]
 }
 
 model ArtistProfile {
@@ -48,5 +50,22 @@ model HirerProfile {
   bio                 String?
   location            String?
   availability        Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+}
+
+
+enum FileType {
+  image
+  audio
+  video
+  document
+}
+
+model File {
+  id                  String    @id       @default(uuid())
+  ownerId             String    @unique
+  owner               User      @relation(fields: [ownerId], references: [id])
+  type                FileType
+  location            String
   createdAt           DateTime  @default(now())
 }
