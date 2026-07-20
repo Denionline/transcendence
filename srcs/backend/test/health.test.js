@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import app from "../index.js";
+import app from "../src/app.js";
 
 // Boots the app on an ephemeral port and hits the real routes so the CI test
 // job exercises the running server, not just imports.
