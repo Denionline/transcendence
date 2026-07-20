@@ -42,7 +42,7 @@ model ArtistProfile {
   category            String
   bio                 String?
   location            String?
-  rate                String?
+  rate                Int?
   availability        Boolean   @default(true)
   createdAt           DateTime  @default(now())
 }
