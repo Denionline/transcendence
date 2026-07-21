@@ -95,11 +95,11 @@ export default function RegisterForm() {
 
 			<fieldset className="fieldset">
 				<label className="label">I am signing up as</label>
-				<div className="join w-full">
+				<div className="flex w-full gap-3">
 					<button
 						type="button"
-						className={`btn join-item flex-1 ${
-							values.role === "artist" ? "btn-primary" : "bg-neutral text-base-content/50"
+						className={`btn flex-1 rounded-full border-none ${
+							values.role === "artist" ? "btn-primary" : "bg-base-200 text-base-content/50"
 						}`}
 						onClick={() => handleRoleChange("artist")}
 						aria-pressed={values.role === "artist"}
@@ -109,8 +109,8 @@ export default function RegisterForm() {
 					</button>
 					<button
 						type="button"
-						className={`btn join-item flex-1 ${
-							values.role === "hirer" ? "btn-primary" : "bg-neutral text-base-content/50"
+						className={`btn flex-1 rounded-full border-none ${
+							values.role === "hirer" ? "btn-primary" : "bg-base-200 text-base-content/50"
 						}`}
 						onClick={() => handleRoleChange("hirer")}
 						aria-pressed={values.role === "hirer"}
