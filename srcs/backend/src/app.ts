@@ -7,7 +7,7 @@ const app = express();
 // Global middlewares
 app.use(cors()); // allow requests from the frontend's origin
 // app.use(cors({ origin: 'http://localhost:3000' }));
-app.use(express.json()); // parse JSON request bodies
+app.use(express.json()); 
 
 // Infrastructure routes
 app.get("/", (_req, res) => {

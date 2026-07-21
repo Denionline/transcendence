@@ -6,8 +6,8 @@ const router = Router();
 
 router.post("/register", async (req, res) => {
 	try {
-		const { email, password } = req.body;
-		const user = await registerUser(email, password);
+		const { email, password, name, role } = req.body;
+		const user = await registerUser(email, password, name, role);
 		res.status(201).json(user);
 	} catch (error) {
 		if (error instanceof HttpError) res.status(error.status).json({ error: error.message });
