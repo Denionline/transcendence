@@ -1,7 +1,9 @@
+import { SECRET } from "../../lib/env.js";
 import bcrypt from "bcrypt";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
+import jwt from "jsonwebtoken";
 
 const REGISTERABLE_ROLES: UserRole[] = [UserRole.artist, UserRole.hirer];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,7 +46,15 @@ export async function registerUser(
 	}
 }
 
-export async function login(email: string, password: string)
+export async function userLogin(email: string, password: string)
 {
 	email = normalizeCredentials(email, password);
+	const user = await prisma.user.findUnique({where: {email: email}});
+	if (!user)
+		throwError(401, "invalid email or password");
+	const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+	if (!passwordMatch)
+		throwError(401, "invalid email or password");
+	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, { algorithm: 'HS256', expiresIn: '15m' });
+	return { id: user.id, email: user.email, token };
 }
