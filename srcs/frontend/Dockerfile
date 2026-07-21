@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-EXPOSE 3000
+EXPOSE 5173
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD node -e "fetch('http://localhost:3000').then(() => process.exit(0)).catch(() => process.exit(1))"
