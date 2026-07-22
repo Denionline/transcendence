@@ -1,13 +1,14 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.routes.js";
 import usersRoutes from "./modules/users/users.routes.js";
 
 const app = express();
 
 // Global middlewares
-app.use(cors()); // allow requests from the frontend's origin
-// app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+app.use(cookieParser());
 app.use(express.json()); 
 
 // Infrastructure routes
