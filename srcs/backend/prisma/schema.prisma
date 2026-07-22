@@ -33,6 +33,7 @@ model User {
   matchesAsHirer      Match[]   @relation("MatchesAsHirer")
 
   chatMessages        ChatMessage[]
+  refreshTokens       RefreshToken[]
 }
 
 model ArtistProfile {
@@ -109,4 +110,13 @@ model ChatMessage {
   sender              User      @relation(fields: [senderId], references: [id])
   content             String
   createdAt           DateTime  @default(now())
+}
+
+model RefreshToken {
+  id                  String    @id       @default(uuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  tokenHash           String    @unique
+  expiresAt           DateTime
+  createdAt           DateTime            @default(now())
 }

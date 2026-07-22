@@ -36,6 +36,17 @@
   <button onclick="doRefresh()">Chamar /auth/refresh</button>
 </fieldset>
 
+<fieldset>
+  <legend>Logout</legend>
+  <button onclick="doLogout()">Chamar /auth/logout</button>
+</fieldset>
+
+<fieldset>
+  <legend>Refresh com token manual</legend>
+  <input id="manual-refresh-token" placeholder="refresh token" />
+  <button onclick="doManualRefresh()">Chamar /auth/refresh</button>
+</fieldset>
+
 <h3>Resultado:</h3>
 <pre id="output">(nada ainda)</pre>
 
@@ -83,6 +94,26 @@
       credentials: "include",
     });
     log("REFRESH", res, await res.json());
+  }
+
+  async function doManualRefresh() {
+    const res = await fetch(`${API}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        refreshToken: document.getElementById("manual-refresh-token").value,
+      }),
+    });
+    log("REFRESH (manual)", res, await res.json());
+  }
+
+  async function doLogout() {
+    const res = await fetch(`${API}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+    log("LOGOUT", res, { status: "logged out" });
   }
 </script>
 </body>
