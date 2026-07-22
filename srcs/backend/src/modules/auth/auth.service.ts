@@ -70,9 +70,8 @@ export function refreshAccessToken(refreshToken: string)
 		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, { algorithm: 'HS256', expiresIn: '15m' });
 		return { token: newToken };
 
-	} catch (error) 
+	} catch (error)
 	{
 		throwError(401, "invalid or expired refresh token");	
 	}
-
 }
