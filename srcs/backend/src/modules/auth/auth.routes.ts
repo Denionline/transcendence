@@ -41,6 +41,11 @@ router.post("/login", async(req, res) => {
 	}
 });
 
+router.post("/logout", (_req, res) => {
+	res.clearCookie("refreshToken", { path: "/auth/refresh" });
+	res.status(204).send();
+});
+
 router.post("/refresh", async(req, res) => {
 	try 
 	{
@@ -54,6 +59,5 @@ router.post("/refresh", async(req, res) => {
 			res.status(500).json({ error: "Internal server error" });
 	}
 });
-
 
 export default router;
