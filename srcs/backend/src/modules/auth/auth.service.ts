@@ -4,6 +4,7 @@ import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import jwt from "jsonwebtoken";
+import crypto from "node:crypto";
 
 const REGISTERABLE_ROLES: UserRole[] = [UserRole.artist, UserRole.hirer];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,6 +20,11 @@ function normalizeCredentials(email: string, password: string) {
 	if (!EMAIL_REGEX.test(email))
 		throwError(400, "invalid email format");
 	return email;
+}
+
+function hashToken(token: string)
+{
+	return crypto.createHash("sha256").update(token).digest("hex");
 }
 
 export async function registerUser(
@@ -57,16 +63,32 @@ export async function userLogin(email: string, password: string)
 		throwError(401, "invalid email or password");
 	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, { algorithm: 'HS256', expiresIn: '15m' });
 	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, { algorithm: 'HS256', expiresIn: '7d' });
+	await prisma.refreshToken.create({ 
+		data: { userId :user.id, 
+			tokenHash: hashToken(refreshToken),
+			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+		  } 
+		});
 	return { id: user.id, email: user.email, token, refreshToken };
 }
 
-export function refreshAccessToken(refreshToken: string)
+export async function logoutUser(refreshToken: string)
+{
+	if (!refreshToken)
+		return ;
+	await prisma.refreshToken.deleteMany({ where: { tokenHash: hashToken(refreshToken) }});
+}
+
+export async function refreshAccessToken(refreshToken: string)
 {
 	if (!refreshToken)
 		throwError(401, "Not found refreshToken");
 	try 
 	{
 		const data = jwt.verify(refreshToken, R_SECRET, {algorithms: ['HS256']}) as jwt.JwtPayload & { userId: number; role: UserRole };
+		const stored = await prisma.refreshToken.findUnique({ where: { tokenHash: hashToken(refreshToken) } });
+		if (!stored)
+			throwError(401, "invalid or expired refresh token");
 		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, { algorithm: 'HS256', expiresIn: '15m' });
 		return { token: newToken };
 

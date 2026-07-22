@@ -1,4 +1,4 @@
-import { registerUser, userLogin, refreshAccessToken } from "./auth.service.js";
+import { registerUser, userLogin, refreshAccessToken, logoutUser } from "./auth.service.js";
 import { HttpError, throwError } from "../../lib/http-error.js";
 import { Router } from "express";
 
@@ -28,7 +28,7 @@ router.post("/login", async(req, res) => {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === "production",
 				sameSite: "strict",
-				path: "/auth/refresh",
+				path: "/auth",
 				maxAge: 7 * 24 * 60 * 60 * 1000,
 			});
 		res.status(200).json(user);
@@ -41,15 +41,16 @@ router.post("/login", async(req, res) => {
 	}
 });
 
-router.post("/logout", (_req, res) => {
-	res.clearCookie("refreshToken", { path: "/auth/refresh" });
+router.post("/logout", async (req, res) => {
+	await logoutUser(req.cookies.refreshToken);
+	res.clearCookie("refreshToken", { path: "/auth" });
 	res.status(204).send();
 });
 
-router.post("/refresh", async(req, res) => {
+router.post("/refresh", async (req, res) => {
 	try 
 	{
-		const result = refreshAccessToken(req.cookies.refreshToken);
+		const result = await refreshAccessToken(req.cookies.refreshToken);
 		res.status(200).json(result);
 	} catch (error) 
 	{
