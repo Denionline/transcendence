@@ -18,13 +18,3 @@ export async function listUsers() {
 		select: { id: true, email: true, username: true, role: true, createdAt: true },
 	});
 }
-
-export async function deleteUser(id: string) {
-	try {
-		await prisma.user.delete({ where: { id } });
-	} catch (error) {
-		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
-			throwError(404, "user not found");
-		throw error;
-	}
-}
