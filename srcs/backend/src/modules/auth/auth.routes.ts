@@ -1,7 +1,6 @@
-import { registerUser, userLogin } from "./auth.service.js";
-import { HttpError } from "../../lib/http-error.js";
+import { registerUser, userLogin, refreshAccessToken } from "./auth.service.js";
+import { HttpError, throwError } from "../../lib/http-error.js";
 import { Router } from "express";
-import { toArrayBuffer } from "node:ffi";
 
 const router = Router();
 
@@ -34,6 +33,20 @@ router.post("/login", async(req, res) => {
 			});
 		res.status(200).json(user);
 	} catch (error)
+	{
+		if (error instanceof HttpError)
+			res.status(error.status).json({ error: error.message });
+		else
+			res.status(500).json({ error: "Internal server error" });
+	}
+});
+
+router.post("/refresh", async(req, res) => {
+	try 
+	{
+		const result = refreshAccessToken(req.cookies.refreshToken);
+		res.status(200).json(result);
+	} catch (error) 
 	{
 		if (error instanceof HttpError)
 			res.status(error.status).json({ error: error.message });
