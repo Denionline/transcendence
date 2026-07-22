@@ -4,7 +4,6 @@ import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import jwt from "jsonwebtoken";
-import { ref } from "node:process";
 
 const REGISTERABLE_ROLES: UserRole[] = [UserRole.artist, UserRole.hirer];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -59,4 +58,21 @@ export async function userLogin(email: string, password: string)
 	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, { algorithm: 'HS256', expiresIn: '15m' });
 	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, { algorithm: 'HS256', expiresIn: '7d' });
 	return { id: user.id, email: user.email, token, refreshToken };
+}
+
+export function refreshAccessToken(refreshToken: string)
+{
+	if (!refreshToken)
+		throwError(401, "Not found refreshToken");
+	try 
+	{
+		const data = jwt.verify(refreshToken, R_SECRET, {algorithms: ['HS256']}) as jwt.JwtPayload & { userId: number; role: UserRole };
+		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, { algorithm: 'HS256', expiresIn: '15m' });
+		return { token: newToken };
+
+	} catch (error) 
+	{
+		throwError(401, "invalid or expired refresh token");	
+	}
+
 }
