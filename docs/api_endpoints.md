@@ -1,7 +1,9 @@
 # Artmate — API Endpoints
 
-All endpoints require a session cookie except `/api/auth/*`.
+All protected endpoints require an `Authorization: Bearer <token>` header (JWT access token) except `/api/auth/*`.
+The refresh token (also a JWT) is never exposed to JS — it travels only as an httpOnly cookie, scoped to `/api/auth`.
 Errors always have the shape `{ "error": "CODE", "message": "..." }`.
+`error` is a machine-readable code (see table below); `message` is human-readable.
 Paginated lists accept `?page=1&pageSize=20` and return `{ items, page, pageSize, total }`.
 
 ## Match flow (how it works)
@@ -33,9 +35,45 @@ Hirer ──POST interest──▶ Artist
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | POST | `/register` | anyone | Creates the user (this is the User "create") |
-| POST | `/login` | anyone | Sets httpOnly session cookie |
+| POST | `/login` | anyone | Returns access token in body (`token`); sets refresh token as httpOnly cookie |
 | POST | `/logout` | logged-in | Clears session |
-| GET | `/me` | logged-in | Restores session on app mount |
+| POST | `/refresh` | logged-in (via refresh cookie) | Issues a new access token |
+| GET | `/me` | logged-in | Requires a valid access token — call after `refresh` to restore the session on app mount |
+
+### Auth flow: access + refresh tokens
+
+There are two tokens, each with one job.
+
+- **Access token**: proves who you are. Expires in 15 min. You get it in the
+  `login`/`refresh` response body (`token` field). Send it yourself as
+  `Authorization: Bearer <token>` on every protected request.
+- **Refresh token**: only used to get a new access token. Expires in 7 days.
+  Never appears in a response body. The server sets it as an `httpOnly` cookie
+  (`path=/api/auth`), so JavaScript can never read it.
+- `refresh` issues a new access token. It does not replace the refresh token —
+  the same one keeps working until it expires or you log out.
+- `logout` deletes the refresh token server-side and clears its cookie.
+
+On app mount, the access token is gone (it only lived in memory), but the
+refresh cookie may still be valid. To restore the session: call `refresh`
+first (the cookie is sent automatically) to get a new access token, then call
+`me` with it. If `refresh` fails, there's no session to restore.
+
+`register`, `login`, and `me` all return the same user shape:
+
+```json
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "username": "Jane",
+  "role": "artist",
+  "avatarUrl": null,
+  "createdAt": "2026-07-23T17:32:54.050Z"
+}
+```
+
+`login` also includes `"token"` (the access token) in this same response.
+- `register`/`login` validation: email trimmed/lowercased and regex-checked; password 8–72 chars; `role` must be `artist` or `hirer` (no self-registering as `admin`).
 
 ## Users `/api/users`
 
@@ -120,10 +158,16 @@ Chat is only reachable through a match — no match, no messages.
 
 | Code | Status | Meaning |
 |---|---|---|
-| `VALIDATION_ERROR` | 400 | Zod rejected body/query/params |
+| `VALIDATION_ERROR` | 400 | Zod rejected body/query/params (also used by auth for missing/invalid fields) |
 | `SELF_INTEREST` | 400 | Tried to show interest in yourself |
+| `INVALID_CREDENTIALS` | 401 | Wrong email or password on login |
+| `MISSING_TOKEN` | 401 | Authorization header missing/malformed, or refresh cookie missing |
+| `INVALID_TOKEN` | 401 | Access token signature invalid or malformed |
+| `TOKEN_EXPIRED` | 401 | Access token expired |
+| `INVALID_REFRESH_TOKEN` | 401 | Refresh token invalid, expired, or revoked |
 | `FORBIDDEN` | 403 | Logged in, but not allowed (wrong owner/role/side) |
 | `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence |
+| `EMAIL_EXISTS` | 409 | Email already registered |
 | `PROFILE_EXISTS` | 409 | User already has a profile |
 | `INTEREST_EXISTS` | 409 | Pending interest already exists for this pair |
 | `INTEREST_CLOSED` | 409 | Interest already accepted/declined, can't withdraw |
