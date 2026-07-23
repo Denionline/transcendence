@@ -6,6 +6,8 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
+RUN DATABASE_URL="postgresql://user:pass@localhost:5432/db" npx prisma generate
+
 EXPOSE 9000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
