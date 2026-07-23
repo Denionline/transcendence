@@ -20,7 +20,6 @@ Testing/
 
 # Node files
 node_modules/
-package-lock.json
 nodesource_setup.sh
 
 # Prisma

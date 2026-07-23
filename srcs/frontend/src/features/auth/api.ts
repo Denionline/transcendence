@@ -69,7 +69,7 @@ export async function registerRequest(data: RegisterData): Promise<User> {
 		id: crypto.randomUUID(),
 		email: data.email,
 		username: data.name,
-		role: "artist",
+		role: data.role,
 		avatarUrl: null,
 		createdAt: new Date().toISOString(),
 		isActive: true,
