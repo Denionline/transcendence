@@ -4,9 +4,11 @@ import {
 	refreshAccessToken,
 	logoutUser,
 	loginWith42,
+	getCurrentUser,
 } from "./auth.service.js";
-import { HttpError, throwError } from "../../lib/http-error.js";
+import { throwError } from "../../lib/http-error.js";
 import { Router } from "express";
+import { verifyToken } from "../../middlewares/auth.middleware.js";
 import crypto from "node:crypto";
 import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
 
@@ -18,7 +20,7 @@ router.get("/42", (req, res) => {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
 		sameSite: "lax",
-		path: "/auth",
+		path: "/api/auth",
 		maxAge: 10 * 60 * 1000,
 	});
 	const params = new URLSearchParams({
@@ -31,22 +33,25 @@ router.get("/42", (req, res) => {
 	res.redirect(`https://api.intra.42.fr/oauth/authorize?${params.toString()}`);
 });
 
+// Keeps its own try/catch on purpose: on error this route must REDIRECT the
+// browser (OAuth is a full-page navigation), not return the JSON error that the
+// errorHandler middleware would produce for the other routes.
 router.get("/42/callback", async (req, res) => {
 	try {
 		const { code, state } = req.query;
 		const storedState = req.cookies.oauth_state;
-		res.clearCookie("oauth_state", { path: "/auth" });
+		res.clearCookie("oauth_state", { path: "/api/auth" });
 
 		if (typeof code !== "string" || typeof state !== "string")
-			throwError(400, "missing code or state");
-		if (state !== storedState) throwError(400, "invalid oauth state");
+			throwError(400, "OAUTH_INVALID_REQUEST", "missing code or state");
+		if (state !== storedState) throwError(400, "OAUTH_STATE_INVALID", "invalid oauth state");
 
 		const { refreshToken } = await loginWith42(code);
 		res.cookie("refreshToken", refreshToken, {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "strict",
-			path: "/auth",
+			path: "/api/auth",
 			maxAge: 7 * 24 * 60 * 60 * 1000,
 		});
 		res.redirect(FRONTEND_URL);
@@ -57,48 +62,38 @@ router.get("/42/callback", async (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-	try {
-		const { email, password, name, role } = req.body;
-		const user = await registerUser(email, password, name, role);
-		res.status(201).json(user);
-	} catch (error) {
-		if (error instanceof HttpError) res.status(error.status).json({ error: error.message });
-		else res.status(500).json({ error: "Internal server error" });
-	}
+	const { email, password, name, role } = req.body;
+	const user = await registerUser(email, password, name, role);
+	res.status(201).json(user);
 });
 
 router.post("/login", async (req, res) => {
-	try {
-		const { email, password } = req.body;
-		const { refreshToken, ...user } = await userLogin(email, password);
-		res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			path: "/auth",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-		});
-		res.status(200).json(user);
-	} catch (error) {
-		if (error instanceof HttpError) res.status(error.status).json({ error: error.message });
-		else res.status(500).json({ error: "Internal server error" });
-	}
+	const { email, password } = req.body;
+	const { refreshToken, ...user } = await userLogin(email, password);
+	res.cookie("refreshToken", refreshToken, {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "strict",
+		path: "/api/auth",
+		maxAge: 7 * 24 * 60 * 60 * 1000,
+	});
+	res.status(200).json(user);
 });
 
 router.post("/logout", async (req, res) => {
 	await logoutUser(req.cookies.refreshToken);
-	res.clearCookie("refreshToken", { path: "/auth" });
+	res.clearCookie("refreshToken", { path: "/api/auth" });
 	res.status(204).send();
 });
 
 router.post("/refresh", async (req, res) => {
-	try {
-		const result = await refreshAccessToken(req.cookies.refreshToken);
-		res.status(200).json(result);
-	} catch (error) {
-		if (error instanceof HttpError) res.status(error.status).json({ error: error.message });
-		else res.status(500).json({ error: "Internal server error" });
-	}
+	const result = await refreshAccessToken(req.cookies.refreshToken);
+	res.status(200).json(result);
+});
+
+router.get("/me", verifyToken, async (req, res) => {
+	const user = await getCurrentUser(req.user!.userId);
+	res.status(200).json(user);
 });
 
 export default router;

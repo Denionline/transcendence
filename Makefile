@@ -78,8 +78,8 @@ srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
 
 test: up
-	curl -s http://localhost:9000
-	@echo "\nINFO access db with 'make dbaccess'"
+	@echo "INFO access OAuth with: http://localhost:9000/api/auth/42"
+	@echo "INFO access db with 'make dbaccess'"
 
 report:
 	@\

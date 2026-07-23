@@ -7,6 +7,7 @@ export interface User {
 	role: UserRole;
 	avatarUrl: string | null;
 	createdAt: string;
+	isActive: boolean;
 }
 
 export interface Credentials {
@@ -18,4 +19,5 @@ export interface RegisterData {
 	name: string;
 	email: string;
 	password: string;
+	role: Extract<UserRole, "artist" | "hirer">;
 }

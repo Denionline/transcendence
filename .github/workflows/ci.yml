@@ -61,6 +61,11 @@ jobs:
         env:
           DATABASE_URL: "postgresql://user:password@localhost:5432/db"
         run: npx prisma validate
+      - name: Generate Prisma Client
+        working-directory: srcs/backend
+        env:
+          DATABASE_URL: "postgresql://user:password@localhost:5432/db"
+        run: npx prisma generate
       - name: Check backend syntax
         working-directory: srcs/backend
         run: npx tsc --noEmit
@@ -71,6 +76,16 @@ jobs:
     defaults:
       run:
         working-directory: srcs/backend
+    env:
+      DATABASE_URL: "postgresql://user:password@localhost:5432/db"
+      JWT_SECRET: "test-jwt-secret"
+      JWT_REFRESH_SECRET: "test-jwt-refresh-secret"
+      # env.ts validates these at import time; the tests boot the app, so they
+      # must be present even though no test performs a real 42 OAuth exchange.
+      FT_API_UID: "test-ft-uid"
+      FT_API_SECRET: "test-ft-secret"
+      FT_API_CALLBACK_URL: "http://localhost:9000/api/auth/42/callback"
+      FRONTEND_URL: "http://localhost:5173"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -78,5 +93,7 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Generate Prisma Client
+        run: npx prisma generate
       - name: Run tests
         run: npm test

@@ -1,7 +1,7 @@
 import { SECRET, R_SECRET, FT_UID, FT_SECRET, FT_CALLBACK_URL } from "../../lib/env.js";
 import bcrypt from "bcrypt";
 import { throwError } from "../../lib/http-error.js";
-import { Prisma, UserRole } from "../../../generated/prisma/client.js";
+import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
@@ -10,13 +10,13 @@ const REGISTERABLE_ROLES: UserRole[] = [UserRole.artist, UserRole.hirer];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizeCredentials(email: string, password: string) {
-	if (!email || !password) throwError(400, "email and password are required");
+	if (!email || !password) throwError(400, "VALIDATION_ERROR", "email and password are required");
 	if (typeof email !== "string" || typeof password !== "string")
-		throwError(400, "email and password must be strings");
+		throwError(400, "VALIDATION_ERROR", "email and password must be strings");
 	if (password.length < 8 || password.length > 72)
-		throwError(400, "password must be between 8 and 72 characters");
+		throwError(400, "VALIDATION_ERROR", "password must be between 8 and 72 characters");
 	email = email.trim().toLowerCase();
-	if (!EMAIL_REGEX.test(email)) throwError(400, "invalid email format");
+	if (!EMAIL_REGEX.test(email)) throwError(400, "VALIDATION_ERROR", "invalid email format");
 	return email;
 }
 
@@ -24,8 +24,21 @@ function hashToken(token: string) {
 	return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-// adapted from userLogin bellow
-async function issueSession(user: { id: string; email: string; role: UserRole }) {
+function toPublicUser(user: User) {
+	return {
+		id: user.id,
+		email: user.email,
+		username: user.username,
+		role: user.role,
+		avatarUrl: user.avatarUrl,
+		createdAt: user.createdAt,
+	};
+}
+
+// Issues our own access+refresh JWTs and persists the refresh-token hash for
+// revocability. Shared by both password login (userLogin) and 42 OAuth
+// (loginWith42), so both flows return the same session shape.
+async function issueSession(user: User) {
 	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, {
 		algorithm: "HS256",
 		expiresIn: "15m",
@@ -41,13 +54,14 @@ async function issueSession(user: { id: string; email: string; role: UserRole })
 			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 		},
 	});
-	return { id: user.id, email: user.email, token, refreshToken };
+	return { ...toPublicUser(user), token, refreshToken };
 }
 
 export async function registerUser(email: string, password: string, name: string, role: UserRole) {
-	if (!name || !role) throwError(400, "email, password, name and role are required");
+	if (!name || !role)
+		throwError(400, "VALIDATION_ERROR", "email, password, name and role are required");
 	if (!REGISTERABLE_ROLES.includes(role))
-		throwError(400, "role must be either 'artist' or 'hirer'");
+		throwError(400, "VALIDATION_ERROR", "role must be either 'artist' or 'hirer'");
 	email = normalizeCredentials(email, password);
 	name = name.trim();
 	const passwordHash = await bcrypt.hash(password, 10);
@@ -55,10 +69,10 @@ export async function registerUser(email: string, password: string, name: string
 		const user = await prisma.user.create({
 			data: { email, username: name, passwordHash, role },
 		});
-		return { id: user.id, email: user.email };
+		return toPublicUser(user);
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")
-			throwError(409, "email already registered");
+			throwError(409, "EMAIL_EXISTS", "email already registered");
 		throw error;
 	}
 }
@@ -66,26 +80,13 @@ export async function registerUser(email: string, password: string, name: string
 export async function userLogin(email: string, password: string) {
 	email = normalizeCredentials(email, password);
 	const user = await prisma.user.findUnique({ where: { email: email } });
-	if (!user) throwError(401, "invalid email or password");
-	if (!user.passwordHash) throwError(401, "invalid email or password");
+	if (!user) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
+	// 42-only accounts have a NULL passwordHash — reject password login for them
+	// without revealing that the email belongs to a 42 account.
+	if (!user.passwordHash) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
 	const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-	if (!passwordMatch) throwError(401, "invalid email or password");
-	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, {
-		algorithm: "HS256",
-		expiresIn: "15m",
-	});
-	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, {
-		algorithm: "HS256",
-		expiresIn: "7d",
-	});
-	await prisma.refreshToken.create({
-		data: {
-			userId: user.id,
-			tokenHash: hashToken(refreshToken),
-			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-		},
-	});
-	return { id: user.id, email: user.email, token, refreshToken };
+	if (!passwordMatch) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
+	return issueSession(user);
 }
 
 interface FtTokenResponse {
@@ -110,12 +111,12 @@ export async function loginWith42(code: string) {
 			redirect_uri: FT_CALLBACK_URL,
 		}),
 	});
-	if (!tokenRes.ok) throwError(502, "failed to exchange code with 42");
+	if (!tokenRes.ok) throwError(502, "FT_EXCHANGE_FAILED", "failed to exchange code with 42");
 	const { access_token } = (await tokenRes.json()) as FtTokenResponse;
 	const profileRes = await fetch("https://api.intra.42.fr/v2/me", {
 		headers: { Authorization: `Bearer ${access_token}` },
 	});
-	if (!profileRes.ok) throwError(502, "failed to fetch 42 profile");
+	if (!profileRes.ok) throwError(502, "FT_PROFILE_FAILED", "failed to fetch 42 profile");
 	const profile = (await profileRes.json()) as FtProfile;
 	const email = profile.email.trim().toLowerCase();
 	let user = await prisma.user.findUnique({ where: { email } });
@@ -136,22 +137,28 @@ export async function logoutUser(refreshToken: string) {
 }
 
 export async function refreshAccessToken(refreshToken: string) {
-	if (!refreshToken) throwError(401, "Not found refreshToken");
+	if (!refreshToken) throwError(401, "MISSING_TOKEN", "Not found refreshToken");
 	try {
 		const data = jwt.verify(refreshToken, R_SECRET, { algorithms: ["HS256"] }) as jwt.JwtPayload & {
-			userId: number;
+			userId: string;
 			role: UserRole;
 		};
 		const stored = await prisma.refreshToken.findUnique({
 			where: { tokenHash: hashToken(refreshToken) },
 		});
-		if (!stored) throwError(401, "invalid or expired refresh token");
+		if (!stored) throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
 		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, {
 			algorithm: "HS256",
 			expiresIn: "15m",
 		});
 		return { token: newToken };
-	} catch (error) {
-		throwError(401, "invalid or expired refresh token");
+	} catch {
+		throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
 	}
+}
+
+export async function getCurrentUser(userId: string) {
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+	if (!user) throwError(404, "NOT_FOUND", "user not found");
+	return toPublicUser(user);
 }
