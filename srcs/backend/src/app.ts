@@ -23,4 +23,6 @@ app.use("/users", usersRoutes);
 
 app.use(errorHandler);
 
+app.use(errorHandler);
+
 export default app;
