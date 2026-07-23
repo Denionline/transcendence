@@ -63,6 +63,8 @@ jobs:
         run: npx prisma validate
       - name: Generate Prisma Client
         working-directory: srcs/backend
+        env:
+          DATABASE_URL: "postgresql://user:password@localhost:5432/db"
         run: npx prisma generate
       - name: Check backend syntax
         working-directory: srcs/backend
@@ -82,6 +84,8 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Generate Prisma Client
+        env:
+          DATABASE_URL: "postgresql://user:password@localhost:5432/db"
         run: npx prisma generate
       - name: Run tests
         run: npm test
