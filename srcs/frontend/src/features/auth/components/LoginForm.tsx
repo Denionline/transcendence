@@ -1,14 +1,18 @@
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
+import { useLocation, useNavigate, type Location } from "react-router-dom";
 import { flattenError } from "zod";
 import { loginSchema, type LoginFormValues } from "../schemas";
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../hooks/useAuth";
+import { defaultPathForRole } from "../../../Router";
 
 type FieldErrors = Partial<Record<keyof LoginFormValues, string>>;
 
 export default function LoginForm() {
 	const { login, isLoading } = useAuth();
+	const navigate = useNavigate();
+	const location = useLocation();
 	const [values, setValues] = useState<LoginFormValues>({ email: "", password: "" });
 	const [errors, setErrors] = useState<FieldErrors>({});
 	const [formError, setFormError] = useState<string | null>(null);
@@ -34,7 +38,12 @@ export default function LoginForm() {
 		setErrors({});
 		setFormError(null);
 		try {
-			await login(result.data);
+			const user = await login(result.data);
+			const from = (location.state as { from?: Location } | null)?.from;
+			const to = from
+				? `${from.pathname}${from.search}${from.hash}`
+				: defaultPathForRole(user.role);
+			navigate(to, { replace: true });
 		} catch (error) {
 			setFormError(error instanceof Error ? error.message : "Failed to log in");
 		}
