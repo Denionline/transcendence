@@ -31,7 +31,7 @@ router.get("/42", (req, res) => {
 	res.redirect(`https://api.intra.42.fr/oauth/authorize?${params.toString()}`);
 });
 
-router.get("/42/callback", async (require, res) => {
+router.get("/42/callback", async (req, res) => {
 	try {
 		const { code, state } = req.query;
 		const storedState = req.cookies.oauth_state;
