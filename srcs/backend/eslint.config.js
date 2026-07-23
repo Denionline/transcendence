@@ -4,6 +4,7 @@ import prettier from "eslint-config-prettier";
 import prettierPlugin from "eslint-plugin-prettier";
 
 export default tseslint.config(
+	{ ignores: ["generated/**"] },
 	js.configs.recommended,
 	...tseslint.configs.recommended,
 	prettier, // must be last — disables rules that conflict with Prettier
