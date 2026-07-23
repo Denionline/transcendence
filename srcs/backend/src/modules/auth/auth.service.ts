@@ -89,32 +89,6 @@ export async function userLogin(email: string, password: string) {
 }
 
 export async function loginWith42(code: string) {
-	const tokenRes = await fetch("https://api.intra.42.fr/oauth/token", {
-		method: "POST",
-		headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "authorization_code",
-			client_id: FT_UID,
-			client_secret: FT_SECRET,
-			code,
-			redirect_uri: FT_CALLBACK_URL,
-		}),
-	});
-	if (!tokenRes.ok) throwError(502, "failed to exchange code with 42");
-	const { access_token } = await tokenRes.json();
-	const tokenRes = await fetch("https://api.intra.42.fr/oauth/token", {
-		method: "POST",
-		headers: { "Content-Type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "authorization_code",
-			client_id: FT_UID,
-			client_secret: FT_SECRET,
-			code,
-			redirect_uri: FT_CALLBACK_URL,
-		}),
-	});
-	if (!tokenRes.ok) throwError(502, "failed to exchange code with 42");
-	const { access_token } = await tokenRes.json();
 	const profileRes = await fetch("https://api.intra.42.fr/v2/me", {
 		headers: { Authorization: `Bearer ${access_token}` },
 	});
