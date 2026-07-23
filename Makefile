@@ -79,8 +79,7 @@ srcs/frontend/package-lock.json: srcs/frontend/package.json
 
 test: up
 	curl -s http://localhost:9000
-	@echo "INFO also check curl -s http://localhost:3000"
-	@echo "INFO access db with 'make dbaccess'"
+	@echo "\nINFO access db with 'make dbaccess'"
 
 report:
 	@\
