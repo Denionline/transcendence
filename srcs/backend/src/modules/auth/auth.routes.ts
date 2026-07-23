@@ -7,7 +7,7 @@ import { FT_UID, FT_CALLBACK_URL } from "../../lib/env.js"
 const router = Router();
 
 router.get("/42", (req, res) => { 
-	const state = crypto.randomBytes(16).toSring("hex");
+	const state = crypto.randomBytes(16).toString("hex");
 	res.cookie("oauth_state", state, {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
