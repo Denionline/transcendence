@@ -1,5 +1,12 @@
-import { registerUser, userLogin, refreshAccessToken, logoutUser } from "./auth.service.js";
 import { Router } from "express";
+import { verifyToken } from "../../middlewares/auth.middleware.js";
+import {
+	registerUser,
+	userLogin,
+	refreshAccessToken,
+	logoutUser,
+	getCurrentUser,
+} from "./auth.service.js";
 
 const router = Router();
 
@@ -16,7 +23,7 @@ router.post("/login", async (req, res) => {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",
 		sameSite: "strict",
-		path: "/auth",
+		path: "/api/auth",
 		maxAge: 7 * 24 * 60 * 60 * 1000,
 	});
 	res.status(200).json(user);
@@ -24,13 +31,18 @@ router.post("/login", async (req, res) => {
 
 router.post("/logout", async (req, res) => {
 	await logoutUser(req.cookies.refreshToken);
-	res.clearCookie("refreshToken", { path: "/auth" });
+	res.clearCookie("refreshToken", { path: "/api/auth" });
 	res.status(204).send();
 });
 
 router.post("/refresh", async (req, res) => {
 	const result = await refreshAccessToken(req.cookies.refreshToken);
 	res.status(200).json(result);
+});
+
+router.get("/me", verifyToken, async (req, res) => {
+	const user = await getCurrentUser(req.user!.userId);
+	res.status(200).json(user);
 });
 
 export default router;
