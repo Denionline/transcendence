@@ -88,6 +88,16 @@ export async function userLogin(email: string, password: string) {
 	return { id: user.id, email: user.email, token, refreshToken };
 }
 
+interface FtTokenResponse {
+	access_token: string;
+}
+
+interface FtProfile {
+	email: string;
+	login: string;
+	image?: { link?: string | null };
+}
+
 export async function loginWith42(code: string) {
 	const tokenRes = await fetch("https://api.intra.42.fr/oauth/token", {
 		method: "POST",
@@ -101,12 +111,12 @@ export async function loginWith42(code: string) {
 		}),
 	});
 	if (!tokenRes.ok) throwError(502, "failed to exchange code with 42");
-	const { access_token } = await tokenRes.json();
+	const { access_token } = (await tokenRes.json()) as FtTokenResponse;
 	const profileRes = await fetch("https://api.intra.42.fr/v2/me", {
 		headers: { Authorization: `Bearer ${access_token}` },
 	});
 	if (!profileRes.ok) throwError(502, "failed to fetch 42 profile");
-	const profile = await profileRes.json();
+	const profile = (await profileRes.json()) as FtProfile;
 	const email = profile.email.trim().toLowerCase();
 	let user = await prisma.user.findUnique({ where: { email } });
 	if (!user)
