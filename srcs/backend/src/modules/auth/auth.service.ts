@@ -58,6 +58,8 @@ export async function userLogin(email: string, password: string)
 	const user = await prisma.user.findUnique({where: {email: email}});
 	if (!user)
 		throwError(401, "invalid email or password");
+	if (!user.passwordHash)
+		throwError(401, "invalid email or password");
 	const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 	if (!passwordMatch)
 		throwError(401, "invalid email or password");
