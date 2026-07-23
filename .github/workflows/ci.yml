@@ -76,6 +76,10 @@ jobs:
     defaults:
       run:
         working-directory: srcs/backend
+    env:
+      DATABASE_URL: "postgresql://user:password@localhost:5432/db"
+      JWT_SECRET: "test-jwt-secret"
+      JWT_REFRESH_SECRET: "test-jwt-refresh-secret"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -84,8 +88,6 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Generate Prisma Client
-        env:
-          DATABASE_URL: "postgresql://user:password@localhost:5432/db"
         run: npx prisma generate
       - name: Run tests
         run: npm test
