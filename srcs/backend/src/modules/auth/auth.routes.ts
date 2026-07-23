@@ -1,8 +1,29 @@
 import { registerUser, userLogin, refreshAccessToken, logoutUser } from "./auth.service.js";
 import { HttpError, throwError } from "../../lib/http-error.js";
 import { Router } from "express";
+import crypto from "node:crypto"
+import { FT_UID, FT_CALLBACK_URL } from "../../lib/env.js"
 
 const router = Router();
+
+router.get("/42", (req, res) => { 
+	const state = crypto.randomBytes(16).toSring("hex");
+	res.cookie("oauth_state", state, {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax",
+		path: "/auth",
+		maxAge: 10 * 60 * 1000,
+	});
+	const params = new URLSearchParams({
+		client_id: FT_UID,
+		redirect_uri: FT_CALLBACK_URL,
+		response_type: "code",
+		scope: "public",
+		state
+	});
+	res.redirect(`https://api.intra.42.fr/oauth/authorize?${params.toString()}`);
+});
 
 router.post("/register", async (req, res) => {
 	try 
