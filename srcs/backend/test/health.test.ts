@@ -1,3 +1,4 @@
+import "dotenv/config"
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
@@ -19,14 +20,3 @@ test("GET /health responds with { status: 'ok' }", async () => {
 	}
 });
 
-test("GET / responds with 200", async () => {
-	const server = app.listen(0);
-	const address = server.address() as AddressInfo;
-	const { port } = address;
-	try {
-		const res = await fetch(`http://localhost:${port}/`);
-		assert.equal(res.status, 200);
-	} finally {
-		server.close();
-	}
-});

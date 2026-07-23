@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.routes.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -11,15 +12,13 @@ app.use(cookieParser());
 app.use(express.json()); 
 
 // Infrastructure routes
-app.get("/", (_req, res) => {
-	res.json({ status: "Hello there!" });
-});
-
 app.get("/health", (_req, res) => {
 	res.json({ status: "ok" });
 });
 
 // Modules
 app.use("/auth", authRoutes);
+
+app.use(errorHandler);
 
 export default app;
