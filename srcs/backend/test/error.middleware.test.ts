@@ -9,7 +9,7 @@ import { throwError } from "../src/lib/http-error.js";
 function makeTestApp() {
 	const app = express();
 	app.get("/http-error", () => {
-		throwError(409, "conflict");
+		throwError(409, "CONFLICT", "conflict");
 	});
 	app.get("/unknown-error", () => {
 		throw new Error("boom");
@@ -30,14 +30,14 @@ async function get(path: string) {
 	}
 }
 
-test("errorHandler formats HttpError with its own status and message", async () => {
+test("errorHandler formats HttpError with its own status, code and message", async () => {
 	const { status, body } = await get("/http-error");
 	assert.equal(status, 409);
-	assert.deepEqual(body, { error: "conflict" });
+	assert.deepEqual(body, { error: "CONFLICT", message: "conflict" });
 });
 
 test("errorHandler falls back to 500 for unknown errors", async () => {
 	const { status, body } = await get("/unknown-error");
 	assert.equal(status, 500);
-	assert.deepEqual(body, { error: "Internal server error" });
+	assert.deepEqual(body, { error: "INTERNAL_ERROR", message: "Internal server error" });
 });

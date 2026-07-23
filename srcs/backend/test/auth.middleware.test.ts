@@ -25,7 +25,10 @@ async function requestProtected(headers: Record<string, string> = {}) {
 	const { port } = server.address() as AddressInfo;
 	try {
 		const res = await fetch(`http://localhost:${port}/protected`, { headers });
-		return { status: res.status, body: (await res.json()) as { error?: string; userId?: number } };
+		return {
+			status: res.status,
+			body: (await res.json()) as { error?: string; message?: string; userId?: number },
+		};
 	} finally {
 		server.close();
 	}
@@ -34,7 +37,8 @@ async function requestProtected(headers: Record<string, string> = {}) {
 test("verifyToken rejects missing Authorization header", async () => {
 	const { status, body } = await requestProtected();
 	assert.equal(status, 401);
-	assert.equal(body.error, "Missing or malformed Authorization header");
+	assert.equal(body.error, "MISSING_TOKEN");
+	assert.equal(body.message, "Missing or malformed Authorization header");
 });
 
 test("verifyToken rejects malformed Authorization header (no Bearer prefix)", async () => {
@@ -45,7 +49,8 @@ test("verifyToken rejects malformed Authorization header (no Bearer prefix)", as
 test("verifyToken rejects an invalid token", async () => {
 	const { status, body } = await requestProtected({ Authorization: "Bearer not-a-real-token" });
 	assert.equal(status, 401);
-	assert.equal(body.error, "Invalid token");
+	assert.equal(body.error, "INVALID_TOKEN");
+	assert.equal(body.message, "Invalid token");
 });
 
 test("verifyToken rejects an expired token", async () => {
@@ -55,7 +60,8 @@ test("verifyToken rejects an expired token", async () => {
 	});
 	const { status, body } = await requestProtected({ Authorization: `Bearer ${expired}` });
 	assert.equal(status, 401);
-	assert.equal(body.error, "Token expired");
+	assert.equal(body.error, "TOKEN_EXPIRED");
+	assert.equal(body.message, "Token expired");
 });
 
 test("verifyToken accepts a valid token and attaches req.user", async () => {

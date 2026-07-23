@@ -8,17 +8,17 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
 	const authHeader = req.headers["authorization"];
 
 	if (!authHeader || !authHeader.startsWith("Bearer "))
-		throwError(401, "Missing or malformed Authorization header");
+		throwError(401, "MISSING_TOKEN", "Missing or malformed Authorization header");
 	const token: string = authHeader.split(" ")[1];
 	try {
 		const playload = jwt.verify(token, SECRET, { algorithms: ["HS256"] }) as jwt.JwtPayload & {
-			userId: number;
+			userId: string;
 			role: UserRole;
 		};
 		req.user = playload;
 		next();
 	} catch (error) {
-		if (error instanceof jwt.TokenExpiredError) throwError(401, "Token expired");
-		throwError(401, "Invalid token");
+		if (error instanceof jwt.TokenExpiredError) throwError(401, "TOKEN_EXPIRED", "Token expired");
+		throwError(401, "INVALID_TOKEN", "Invalid token");
 	}
 }

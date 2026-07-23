@@ -18,7 +18,7 @@ app.get("/health", (_req, res) => {
 });
 
 // Modules
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/users", usersRoutes);
 
 app.use(errorHandler);
