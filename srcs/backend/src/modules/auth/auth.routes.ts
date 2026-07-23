@@ -1,8 +1,8 @@
-import { registerUser, userLogin, refreshAccessToken, logoutUser } from "./auth.service.js";
+import { registerUser, userLogin, refreshAccessToken, logoutUser, loginWith42 } from "./auth.service.js";
 import { HttpError, throwError } from "../../lib/http-error.js";
 import { Router } from "express";
 import crypto from "node:crypto";
-import { FT_UID, FT_CALLBACK_URL } from "../../lib/env.js";
+import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
 
 const router = Router();
 
