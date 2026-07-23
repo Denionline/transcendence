@@ -9,16 +9,16 @@ router.post("/register", async (req, res) => {
 	res.status(201).json(user);
 });
 
-router.post("/login", async(req, res) => {
+router.post("/login", async (req, res) => {
 	const { email, password } = req.body;
 	const { refreshToken, ...user } = await userLogin(email, password);
 	res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			path: "/auth",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-		});
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "strict",
+		path: "/auth",
+		maxAge: 7 * 24 * 60 * 60 * 1000,
+	});
 	res.status(200).json(user);
 });
 

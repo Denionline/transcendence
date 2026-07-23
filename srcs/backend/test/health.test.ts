@@ -1,4 +1,4 @@
-import "dotenv/config"
+import "dotenv/config";
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
@@ -19,4 +19,3 @@ test("GET /health responds with { status: 'ok' }", async () => {
 		server.close();
 	}
 });
-

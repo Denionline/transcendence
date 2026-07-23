@@ -10,7 +10,7 @@ const app = express();
 // Global middlewares
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(cookieParser());
-app.use(express.json()); 
+app.use(express.json());
 
 // Infrastructure routes
 app.get("/health", (_req, res) => {
