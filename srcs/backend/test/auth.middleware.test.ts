@@ -25,7 +25,7 @@ async function requestProtected(headers: Record<string, string> = {}) {
 	const { port } = server.address() as AddressInfo;
 	try {
 		const res = await fetch(`http://localhost:${port}/protected`, { headers });
-		return { status: res.status, body: await res.json() };
+		return { status: res.status, body: (await res.json()) as { error?: string; userId?: number } };
 	} finally {
 		server.close();
 	}
