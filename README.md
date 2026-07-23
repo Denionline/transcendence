@@ -80,6 +80,17 @@ docker compose -f srcs/docker-compose.yml down
 **Prisma**
 - [Prisma Schema Overview](https://pris.ly/d/prisma-schema) - used as reference
 
+**OAuth 2.0 (standard behind 42 login):**
+- [OAuth 2.0 Simplified — Aaron Parecki](https://aaronparecki.com/oauth-2-simplified/) — readable introduction to the Authorization Code flow used for "Login with 42".
+- [oauth.net — Authorization Code grant](https://oauth.net/2/grant-types/authorization-code/) — concise reference for the redirect → code → token exchange.
+- [RFC 6749 — The OAuth 2.0 Authorization Framework](https://datatracker.ietf.org/doc/html/rfc6749) — formal spec; §4.1.3 defines the token-exchange request, §10.12 explains the `state` parameter (CSRF protection).
+- [RFC 6750 — Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750) — the `Authorization: Bearer <token>` scheme used to call the 42 profile endpoint.
+
+**42 API (login provider):**
+- [Web Application Flow guide](https://api.intra.42.fr/apidoc/guides/web_application_flow) — 42's step-by-step OAuth flow; documents the `/oauth/token` exchange and `access_token` response. *(requires 42 intranet login)*
+- [42 API reference](https://api.intra.42.fr/apidoc) — full endpoint list, including `GET /v2/me` and its profile fields (`email`, `login`, `image`). *(requires 42 intranet login)*
+- [Getting Started guide](https://api.intra.42.fr/apidoc/guides/getting_started) — app registration, scopes, and rate limits. *(requires 42 intranet login)*
+
 ### AI usage disclosure
 AI assistance (Claude) was used during this project for:
 - Drafting and structuring this README.md.
