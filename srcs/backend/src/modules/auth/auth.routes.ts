@@ -1,4 +1,10 @@
-import { registerUser, userLogin, refreshAccessToken, logoutUser, loginWith42 } from "./auth.service.js";
+import {
+	registerUser,
+	userLogin,
+	refreshAccessToken,
+	logoutUser,
+	loginWith42,
+} from "./auth.service.js";
 import { HttpError, throwError } from "../../lib/http-error.js";
 import { Router } from "express";
 import crypto from "node:crypto";
@@ -23,6 +29,30 @@ router.get("/42", (req, res) => {
 		state,
 	});
 	res.redirect(`https://api.intra.42.fr/oauth/authorize?${params.toString()}`);
+});
+
+router.get("/42/callback", async (require, res) => {
+	try {
+		const { code, state } = req.query;
+		const storedState = req.cookies.oauth_state;
+		res.clearCookie("oauth_state", { path: "/auth" });
+
+		if (typeof code !== "string" || typeof state !== "string")
+			throwError(400, "missing code or state");
+		if (state !== storedState) throwError(400, "invalid oauth state");
+
+		const { refreshToken } = await loginWith42(code);
+		res.cookie("refreshToken", refreshToken, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			path: "/auth",
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+		});
+		res.redirect(FRONTEND_URL);
+	} catch (error) {
+		res.redirect(`${FRONTEND_URL}/login?error=oauth`);
+	}
 });
 
 router.post("/register", async (req, res) => {
