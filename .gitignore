@@ -11,7 +11,16 @@ dist/
 # Enviroment files
 .env
 
+# debug information files
+*.dwo
+
+# test output & cache
+Testing/
+.cache/
+
 # Node files
 node_modules/
-package-lock.json
 nodesource_setup.sh
+
+# Prisma
+srcs/backend/generated/prisma

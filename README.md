@@ -1,23 +1,20 @@
-*This project has been created as part of the 42 curriculum by abessa-m, dximenes, carlaugu, mreinald, leoaguia.*
+# transcendence
 
-# ArtMate
 [![CI](https://github.com/Denionline/transcendence/actions/workflows/ci.yml/badge.svg)](https://github.com/Denionline/transcendence/actions/workflows/ci.yml)
 
-## Description
-
-### Overview
-**ArtMate** is a matchmaking platform for artists. It connects musicians, painters, comedians, and other creatives with contractors — bands looking for a member, venues looking to book an act, other artists looking for a collab, and more.
+# Intro
+# Description
+## Overview
+This is a matchmaking platform for artists. Connecting musicians, painters, comedians, etc with hirers (Bands looking for a member, venues looking to book an act, other artists looking for a collab, etc.)
 
 The magic happens when both parties swipe right, unlocking a private conversation. Nothing is sent until both parties have said yes.
 
 ### Key features
-- **Swipe-based matching**: artists and contractors swipe on each other's profiles; a mutual swipe creates a match.
+- **Swipe-based matching**: artists and hirers swipe on each other's profiles; a mutual swipe creates a match.
 - **Private chat**: once matched, users unlock a real-time conversation tied to that match.
-- **Profiles**: artists (musicians, comedians, painters, etc.) and contractors (bands, venues, collabs) showcase their category, bio, and availability.
-- **File uploads**: artists and contractors can attach audio, video, or image files to their profile (portfolio, demo reel, etc.).
+- **Profiles**: artists (musicians, comedians, painters, etc.) and hirers (bands, venues, collabs) showcase their category, bio, and availability.
+- **File uploads**: artists and hirers can attach audio, video, or image files to their profile (portfolio, demo reel, etc.).
 - **Real-time updates**: matches and messages are delivered instantly via WebSockets.
-
-> This is a group project developed as part of the 42 Porto Common Core (ft_transcendence).
 
 ## Files structure
 ```
@@ -29,7 +26,10 @@ The magic happens when both parties swipe right, unlocking a private conversatio
     ├── backend
     │   ├── Dockerfile
     │   ├── eslint.config.js
-    │   └── package.json
+    │   ├── package.json
+    │   └── prisma
+    │       ├── migrations
+    │       └── schema.prisma
     ├── database
     │   └── Dockerfile
     ├── docker-compose.yml
@@ -38,6 +38,7 @@ The magic happens when both parties swipe right, unlocking a private conversatio
         ├── eslint.config.js
         └── package.json
 ```
+
 ---
 
 ## Instructions
@@ -51,7 +52,6 @@ The magic happens when both parties swipe right, unlocking a private conversatio
 ```bash
 make
 ```
-> Update with the exact `make`/`docker compose` targets once the Makefile is finalized.
 
 ### Execution
 ```bash
@@ -61,7 +61,6 @@ The application will then be available at:
 ```
 https://localhost
 ```
-(served through NginX on port 443 — see architecture diagram below)
 
 ### Stopping the project
 ```bash
@@ -78,14 +77,12 @@ docker compose -f srcs/docker-compose.yml down
 **Container:**
 - [How to Use the Postgres Docker Official Image](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/) — used to set up the PostgreSQL container.
 
-- \<Add any other docs/tutorials used, e.g. NginX reverse proxy config, socket.io, Prisma, React + Vite setup\>
+**Prisma**
+- [Prisma Schema Overview](https://pris.ly/d/prisma-schema) - used as reference
 
 ### AI usage disclosure
 AI assistance (Claude) was used during this project for:
 - Drafting and structuring this README.md.
-- \<Add other concrete uses, e.g. "debugging the WebSocket reconnection logic", "generating boilerplate for the profile CRUD endpoints", "reviewing the database schema design"\>
-
-Each team member reviewed and validated any AI-assisted code or content before integrating it into the project, and can explain its logic during evaluation, per the 42 AI guidelines.
 
 ---
 
@@ -154,22 +151,21 @@ Each team member reviewed and validated any AI-assisted code or content before i
 
 ## Database Schema
 
-| Table | Fields |
+| Table | Purpose |
 | :--- | :--- |
-| **USER** | `uuid`, `login`, `role` (artist/contractor) |
-| **ARTIST** | `uuid`, `category` (musician/comedian/painter), `bio`, `availability` (yes/no) |
-| **CONTRACTOR** | `uuid`, `category` (band/venue/collab), `bio`, `availability` (yes/no) |
-| **FILES** | `uuid`, `type` (audio/video/image), `location` |
-| **SWIPE** | `uuid`, `swiper_id`, `swiped_id` |
-| **MATCH/CHAT** | `uuid`, `artist_id`, `contractor_id` |
-| **CHAT_MESSAGE** | `uuid`, `match_id`, `sender_id`, `content`, `time` |
+| **User** | Account identity: email, username, password hash, role (`artist` / `hirer` / `admin`), avatar |
+| **ArtistProfile** | Artist-specific fields (category, bio, location, rate, availability); 1:1 with User |
+| **HirerProfile** | Hirer-specific fields (category, organization name, bio, location, availability); 1:1 with User |
+| **File** | Portfolio uploads (image/audio/video/document); belongs to a User |
+| **Swipe** | One row per swipe (like or pass), between two Users |
+| **Match** | Artist ↔ Hirer match; also serves as the friend/connection relationship |
+| **ChatMessage** | Messages within a Match's chat |
 
 **Notes:**
-- When a USER swipes another, it creates a SWIPE entry.
-- When two USERs have a mutual SWIPE, a MATCH is set up along with its own CHAT.
-- CHAT_MESSAGE represents each individual message sent within a CHAT.
-
-> Add primary/foreign key details and an ER diagram image once the schema is fully implemented.
+- A mutual `Swipe` (both sides `liked: true`) creates a `Match`.
+- `Match` doubles as the friends/connections relationship — no separate `Friend` table.
+- Artists and hirers are classified only by `category` (e.g. musician, painter, venue) — no separate tags/genres table.
+- Online/offline status is intentionally not persisted — it's runtime Socket.io connection state, not a database column.
 
 ---
 
@@ -178,14 +174,12 @@ Each team member reviewed and validated any AI-assisted code or content before i
 | Feature | Description | Implemented by |
 |---|---|---|
 | User signup/login | Email + password auth with hashed/salted passwords | \<name\> |
-| Artist/Contractor profiles | Create and edit profile (category, bio, availability) | \<name\> |
+| Artist/Hirer profiles | Create and edit profile (category, bio, availability) | \<name\> |
 | Swipe & match system | Swipe on other users, auto-create match on mutual swipe | \<name\> |
 | Private chat | Send/receive messages within a match | \<name\> |
 | File uploads | Attach audio/video/image files to a profile | \<name\> |
 | Notifications | Alerts for new matches and messages | \<name\> |
 | Privacy Policy / Terms of Service | Accessible legal pages with relevant content | \<name\> |
-
-> Expand this table as features are completed.
 
 ---
 
@@ -203,8 +197,6 @@ Each team member reviewed and validated any AI-assisted code or content before i
 
 **Total points targeted:** 10 / 14 minimum required *(add more modules to close the gap)*
 
-> Fill in the full list of chosen modules, how each was implemented, and which team member(s) worked on it. Remember: custom "Modules of choice" require detailed justification (why it was chosen, what challenge it solves, why it deserves Major/Minor status).
-
 ---
 
 ## Individual Contributions
@@ -218,9 +210,6 @@ Each team member reviewed and validated any AI-assisted code or content before i
 ---
 
 ## Known Limitations
-
-- \<list any known limitations or future improvements\>
-
 ## License
 
  *PolyForm Noncommercial License 1.0.0*
