@@ -147,6 +147,14 @@ export async function refreshAccessToken(refreshToken: string) {
 			where: { tokenHash: hashToken(refreshToken) },
 		});
 		if (!stored) throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
+
+		if (stored.expiresAt <= new Date()) {
+			await prisma.refreshToken.deleteMany({
+				where: { userId: data.userId, expiresAt: { lt: new Date() } },
+			});
+			throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
+		}
+
 		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, {
 			algorithm: "HS256",
 			expiresIn: "15m",
