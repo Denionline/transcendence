@@ -13,7 +13,7 @@ import { UserRole } from "../generated/prisma/client.js";
 function makeTestApp() {
 	const app = express();
 	app.get("/protected", verifyToken, (req, res) => {
-		res.json({ userId: req.user?.userId });
+		res.json({ userId: req.user?.id });
 	});
 	app.use(errorHandler);
 	return app;
