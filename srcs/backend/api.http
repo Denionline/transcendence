@@ -3,7 +3,8 @@
 ### Run requests top to bottom for a normal flow (register -> login -> me -> refresh -> logout).
 
 @baseUrl = http://localhost:9000
-@email = user@email.com
+@username = hirer
+@email = hirer@email.com
 @password = password
 
 ### =========================================================
@@ -26,7 +27,7 @@ Content-Type: application/json
 {
   "email": "{{email}}",
   "password": "{{password}}",
-  "name": "Test User",
+  "name": "{{username}}",
   "role": "artist"
 }
 
