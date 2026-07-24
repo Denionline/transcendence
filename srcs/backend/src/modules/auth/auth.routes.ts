@@ -56,6 +56,7 @@ router.get("/42/callback", async (req, res) => {
 		});
 		res.redirect(FRONTEND_URL);
 	} catch (error) {
+		// eslint-disable-next-line no-console
 		console.error("42 callback failed:", error); // for debugging purposes
 		res.redirect(`${FRONTEND_URL}/login?error=oauth`);
 	}
