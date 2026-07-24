@@ -33,6 +33,8 @@ export async function registerRequest(data: RegisterData): Promise<User> {
 			role: data.role,
 		}),
 	});
+	const user = await loginRequest({ email: data.email, password: data.password });
+	return user;
 }
 
 export async function loginRequest(credentials: Credentials): Promise<User> {
