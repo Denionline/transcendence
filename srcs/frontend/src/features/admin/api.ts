@@ -1,9 +1,10 @@
-import type { User, UserRole } from "../auth/types";
+import type { UserRole } from "../auth/types";
+import type { ManagedUser } from "./types";
 import { delay } from "../../lib/delay";
 
 const DB_KEY = "artmate_db_users";
 
-interface StoredUser extends User {
+interface StoredUser extends ManagedUser {
 	password: string;
 }
 
@@ -53,17 +54,17 @@ function writeUsers(users: StoredUser[]): void {
 	localStorage.setItem(DB_KEY, JSON.stringify(users));
 }
 
-function toPublicUser(user: StoredUser): User {
+function toPublicUser(user: StoredUser): ManagedUser {
 	const { id, email, username, role, avatarUrl, createdAt, isActive } = user;
 	return { id, email, username, role, avatarUrl, createdAt, isActive };
 }
 
-export async function fetchUsers(): Promise<User[]> {
+export async function fetchUsers(): Promise<ManagedUser[]> {
 	await delay(undefined);
 	return readUsers().map(toPublicUser);
 }
 
-export async function setUsersActive(ids: string[], isActive: boolean): Promise<User[]> {
+export async function setUsersActive(ids: string[], isActive: boolean): Promise<ManagedUser[]> {
 	await delay(undefined);
 	const idSet = new Set(ids);
 	const users = readUsers().map((u) => (idSet.has(u.id) ? { ...u, isActive } : u));
@@ -74,7 +75,7 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
 export async function updateUser(
 	id: string,
 	updates: { username: string; email: string; role: UserRole },
-): Promise<User> {
+): Promise<ManagedUser> {
 	await delay(undefined);
 	const users = readUsers();
 	const index = users.findIndex((u) => u.id === id);
