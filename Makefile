@@ -96,7 +96,7 @@ ci:
 		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
 	@echo "TEST    Backend tests"
 	npm test --prefix $(BACKEND_PATH)
-	@echo "TEST    CI checks passed \342\234\205"
+	@echo "TEST    CI looking good"
 
 report:
 	@\
