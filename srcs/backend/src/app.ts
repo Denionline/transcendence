@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.routes.js";
@@ -6,6 +6,7 @@ import usersRoutes from "./modules/users/users.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
+const apiRouter = Router();
 
 // Global middlewares
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
@@ -18,10 +19,10 @@ app.get("/health", (_req, res) => {
 });
 
 // Modules
-app.use("/api/auth", authRoutes);
-app.use("/users", usersRoutes);
+app.use("/api", apiRouter);
 
-app.use(errorHandler);
+apiRouter.use("/auth", authRoutes);
+apiRouter.use("/users", usersRoutes);
 
 app.use(errorHandler);
 
