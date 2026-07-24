@@ -1,6 +1,62 @@
 import type { User, UserRole } from "../auth/types";
-import { readUsers, writeUsers, toPublicUser } from "../auth/api";
 import { delay } from "../../lib/delay";
+
+const DB_KEY = "artmate_db_users";
+
+interface StoredUser extends User {
+  password: string;
+}
+
+const seedUsers: StoredUser[] = [
+  {
+    id: "1",
+    email: "artist@email.com",
+    username: "artist",
+    role: "artist",
+    avatarUrl: null,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    isActive: true,
+    password: "artist",
+  },
+  {
+    id: "2",
+    email: "hirer@email.com",
+    username: "hirer",
+    role: "hirer",
+    avatarUrl: null,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    isActive: true,
+    password: "hirer",
+  },
+  {
+    id: "3",
+    email: "admin@email.com",
+    username: "admin",
+    role: "admin",
+    avatarUrl: null,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    isActive: true,
+    password: "admin",
+  },
+];
+
+function readUsers(): StoredUser[]
+  const raw = localStorage.getItem(DB_KEY);
+  if (!raw) {
+    localStorage.setItem(DB_KEY, JSON.stringify(seedUsers));
+    return seedUsers;
+  }
+  return JSON.parse(raw) as Stored
+}
+
+function writeUsers(users: StoredUser[]): void {
+  localStorage.setItem(DB_KEY, JSO
+}
+
+function toPublicUser(user: StoredUser): User {
+  const { id, email, username, roltive } = user;
+  return { id, email, username, role, avatarUrl, createdAt, isActive };
+}
 
 export async function fetchUsers(): Promise<User[]> {
 	await delay(undefined);
