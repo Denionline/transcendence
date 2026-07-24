@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./setup.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";

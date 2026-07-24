@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "tsx --watch src/server.ts",
 		"start": "tsx src/server.ts",
-		"test": "tsx --test",
+		"pretest": "prisma generate",
+		"test": "tsx --test test/*.test.ts",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"format": "prettier --write .",
