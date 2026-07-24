@@ -64,7 +64,7 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
 			userId: string;
 			role: UserRole;
 		};
-		req.user = playload;
+		req.user = { id: playload.userId, role: playload.role };
 		next();
 	} catch (error) {
 		if (error instanceof jwt.TokenExpiredError) throwError(401, "TOKEN_EXPIRED", "Token expired");
