@@ -41,7 +41,15 @@ router.post("/refresh", async (req, res) => {
 });
 
 router.get("/me", verifyToken, async (req, res) => {
-	const user = await getCurrentUser(req.user!.userId);
+	const userId =
+		(req.user as { userId?: string; id?: string } | undefined)?.userId ??
+		(req.user as { userId?: string; id?: string } | undefined)?.id;
+
+	if (!userId) {
+		return res.status(401).json({ message: "Unauthorized" });
+	}
+
+	const user = await getCurrentUser(userId);
 	res.status(200).json(user);
 });
 

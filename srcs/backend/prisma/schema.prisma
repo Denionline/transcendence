@@ -9,57 +9,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole{
+enum UserRole {
   artist
   hirer
   admin
 }
 
 model User {
-  id                  String    @id       @default(uuid())
-  email               String    @unique
-  username            String
-  passwordHash        String
-  role                UserRole            @default(artist)
-  avatarUrl           String?
-  createdAt           DateTime            @default(now())
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String
+  passwordHash String
+  role         UserRole @default(artist)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
 
-  artistProfile       ArtistProfile?
-  hirerProfile        HirerProfile?
-  files               File[]
-  swipesMade          Swipe[]   @relation("SwipesMade")
-  swipesReceived      Swipe[]   @relation("SwipesReceived")
-  matchesAsArtist     Match[]   @relation("MatchesAsArtist")
-  matchesAsHirer      Match[]   @relation("MatchesAsHirer")
+  artistProfile   ArtistProfile?
+  hirerProfile    HirerProfile?
+  files           File[]
+  swipesMade      Swipe[]        @relation("SwipesMade")
+  swipesReceived  Swipe[]        @relation("SwipesReceived")
+  matchesAsArtist Match[]        @relation("MatchesAsArtist")
+  matchesAsHirer  Match[]        @relation("MatchesAsHirer")
 
-  chatMessages        ChatMessage[]
-  refreshTokens       RefreshToken[]
+  chatMessages  ChatMessage[]
+  refreshTokens RefreshToken[]
 }
 
 model ArtistProfile {
-  id                  String    @id       @default(uuid())
-  userId              String    @unique
-  user                User      @relation(fields: [userId], references: [id])
-  category            String
-  bio                 String?
-  location            String?
-  rate                Int?
-  availability        Boolean   @default(true)
-  createdAt           DateTime  @default(now())
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  category     String
+  bio          String?
+  location     String?
+  rate         Int?
+  availability Boolean  @default(true)
+  createdAt    DateTime @default(now())
 }
 
 model HirerProfile {
-  id                  String    @id       @default(uuid())
-  userId              String    @unique
-  user                User      @relation(fields: [userId], references: [id])
-  category            String
-  organizationName    String
-  bio                 String?
-  location            String?
-  availability        Boolean   @default(true)
-  createdAt           DateTime  @default(now())
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  category         String
+  organizationName String
+  bio              String?
+  location         String?
+  availability     Boolean  @default(true)
+  createdAt        DateTime @default(now())
 }
-
 
 enum FileType {
   image
@@ -69,54 +68,54 @@ enum FileType {
 }
 
 model File {
-  id                  String    @id       @default(uuid())
-  ownerId             String
-  owner               User      @relation(fields: [ownerId], references: [id])
-  type                FileType
-  location            String
-  createdAt           DateTime  @default(now())
+  id        String   @id @default(uuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  type      FileType
+  location  String
+  createdAt DateTime @default(now())
 }
 
 model Swipe {
-  id                  String    @id       @default(uuid())
-  swiperId            String
-  swiper              User      @relation("SwipesMade", fields: [swiperId], references: [id])
-  swipedId            String
-  swiped              User      @relation("SwipesReceived", fields: [swipedId], references: [id])
-  liked               Boolean
-  createdAt           DateTime  @default(now())
+  id        String   @id @default(uuid())
+  swiperId  String
+  swiper    User     @relation("SwipesMade", fields: [swiperId], references: [id])
+  swipedId  String
+  swiped    User     @relation("SwipesReceived", fields: [swipedId], references: [id])
+  liked     Boolean
+  createdAt DateTime @default(now())
+
   @@unique([swiperId, swipedId])
 }
 
 model Match {
-  id                  String    @id       @default(uuid())
-  artistId            String
-  artist              User      @relation("MatchesAsArtist", fields: [artistId], references: [id])
-  hirerId             String
-  hirer               User      @relation("MatchesAsHirer", fields: [hirerId], references: [id])
-  createdAt           DateTime  @default(now())
+  id        String   @id @default(uuid())
+  artistId  String
+  artist    User     @relation("MatchesAsArtist", fields: [artistId], references: [id])
+  hirerId   String
+  hirer     User     @relation("MatchesAsHirer", fields: [hirerId], references: [id])
+  createdAt DateTime @default(now())
+
+  messages ChatMessage[]
 
   @@unique([artistId, hirerId])
-
-  messages            ChatMessage[]
 }
 
-
 model ChatMessage {
-  id                  String    @id       @default(uuid())
-  matchId             String
-  match               Match     @relation(fields: [matchId], references: [id])
-  senderId            String
-  sender              User      @relation(fields: [senderId], references: [id])
-  content             String
-  createdAt           DateTime  @default(now())
+  id        String   @id @default(uuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
 }
 
 model RefreshToken {
-  id                  String    @id       @default(uuid())
-  userId              String
-  user                User      @relation(fields: [userId], references: [id])
-  tokenHash           String    @unique
-  expiresAt           DateTime
-  createdAt           DateTime            @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
