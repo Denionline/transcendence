@@ -1,10 +1,10 @@
 import { throwError } from "../../lib/http-error.js";
-import { Prisma } from "../../../generated/prisma/client.js";
+// import { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 
 export async function getUserById(id: string) {
 	const user = await prisma.user.findUnique({ where: { id } });
-	if (!user) throwError(404, "user not found");
+	if (!user) throwError(404, "", "user not found");
 	return {
 		id: user.id,
 		email: user.email,
