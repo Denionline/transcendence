@@ -1,0 +1,73 @@
+### Transcendence Backend API
+### Use with the "REST Client" VSCode extension.
+### Run requests top to bottom for a normal flow (register -> login -> me -> refresh -> logout).
+
+@baseUrl = http://localhost:9000
+@email = user@email.com
+@password = password
+
+### =========================================================
+### Health
+### =========================================================
+
+### Health check
+GET {{baseUrl}}/health
+
+
+### =========================================================
+### Auth  (/api/auth)
+### =========================================================
+
+### Register a new user
+# role must be "artist" or "hirer"
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "name": "Test User",
+  "role": "artist"
+}
+
+
+### Login
+# Sets refreshToken cookie automatically (handled by REST Client cookie jar)
+# Captures the access token into {{login.response.body.token}} for later requests
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Get current user (from token payload)
+# Requires Authorization header with the access token returned by /login
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
+
+### Refresh access token
+# Uses the refreshToken cookie set by /login
+POST {{baseUrl}}/api/auth/refresh
+
+
+### Logout
+# Uses the refreshToken cookie set by /login, clears it
+POST {{baseUrl}}/api/auth/logout
+
+
+### =========================================================
+### Users  (/api/users)
+### =========================================================
+
+### Get my profile
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{login.response.body.token}}
+
+
+### List all users (admin only)
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{login.response.body.token}}
