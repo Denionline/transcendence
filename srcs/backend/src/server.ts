@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "dotenv-expand/config";
 import app from "./app.js";
 import { styleText } from "node:util";
 
