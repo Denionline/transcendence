@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { HttpError } from "../../lib/http-error.js";
-import { requireAuth, requireRole } from "../../middleware/auth.middleware.js";
+import { requireAuth, requireRole } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/client.js";
 import { getUserById, listUsers } from "./users.service.js";
 
