@@ -1,53 +1,26 @@
 import type { Credentials, RegisterData, User } from "./types";
-import { delay } from "../../lib/delay";
 
-const DB_KEY = "artmate_db_users";
-const SESSION_KEY = "artmate_session";
+let accessToken: string | null = null;
+export const setAccessToken = (t: string | null) => {
+	accessToken = t;
+};
+export const getAccessToken = () => accessToken;
 
-export interface StoredUser extends User {
-	password: string;
-}
-
-const seedUsers: StoredUser[] = [
-	{
-		id: "1",
-		email: "artist@email.com",
-		username: "artist",
-		role: "artist",
-		avatarUrl: null,
-		createdAt: "2024-01-01T00:00:00.000Z",
-		isActive: true,
-		password: "artist",
-	},
-	{
-		id: "2",
-		email: "hirer@email.com",
-		username: "hirer",
-		role: "hirer",
-		avatarUrl: null,
-		createdAt: "2024-01-01T00:00:00.000Z",
-		isActive: true,
-		password: "hirer",
-	},
-	{
-		id: "3",
-		email: "admin@email.com",
-		username: "admin",
-		role: "admin",
-		avatarUrl: null,
-		createdAt: "2024-01-01T00:00:00.000Z",
-		isActive: true,
-		password: "admin",
-	},
-];
-
-export function readUsers(): StoredUser[] {
-	const raw = localStorage.getItem(DB_KEY);
-	if (!raw) {
-		localStorage.setItem(DB_KEY, JSON.stringify(seedUsers));
-		return seedUsers;
+async function request(path: string, options: RequestInit = {}) {
+	const res = await fetch(`/api${path}`, {
+		...options,
+		Credentials: "include",
+		headers: {
+			"Content-Type": "application/json",
+			...accessToken(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+			...options.headers,
+		},
+	});
+	if (!res.ok) {
+		const body = await res.json().catch(() => ({}));
+		throw new Error(body.message ?? "Request failed");
 	}
-	return JSON.parse(raw) as StoredUser[];
+	return res.status === 204 ? null : res.json();
 }
 
 export function writeUsers(users: StoredUser[]): void {
