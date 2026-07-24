@@ -1,5 +1,5 @@
 import { Ban, CircleCheck, Pencil, Trash2 } from "lucide-react";
-import type { User } from "../../auth/types";
+import type { ManagedUser } from "../types";
 import { formatDate, initials } from "../../../lib/format";
 import { ROLE_BADGE } from "../constants";
 
@@ -12,7 +12,7 @@ export default function UserRow({
 	onEdit,
 	onDelete,
 }: {
-	user: User;
+	user: ManagedUser;
 	isSelf: boolean;
 	selected: boolean;
 	onToggleSelect: () => void;

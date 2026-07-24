@@ -7,7 +7,6 @@ export interface User {
 	role: UserRole;
 	avatarUrl: string | null;
 	createdAt: string;
-	isActive: boolean;
 }
 
 export interface Credentials {

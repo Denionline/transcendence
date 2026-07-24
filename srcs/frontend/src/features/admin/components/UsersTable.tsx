@@ -1,9 +1,9 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
-import type { User } from "../../auth/types";
+import type { ManagedUser } from "../types";
 import UserRow from "./UserRow";
 
 interface UsersTableProps {
-	users: User[];
+	users: ManagedUser[];
 	isLoading: boolean;
 	currentUserId?: string;
 	selectedIds: Set<string>;

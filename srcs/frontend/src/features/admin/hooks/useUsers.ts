@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import type { User, UserRole } from "../../auth/types";
+import type { UserRole } from "../../auth/types";
+import type { ManagedUser } from "../types";
 import { deleteUsers, fetchUsers, setUsersActive, updateUser } from "../api";
 
 export function useUsers() {
-	const [users, setUsers] = useState<User[]>([]);
+	const [users, setUsers] = useState<ManagedUser[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 

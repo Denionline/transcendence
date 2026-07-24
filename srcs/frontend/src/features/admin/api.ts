@@ -1,13 +1,70 @@
-import type { User, UserRole } from "../auth/types";
-import { readUsers, writeUsers, toPublicUser } from "../auth/api";
+import type { UserRole } from "../auth/types";
+import type { ManagedUser } from "./types";
 import { delay } from "../../lib/delay";
 
-export async function fetchUsers(): Promise<User[]> {
+const DB_KEY = "artmate_db_users";
+
+interface StoredUser extends ManagedUser {
+	password: string;
+}
+
+const seedUsers: StoredUser[] = [
+	{
+		id: "1",
+		email: "artist@email.com",
+		username: "artist",
+		role: "artist",
+		avatarUrl: null,
+		createdAt: "2024-01-01T00:00:00.000Z",
+		isActive: true,
+		password: "artist",
+	},
+	{
+		id: "2",
+		email: "hirer@email.com",
+		username: "hirer",
+		role: "hirer",
+		avatarUrl: null,
+		createdAt: "2024-01-01T00:00:00.000Z",
+		isActive: true,
+		password: "hirer",
+	},
+	{
+		id: "3",
+		email: "admin@email.com",
+		username: "admin",
+		role: "admin",
+		avatarUrl: null,
+		createdAt: "2024-01-01T00:00:00.000Z",
+		isActive: true,
+		password: "admin",
+	},
+];
+
+function readUsers(): StoredUser[] {
+	const raw = localStorage.getItem(DB_KEY);
+	if (!raw) {
+		localStorage.setItem(DB_KEY, JSON.stringify(seedUsers));
+		return seedUsers;
+	}
+	return JSON.parse(raw) as StoredUser[];
+}
+
+function writeUsers(users: StoredUser[]): void {
+	localStorage.setItem(DB_KEY, JSON.stringify(users));
+}
+
+function toPublicUser(user: StoredUser): ManagedUser {
+	const { id, email, username, role, avatarUrl, createdAt, isActive } = user;
+	return { id, email, username, role, avatarUrl, createdAt, isActive };
+}
+
+export async function fetchUsers(): Promise<ManagedUser[]> {
 	await delay(undefined);
 	return readUsers().map(toPublicUser);
 }
 
-export async function setUsersActive(ids: string[], isActive: boolean): Promise<User[]> {
+export async function setUsersActive(ids: string[], isActive: boolean): Promise<ManagedUser[]> {
 	await delay(undefined);
 	const idSet = new Set(ids);
 	const users = readUsers().map((u) => (idSet.has(u.id) ? { ...u, isActive } : u));
@@ -18,7 +75,7 @@ export async function setUsersActive(ids: string[], isActive: boolean): Promise<
 export async function updateUser(
 	id: string,
 	updates: { username: string; email: string; role: UserRole },
-): Promise<User> {
+): Promise<ManagedUser> {
 	await delay(undefined);
 	const users = readUsers();
 	const index = users.findIndex((u) => u.id === id);

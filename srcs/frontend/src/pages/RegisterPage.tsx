@@ -9,7 +9,12 @@ export default function RegisterPage() {
 				Join Artmate
 			</span>
 			<h1 className="text-3xl font-extrabold mt-1">Create your account</h1>
-			<button className="btn bg-neutral mt-6 h-13 w-full rounded-2xl">
+			<button
+				className="btn bg-neutral mt-6 h-13 w-full rounded-2xl"
+				onClick={() => {
+					window.location.href = "/api/auth/42";
+				}}
+			>
 				<GraduationCap />
 				Continue with 42
 			</button>

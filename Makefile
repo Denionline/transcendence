@@ -23,7 +23,7 @@ RM								= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test report rebuild oblivion dbaccess
+.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess
 
 all: up
 
@@ -78,9 +78,25 @@ srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
 
 test: up
-	curl -s http://localhost:9000
-	@echo "INFO also check curl -s http://localhost:3000"
-	@echo "INFO access db with 'make dbaccess'"
+	@echo "INFO    access OAuth with: http://localhost:9000/api/auth/42"
+	@echo "INFO    access db with 'make dbaccess'"
+
+ci:
+	@echo "TEST    Lint (frontend + backend)"
+	npm run lint --prefix $(FRONTEND_PATH)
+	npm run lint --prefix $(BACKEND_PATH)
+	@echo "TEST    Frontend build"
+	npm run build --prefix $(FRONTEND_PATH)
+	@echo "TEST    Backend typecheck (prisma generate + tsc)"
+	cd $(BACKEND_PATH) && npx prisma generate && npx tsc --noEmit
+	@echo "TEST    Start test database (wait for healthy)"
+	docker compose --env-file .env -f $(COMPOSE_FILE) up -d --wait database
+	@echo "TEST    Apply migrations"
+	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:5432/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
+		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
+	@echo "TEST    Backend tests"
+	npm test --prefix $(BACKEND_PATH)
+	@echo "TEST    CI looking good"
 
 report:
 	@\
@@ -100,5 +116,5 @@ oblivion:
 	$(RM) srcs/backend/node_modules srcs/frontend/node_modules srcs/backend/generated/prisma
 
 dbaccess:
-	@echo "INFO type '\\q' to quit"
+	@echo "INFO    type '\\q' to quit"
 	docker exec -it transcendence-db psql -U $$(grep -oP '(?<=^POSTGRES_USER=).*' .env) -d $$(grep -oP '(?<=^POSTGRES_DB=).*' .env)

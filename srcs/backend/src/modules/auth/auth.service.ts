@@ -1,4 +1,4 @@
-import { SECRET, R_SECRET } from "../../lib/env.js";
+import { SECRET, R_SECRET, FT_UID, FT_SECRET, FT_CALLBACK_URL } from "../../lib/env.js";
 import bcrypt from "bcrypt";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
@@ -35,6 +35,28 @@ function toPublicUser(user: User) {
 	};
 }
 
+// Issues our own access+refresh JWTs and persists the refresh-token hash for
+// revocability. Shared by both password login (userLogin) and 42 OAuth
+// (loginWith42), so both flows return the same session shape.
+async function issueSession(user: User) {
+	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, {
+		algorithm: "HS256",
+		expiresIn: "15m",
+	});
+	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, {
+		algorithm: "HS256",
+		expiresIn: "7d",
+	});
+	await prisma.refreshToken.create({
+		data: {
+			userId: user.id,
+			tokenHash: hashToken(refreshToken),
+			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+		},
+	});
+	return { ...toPublicUser(user), token, refreshToken };
+}
+
 export async function registerUser(email: string, password: string, name: string, role: UserRole) {
 	if (!name || !role)
 		throwError(400, "VALIDATION_ERROR", "email, password, name and role are required");
@@ -59,24 +81,54 @@ export async function userLogin(email: string, password: string) {
 	email = normalizeCredentials(email, password);
 	const user = await prisma.user.findUnique({ where: { email: email } });
 	if (!user) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
+	// 42-only accounts have a NULL passwordHash — reject password login for them
+	// without revealing that the email belongs to a 42 account.
+	if (!user.passwordHash) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
 	const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 	if (!passwordMatch) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
-	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, {
-		algorithm: "HS256",
-		expiresIn: "15m",
+	return issueSession(user);
+}
+
+interface FtTokenResponse {
+	access_token: string;
+}
+
+interface FtProfile {
+	email: string;
+	login: string;
+	image?: { link?: string | null };
+}
+
+export async function loginWith42(code: string) {
+	const tokenRes = await fetch("https://api.intra.42.fr/oauth/token", {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		body: new URLSearchParams({
+			grant_type: "authorization_code",
+			client_id: FT_UID,
+			client_secret: FT_SECRET,
+			code,
+			redirect_uri: FT_CALLBACK_URL,
+		}),
 	});
-	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, {
-		algorithm: "HS256",
-		expiresIn: "7d",
+	if (!tokenRes.ok) throwError(502, "FT_EXCHANGE_FAILED", "failed to exchange code with 42");
+	const { access_token } = (await tokenRes.json()) as FtTokenResponse;
+	const profileRes = await fetch("https://api.intra.42.fr/v2/me", {
+		headers: { Authorization: `Bearer ${access_token}` },
 	});
-	await prisma.refreshToken.create({
-		data: {
-			userId: user.id,
-			tokenHash: hashToken(refreshToken),
-			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-		},
-	});
-	return { ...toPublicUser(user), token, refreshToken };
+	if (!profileRes.ok) throwError(502, "FT_PROFILE_FAILED", "failed to fetch 42 profile");
+	const profile = (await profileRes.json()) as FtProfile;
+	const email = profile.email.trim().toLowerCase();
+	let user = await prisma.user.findUnique({ where: { email } });
+	if (!user)
+		user = await prisma.user.create({
+			data: {
+				email,
+				username: profile.login,
+				avatarUrl: profile.image?.link ?? null,
+			},
+		});
+	return issueSession(user);
 }
 
 export async function logoutUser(refreshToken: string) {
@@ -88,13 +140,21 @@ export async function refreshAccessToken(refreshToken: string) {
 	if (!refreshToken) throwError(401, "MISSING_TOKEN", "Not found refreshToken");
 	try {
 		const data = jwt.verify(refreshToken, R_SECRET, { algorithms: ["HS256"] }) as jwt.JwtPayload & {
-			userId: number;
+			userId: string;
 			role: UserRole;
 		};
 		const stored = await prisma.refreshToken.findUnique({
 			where: { tokenHash: hashToken(refreshToken) },
 		});
 		if (!stored) throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
+
+		if (stored.expiresAt <= new Date()) {
+			await prisma.refreshToken.deleteMany({
+				where: { userId: data.userId, expiresAt: { lt: new Date() } },
+			});
+			throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
+		}
+
 		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, {
 			algorithm: "HS256",
 			expiresIn: "15m",
