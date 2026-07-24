@@ -9,10 +9,10 @@ export const getAccessToken = () => accessToken;
 async function request(path: string, options: RequestInit = {}) {
 	const res = await fetch(`/api${path}`, {
 		...options,
-		Credentials: "include",
+		credentials: "include",
 		headers: {
 			"Content-Type": "application/json",
-			...accessToken(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+			...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
 			...options.headers,
 		},
 	});
