@@ -113,7 +113,9 @@ oblivion:
 	@sleep 5
 	$(MAKE) fclean
 	docker system prune --all --force
-	$(RM) srcs/backend/node_modules srcs/frontend/node_modules srcs/backend/generated/prisma
+	$(RM) --verbose srcs/backend/node_modules srcs/frontend/node_modules
+	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
+	$(RM) --verbose srcs/backend/generated/prisma
 
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
