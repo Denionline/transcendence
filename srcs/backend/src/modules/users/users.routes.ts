@@ -54,6 +54,13 @@ function parseRole(value: unknown): UserRole | undefined {
 		: undefined;
 }
 
+function parseId(value: string | string[] | undefined): string {
+	if (typeof value !== "string") {
+		throwError(400, "VALIDATION_ERROR", "invalid id parameter");
+	}
+	return value;
+}
+
 router.get("/me", requireAuth, async (req, res) => {
 	try {
 		const user = await getUserById(req.user!.id);
@@ -74,7 +81,7 @@ router.get("/", requireAuth, requireRole(UserRole.admin), async (req, res) => {
 });
 
 router.get("/:id", requireAuth, async (req, res) => {
-	const requestedUserId = req.params.id;
+	const requestedUserId = parseId(req.params.id);
 	const caller = req.user!;
 
 	let isViewingOwnRecord = false;
@@ -95,13 +102,13 @@ router.get("/:id", requireAuth, async (req, res) => {
 	if (isAllowed === false) {
 		throwError(403, "FORBIDDEN", "you are not allowed to view this user");
 	}
-	
+
 	const user = await getUserById(requestedUserId);
 	res.status(200).json(user);
 });
 
 router.put("/:id", requireAuth, async (req, res) => {
-	const targetUserId = req.params.id;
+	const targetUserId = parseId(req.params.id);
 	const caller = req.user!; // { id, role } — set by requireAuth
 	const body = req.body ?? {};
 
@@ -151,7 +158,7 @@ router.put("/:id", requireAuth, async (req, res) => {
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
-	const targetUserId = req.params.id;
+	const targetUserId = parseId(req.params.id);
 	const caller = req.user!;
 
 	let callerIsAdmin = false;
