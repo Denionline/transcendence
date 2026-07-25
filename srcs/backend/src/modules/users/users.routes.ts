@@ -100,29 +100,45 @@ router.get("/:id", requireAuth, async (req, res) => {
 	res.status(200).json(user);
 });
 
-// PUT /api/users/:id — update a user. The service (updateUser) validates and
-// writes the fields; THIS handler decides who is allowed to do it.
 router.put("/:id", requireAuth, async (req, res) => {
 	const targetUserId = req.params.id;
 	const caller = req.user!; // { id, role } — set by requireAuth
 	const body = req.body ?? {};
 
-	// TODO(human): enforce the update authorization rules, THEN call updateUser.
-	//   1. A non-admin may only update THEIR OWN record.
-	//        → if caller is not admin AND caller.id !== targetUserId:
-	//            throwError(403, "FORBIDDEN", "you cannot update this user");
-	//   2. Only an admin may change `role`.
-	//        → if body.role is present AND caller is not admin:
-	//            throwError(403, "FORBIDDEN", "only an admin can change roles");
-	//   3. An admin must not demote THEMSELVES out of admin (avoids locking
-	//      everyone out).
-	//        → if caller is admin AND caller.id === targetUserId
-	//            AND body.role is present AND body.role !== UserRole.admin:
-	//            throwError(409, "SELF_DEMOTE", "an admin cannot demote themselves");
-	//
-	// Reference — an equivalent "self vs admin" guard, fully written, is the
-	// GET /:id handler just above (isViewingOwnRecord / isAdmin / isAllowed).
-	// Mirror that style here.
+	//	Reference:
+	//		https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+	//		https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
+
+	let callerIsAdmin = false;
+	if (caller.role === UserRole.admin) {
+		callerIsAdmin = true;
+	}
+
+	let callerIsEditingSelf = false;
+	if (caller.id === targetUserId) {
+		callerIsEditingSelf = true;
+	}
+
+	let requestChangesRole = false;
+	if (body.role !== undefined) {
+		requestChangesRole = true;
+	}
+
+	if (callerIsAdmin === false && callerIsEditingSelf === false) {
+		throwError(403, "FORBIDDEN", "you cannot update this user");
+	}
+
+	if (requestChangesRole === true && callerIsAdmin === false) {
+		throwError(403, "FORBIDDEN", "only an admin can change roles");
+	}
+
+	if (callerIsAdmin === true && callerIsEditingSelf === true && requestChangesRole === true) {
+		// The new role they are trying to give themselves:
+		const newRole = body.role;
+		if (newRole !== UserRole.admin) {
+			throwError(409, "SELF_DEMOTE", "an admin cannot demote themselves");
+		}
+	}
 
 	const updated = await updateUser(targetUserId, {
 		email: body.email,
