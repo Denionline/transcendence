@@ -1,5 +1,5 @@
 import { Router, Request } from "express";
-import { HttpError } from "../../lib/http-error.js";
+import { HttpError, throwError } from "../../lib/http-error.js";
 import { requireAuth, requireRole } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/client.js";
 import { getUserById, listUsers } from "./users.service.js";
@@ -71,6 +71,33 @@ router.get("/", requireAuth, requireRole(UserRole.admin), async (req, res) => {
 
 	const result = await listUsers({ page, pageSize, role, search });
 	res.status(200).json(result);
+});
+
+router.get("/:id", requireAuth, async (req, res) => {
+	const requestedUserId = req.params.id;
+	const caller = req.user!;
+
+	let isViewingOwnRecord = false;
+	if (caller.id === requestedUserId) {
+		isViewingOwnRecord = true;
+	}
+	let isAdmin = false;
+	if (caller.role === UserRole.admin) {
+		isAdmin = true;
+	}
+	let isAllowed = false;
+	if (isViewingOwnRecord === true) {
+		isAllowed = true;
+	}
+	if (isAdmin === true) {
+		isAllowed = true;
+	}
+	if (isAllowed === false) {
+		throwError(403, "FORBIDDEN", "you are not allowed to view this user");
+	}
+	
+	const user = await getUserById(requestedUserId);
+	res.status(200).json(user);
 });
 
 export default router;
