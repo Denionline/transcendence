@@ -123,3 +123,13 @@ export async function updateUser(targetId: string, input: UpdateUserInput) {
 		throw error;
 	}
 }
+
+export async function deleteUser(targetId: string) {
+	try {
+		await prisma.user.delete({ where: { id: targetId } });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
+			throwError(404, "USER_NOT_FOUND", "user not found");
+		throw error;
+	}
+}

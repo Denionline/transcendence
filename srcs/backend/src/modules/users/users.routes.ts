@@ -2,7 +2,7 @@ import { Router, Request } from "express";
 import { HttpError, throwError } from "../../lib/http-error.js";
 import { requireAuth, requireRole } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/client.js";
-import { getUserById, listUsers, updateUser } from "./users.service.js";
+import { getUserById, listUsers, updateUser, deleteUser } from "./users.service.js";
 
 const router = Router();
 
@@ -148,6 +148,32 @@ router.put("/:id", requireAuth, async (req, res) => {
 		role: body.role,
 	});
 	res.status(200).json(updated);
+});
+
+router.delete("/:id", requireAuth, async (req, res) => {
+	const targetUserId = req.params.id;
+	const caller = req.user!;
+
+	let callerIsAdmin = false;
+	if (caller.role === UserRole.admin) {
+		callerIsAdmin = true;
+	}
+
+	let callerIsDeletingSelf = false;
+	if (caller.id === targetUserId) {
+		callerIsDeletingSelf = true;
+	}
+
+	if (callerIsAdmin === false && callerIsDeletingSelf === false) {
+		throwError(403, "FORBIDDEN", "you cannot delete this user");
+	}
+
+	if (callerIsAdmin === true && callerIsDeletingSelf === true) {
+		throwError(409, "SELF_DELETE", "an admin cannot delete their own account");
+	}
+
+	await deleteUser(targetUserId);
+	res.status(204).send();
 });
 
 export default router;
