@@ -9,10 +9,23 @@ import {
 import { throwError } from "../../lib/http-error.js";
 import { Router } from "express";
 import { verifyToken } from "../../middlewares/auth.middleware.js";
+import { rateLimit } from "../../middlewares/rate-limit.middleware.js";
 import crypto from "node:crypto";
 import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
 
 const router = Router();
+
+const loginLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 10,
+	message: "too many login attempts from this address, try again later",
+});
+
+const registerLimiter = rateLimit({
+	windowMs: 60 * 60 * 1000,
+	max: 5,
+	message: "too many accounts created from this address, try again later",
+});
 
 router.get("/42", (req, res) => {
 	const state = crypto.randomBytes(16).toString("hex");
@@ -62,15 +75,15 @@ router.get("/42/callback", async (req, res) => {
 	}
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
 	const { email, password, name, role } = req.body;
 	const user = await registerUser(email, password, name, role);
 	res.status(201).json(user);
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
 	const { email, password } = req.body;
-	const { refreshToken, ...user } = await userLogin(email, password);
+	const { refreshToken, ...user } = await userLogin(email, password, req.ip);
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
 		secure: process.env.NODE_ENV === "production",

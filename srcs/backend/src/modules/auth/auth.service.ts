@@ -1,5 +1,11 @@
 import { SECRET, R_SECRET, FT_UID, FT_SECRET, FT_CALLBACK_URL } from "../../lib/env.js";
-import bcrypt from "bcrypt";
+import {
+	assertPasswordPolicy,
+	hashPassword,
+	verifyPassword,
+	PASSWORD_POLICY,
+} from "../../lib/password.js";
+import { assertNotLockedOut, recordLoginAttempt } from "./login-attempts.js";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
@@ -13,8 +19,12 @@ function normalizeCredentials(email: string, password: string) {
 	if (!email || !password) throwError(400, "VALIDATION_ERROR", "email and password are required");
 	if (typeof email !== "string" || typeof password !== "string")
 		throwError(400, "VALIDATION_ERROR", "email and password must be strings");
-	if (password.length < 8 || password.length > 72)
-		throwError(400, "VALIDATION_ERROR", "password must be between 8 and 72 characters");
+	if (Buffer.byteLength(password, "utf8") > PASSWORD_POLICY.maxBytes)
+		throwError(
+			400,
+			"VALIDATION_ERROR",
+			`password must be at most ${PASSWORD_POLICY.maxBytes} bytes`,
+		);
 	email = email.trim().toLowerCase();
 	if (!EMAIL_REGEX.test(email)) throwError(400, "VALIDATION_ERROR", "invalid email format");
 	return email;
@@ -64,7 +74,8 @@ export async function registerUser(email: string, password: string, name: string
 		throwError(400, "VALIDATION_ERROR", "role must be either 'artist' or 'hirer'");
 	email = normalizeCredentials(email, password);
 	name = name.trim();
-	const passwordHash = await bcrypt.hash(password, 10);
+	assertPasswordPolicy(password, { email, username: name });
+	const passwordHash = await hashPassword(password);
 	try {
 		const user = await prisma.user.create({
 			data: { email, username: name, passwordHash, role },
@@ -77,15 +88,16 @@ export async function registerUser(email: string, password: string, name: string
 	}
 }
 
-export async function userLogin(email: string, password: string) {
+export async function userLogin(email: string, password: string, ip?: string) {
 	email = normalizeCredentials(email, password);
+	await assertNotLockedOut(email);
 	const user = await prisma.user.findUnique({ where: { email: email } });
-	if (!user) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
-	// 42-only accounts have a NULL passwordHash — reject password login for them
-	// without revealing that the email belongs to a 42 account.
-	if (!user.passwordHash) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
-	const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-	if (!passwordMatch) throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
+	const passwordMatch = await verifyPassword(password, user?.passwordHash ?? null);
+	if (!user || !passwordMatch) {
+		await recordLoginAttempt(email, false, ip, user?.id);
+		throwError(401, "INVALID_CREDENTIALS", "invalid email or password");
+	}
+	await recordLoginAttempt(email, true, ip, user.id);
 	return issueSession(user);
 }
 
