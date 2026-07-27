@@ -16,8 +16,8 @@ COMPOSE_FILE			= srcs/docker-compose.yml
 #                                   Rules                                      #
 # **************************************************************************** #
 
-MAKE							= make --no-print-directory
-RM								= rm -rf
+MAKE					= make --no-print-directory
+RM						= rm -rf
 
 # **************************************************************************** #
 #                                    Comands                                   #
@@ -77,9 +77,9 @@ srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/f
 srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
 
-test: up
-	@echo "INFO    access OAuth with: http://localhost:9000/api/auth/42"
-	@echo "INFO    access db with 'make dbaccess'"
+# test: up
+# 	@echo "INFO    access OAuth with: http://localhost:9000/api/auth/42"
+# 	@echo "INFO    access db with 'make dbaccess'"
 
 ci:
 	@echo "TEST    Lint (frontend + backend)"
@@ -113,7 +113,9 @@ oblivion:
 	@sleep 5
 	$(MAKE) fclean
 	docker system prune --all --force
-	$(RM) srcs/backend/node_modules srcs/frontend/node_modules srcs/backend/generated/prisma
+	$(RM) srcs/backend/node_modules srcs/frontend/node_modules
+	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
+	$(RM) --verbose srcs/backend/generated/prisma
 
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
