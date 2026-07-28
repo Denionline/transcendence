@@ -1,10 +1,5 @@
 import { SECRET, R_SECRET, FT_UID, FT_SECRET, FT_CALLBACK_URL } from "../../lib/env.js";
-import {
-	assertPasswordPolicy,
-	hashPassword,
-	verifyPassword,
-	PASSWORD_POLICY,
-} from "../../lib/password.js";
+import { assertPasswordPolicy, hashPassword, verifyPassword } from "../../lib/password.js";
 import { assertNotLockedOut, recordLoginAttempt } from "./login-attempts.js";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
