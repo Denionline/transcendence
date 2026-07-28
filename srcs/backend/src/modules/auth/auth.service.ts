@@ -19,12 +19,6 @@ function normalizeCredentials(email: string, password: string) {
 	if (!email || !password) throwError(400, "VALIDATION_ERROR", "email and password are required");
 	if (typeof email !== "string" || typeof password !== "string")
 		throwError(400, "VALIDATION_ERROR", "email and password must be strings");
-	if (Buffer.byteLength(password, "utf8") > PASSWORD_POLICY.maxBytes)
-		throwError(
-			400,
-			"VALIDATION_ERROR",
-			`password must be at most ${PASSWORD_POLICY.maxBytes} bytes`,
-		);
 	email = email.trim().toLowerCase();
 	if (!EMAIL_REGEX.test(email)) throwError(400, "VALIDATION_ERROR", "invalid email format");
 	return email;
