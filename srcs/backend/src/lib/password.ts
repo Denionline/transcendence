@@ -3,7 +3,7 @@ import { throwError } from "./http-error.js";
 
 const BCRYPT_COST = 12;
 const MAX_PASSWORD_BYTES = 72;
-const MIN_PASSWORD_LENGTH = 12;
+const MIN_PASSWORD_LENGTH = 8;
 const MIN_PERSONAL_TOKEN_LENGTH = 4;
 
 const TIMING_EQUALIZER_HASH = "$2b$12$ZfxlXwHRIUX8j.mum78f9ez/iX2s8zIlNy4O/tPpdxWnOJ1mlyp..";
