@@ -73,7 +73,32 @@ first (the cookie is sent automatically) to get a new access token, then call
 ```
 
 `login` also includes `"token"` (the access token) in this same response.
-- `register`/`login` validation: email trimmed/lowercased and regex-checked; password 8–72 chars; `role` must be `artist` or `hirer` (no self-registering as `admin`).
+- `register`/`login` validation: email trimmed/lowercased and regex-checked; password at most 72 **bytes** (bcrypt ignores anything past that); `role` must be `artist` or `hirer` (no self-registering as `admin`).
+
+### Password rules and brute-force protection
+
+**Storage.** Passwords are hashed with bcrypt at cost 12. bcrypt draws a fresh
+random salt per password and embeds it in the digest, so identical passwords
+never share a hash. Plaintext is never stored or logged.
+
+**Policy** (`register` only — existing accounts keep logging in with whatever
+they have): at least 12 characters and at most 72 bytes, containing a lowercase
+letter, an uppercase letter, a digit and a symbol. Rejected on top of that:
+common passwords, and passwords containing the user's own name or email
+local-part. Violations → `400 WEAK_PASSWORD`, with a message naming what is
+missing.
+
+**Per-IP rate limit.** `login` allows 10 requests per 15 minutes per IP,
+`register` allows 5 per hour. Over the limit → `429 TOO_MANY_REQUESTS` with a
+`Retry-After` header (seconds). Counters live in the backend process, so they
+reset on restart and are per-replica.
+
+**Per-account lockout.** Every login attempt is recorded (`LoginAttempt`: email,
+IP, success, timestamp — 30 days of history). Five failures within 15 minutes
+lock that email until 15 minutes after the last failure → `423 ACCOUNT_LOCKED`,
+with the remaining minutes in the message. A successful login clears the streak.
+The lockout keys on the submitted email, so unknown emails lock exactly like
+real ones and the response never reveals whether an account exists.
 
 ## Users `/api/users`
 
@@ -159,6 +184,7 @@ Chat is only reachable through a match — no match, no messages.
 |---|---|---|
 | `VALIDATION_ERROR` | 400 | Zod rejected body/query/params (also used by auth for missing/invalid fields) |
 | `SELF_INTEREST` | 400 | Tried to show interest in yourself |
+| `WEAK_PASSWORD` | 400 | Password does not meet the policy on register |
 | `INVALID_CREDENTIALS` | 401 | Wrong email or password on login |
 | `MISSING_TOKEN` | 401 | Authorization header missing/malformed, or refresh cookie missing |
 | `INVALID_TOKEN` | 401 | Access token signature invalid or malformed |
@@ -172,6 +198,8 @@ Chat is only reachable through a match — no match, no messages.
 | `INTEREST_EXISTS` | 409 | Pending interest already exists for this pair |
 | `INTEREST_CLOSED` | 409 | Interest already accepted/declined, can't withdraw |
 | `FRIENDSHIP_EXISTS` | 409 | Relation already exists in either direction |
+| `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
+| `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
+| `TOO_MANY_REQUESTS` | 429 | Per-IP rate limit hit — see the `Retry-After` header |
 | `SELF_DEMOTE` | 409 | Admin tried to change their own role away from `admin` |
-| `SELF_DELETE` | 409 | Admin tried to delete their own account |
 | `INTERNAL_ERROR` | 500 | Unhandled — never leaks internals |
