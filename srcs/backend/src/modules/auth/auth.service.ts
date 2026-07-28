@@ -1,10 +1,5 @@
 import { SECRET, R_SECRET, FT_UID, FT_SECRET, FT_CALLBACK_URL } from "../../lib/env.js";
-import {
-	assertPasswordPolicy,
-	hashPassword,
-	verifyPassword,
-	PASSWORD_POLICY,
-} from "../../lib/password.js";
+import { assertPasswordPolicy, hashPassword, verifyPassword } from "../../lib/password.js";
 import { assertNotLockedOut, recordLoginAttempt } from "./login-attempts.js";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
@@ -19,12 +14,6 @@ function normalizeCredentials(email: string, password: string) {
 	if (!email || !password) throwError(400, "VALIDATION_ERROR", "email and password are required");
 	if (typeof email !== "string" || typeof password !== "string")
 		throwError(400, "VALIDATION_ERROR", "email and password must be strings");
-	if (Buffer.byteLength(password, "utf8") > PASSWORD_POLICY.maxBytes)
-		throwError(
-			400,
-			"VALIDATION_ERROR",
-			`password must be at most ${PASSWORD_POLICY.maxBytes} bytes`,
-		);
 	email = email.trim().toLowerCase();
 	if (!EMAIL_REGEX.test(email)) throwError(400, "VALIDATION_ERROR", "invalid email format");
 	return email;
