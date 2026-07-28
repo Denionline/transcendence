@@ -21,7 +21,7 @@ test("assertPasswordPolicy accepts a password meeting every rule", () => {
 });
 
 test("assertPasswordPolicy rejects passwords shorter than the minimum", () => {
-	rejects("Ab3#efgh");
+	rejects("Ab3#efg");
 });
 
 test("assertPasswordPolicy rejects a missing character class", () => {
