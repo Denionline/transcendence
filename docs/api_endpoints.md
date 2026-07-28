@@ -102,26 +102,25 @@ real ones and the response never reveals whether an account exists.
 
 ## Users `/api/users`
 
-Self-service only — anything done *to other users* lives under `/api/admin`.
+Self-service and admin actions are **one module** — each route authorizes by
+`req.user.role` internally rather than living under a separate `/api/admin`
+prefix. (The original plan split them; the implementation merged them for fewer
+moving parts. If that's ever revisited, change this doc alongside the code.)
+
+Every route requires a valid access token (`requireAuth`). Responses use the
+public user shape — `id, email, username, role, createdAt` — and **never**
+include `passwordHash`.
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| GET | `/:id` | any logged-in | Public fields only (never `passwordHash`) |
-| PUT | `/:id` | self | Update own account (email, password). Cannot change own `role` |
-| DELETE | `/:id` | self | Delete own account — cascades profile, interests, matches, messages |
+| GET | `/me` | any logged-in | The caller's own record |
+| GET | `/` | admin only | Paginated list of all users. Query: `?page=1&pageSize=20` (`pageSize` capped at 100, floored at 1), `?role=artist\|hirer\|admin`, `?search=` (matches `email`/`username`, case-insensitive). Non-admin → `403` |
+| GET | `/:id` | self or admin | A user may read their own record; an admin may read anyone. Otherwise → `403 FORBIDDEN`. Unknown id → `404 USER_NOT_FOUND` |
+| PUT | `/:id` | self or admin | Update `email`, `username`, `avatarUrl`, and/or `password` (re-hashed, never stored as plaintext). Only an admin may change `role` — a non-admin attempting it → `403 FORBIDDEN`. An admin cannot demote **their own** account → `409 SELF_DEMOTE` (prevents locking every admin out). Duplicate `email` → `409 EMAIL_EXISTS`. Empty/invalid body → `400 VALIDATION_ERROR` |
+| DELETE | `/:id` | self or admin | **Hard delete** — removes the user and cascades every owned row (artist/hirer profile, files, swipes, matches, chat messages, refresh tokens) via `onDelete: Cascade`. An admin cannot delete **their own** account → `409 SELF_DELETE`. A non-admin targeting anyone but themselves → `403 FORBIDDEN`. Returns `204 No Content` |
 
-## Admin `/api/admin`
-
-Every route requires `role: admin` — otherwise `403 FORBIDDEN`.
-Scope for now: **users management only**. Future admin features (content
-moderation, reported profiles, stats) get their own sub-paths later.
-
-| Method | Path | Who | Notes |
-|---|---|---|---|
-| GET | `/users` | admin | Paginated list of all users. Filters: `?role=user\|moderator\|admin`, `?search=` (matches email/displayName) |
-| GET | `/users/:id` | admin | Full admin view: user + profile + counts (interests, matches, messages) |
-| PUT | `/users/:id` | admin | Edit any user, including `role`. An admin cannot demote **themselves** → `409 SELF_DEMOTE` (prevents locking everyone out) |
-| DELETE | `/users/:id` | admin | Delete any user with full cascade. Cannot delete yourself here — use `/api/users/:id` for that |
+> **Create** a user via `POST /api/auth/register` (see Auth). This module covers
+> read/update/delete only.
 
 ## Profiles `/api/profiles`
 
@@ -193,6 +192,7 @@ Chat is only reachable through a match — no match, no messages.
 | `INVALID_REFRESH_TOKEN` | 401 | Refresh token invalid, expired, or revoked |
 | `FORBIDDEN` | 403 | Logged in, but not allowed (wrong owner/role/side) |
 | `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence |
+| `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `EMAIL_EXISTS` | 409 | Email already registered |
 | `PROFILE_EXISTS` | 409 | User already has a profile |
 | `INTEREST_EXISTS` | 409 | Pending interest already exists for this pair |
@@ -201,4 +201,5 @@ Chat is only reachable through a match — no match, no messages.
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
 | `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
 | `TOO_MANY_REQUESTS` | 429 | Per-IP rate limit hit — see the `Retry-After` header |
+| `SELF_DEMOTE` | 409 | Admin tried to change their own role away from `admin` |
 | `INTERNAL_ERROR` | 500 | Unhandled — never leaks internals |
