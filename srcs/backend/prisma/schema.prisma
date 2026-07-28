@@ -34,6 +34,7 @@ model User {
 
   chatMessages  ChatMessage[]
   refreshTokens RefreshToken[]
+  loginAttempts LoginAttempt[]
 }
 
 model ArtistProfile {
@@ -118,4 +119,17 @@ model RefreshToken {
   tokenHash String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model LoginAttempt {
+  id         String   @id @default(uuid())
+  email      String
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip         String?
+  successful Boolean
+  createdAt  DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([createdAt])
 }
