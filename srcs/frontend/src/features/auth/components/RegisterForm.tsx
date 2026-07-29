@@ -65,6 +65,7 @@ export default function RegisterForm() {
 					placeholder="Fulano de tal"
 					value={values.name}
 					onChange={handleChange}
+					aria-invalid={errors.name ? "true" : undefined}
 				/>
 				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>{errors.name}</p>
 			</fieldset>
@@ -78,6 +79,7 @@ export default function RegisterForm() {
 					placeholder="you@email.com"
 					value={values.email}
 					onChange={handleChange}
+					aria-invalid={errors.email ? "true" : undefined}
 				/>
 				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
 			</fieldset>
@@ -91,6 +93,7 @@ export default function RegisterForm() {
 					placeholder="••••••••"
 					value={values.password}
 					onChange={handleChange}
+					aria-invalid={errors.password ? "true" : undefined}
 				/>
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
 					{errors.password}
