@@ -8,7 +8,7 @@ import {
 } from "./auth.service.js";
 import { throwError } from "../../lib/http-error.js";
 import { Router } from "express";
-import { verifyToken } from "../../middlewares/auth.middleware.js";
+import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { rateLimit } from "../../middlewares/rate-limit.middleware.js";
 import crypto from "node:crypto";
 import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
@@ -105,7 +105,7 @@ router.post("/refresh", async (req, res) => {
 	res.status(200).json(result);
 });
 
-router.get("/me", verifyToken, async (req, res) => {
+router.get("/me", requireAuth, async (req, res) => {
 	const userId =
 		(req.user as { userId?: string; id?: string } | undefined)?.userId ??
 		(req.user as { userId?: string; id?: string } | undefined)?.id;
