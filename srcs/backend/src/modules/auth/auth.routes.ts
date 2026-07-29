@@ -67,6 +67,13 @@ router.get("/42/callback", async (req, res) => {
 			path: "/api/auth",
 			maxAge: 7 * 24 * 60 * 60 * 1000,
 		});
+		res.cookie("hasSession", "1", {
+			httpOnly: false,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			path: "/",
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+		});
 		res.redirect(FRONTEND_URL);
 	} catch (error) {
 		// eslint-disable-next-line no-console
@@ -91,12 +98,20 @@ router.post("/login", loginLimiter, async (req, res) => {
 		path: "/api/auth",
 		maxAge: 7 * 24 * 60 * 60 * 1000,
 	});
+	res.cookie("hasSession", "1", {
+		httpOnly: false,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "strict",
+		path: "/",
+		maxAge: 7 * 24 * 60 * 60 * 1000,
+	});
 	res.status(200).json(user);
 });
 
 router.post("/logout", async (req, res) => {
 	await logoutUser(req.cookies.refreshToken);
 	res.clearCookie("refreshToken", { path: "/api/auth" });
+	res.clearCookie("hasSession", { path: "/" });
 	res.status(204).send();
 });
 
