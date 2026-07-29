@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
+import { PublicRoute } from "./features/auth/components/PublicRoute";
 import { useAuth } from "./features/auth/hooks/useAuth";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -28,7 +29,11 @@ function RootRedirect() {
 export const router = createBrowserRouter([
 	{ path: "/", element: <RootRedirect /> },
 	{
-		element: <AuthLayout />,
+		element: (
+			<PublicRoute>
+				<AuthLayout />
+			</PublicRoute>
+		),
 		children: [
 			{ path: "/login", element: <LoginPage /> },
 			{ path: "/register", element: <RegisterPage /> },
