@@ -4,6 +4,7 @@ import type { ChangeEvent, SubmitEvent } from "react";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
+import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
@@ -61,6 +62,7 @@ export default function RegisterForm() {
 					placeholder="Fulano de tal"
 					value={values.name}
 					onChange={handleChange}
+					aria-invalid={errors.name ? "true" : "false"}
 				/>
 				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>{errors.name}</p>
 			</fieldset>
@@ -74,6 +76,7 @@ export default function RegisterForm() {
 					placeholder="you@email.com"
 					value={values.email}
 					onChange={handleChange}
+					aria-invalid={errors.email ? "true" : "false"}
 				/>
 				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
 			</fieldset>
@@ -87,10 +90,16 @@ export default function RegisterForm() {
 					placeholder="••••••••"
 					value={values.password}
 					onChange={handleChange}
+					aria-invalid={errors.password ? "true" : "false"}
 				/>
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
 					{errors.password}
 				</span>
+				<PasswordStrengthChecklist
+					password={values.password}
+					name={values.name}
+					email={values.email}
+				/>
 			</label>
 
 			<fieldset className="fieldset">
