@@ -13,9 +13,15 @@ import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
+import ShortlistPage from "./pages/ShortlistPage";
+import MessagesPage from "./pages/MessagesPage";
+import OpportunitiesPage from "./pages/OpportunitiesPage";
+import SavedPage from "./pages/SavedPage";
+import NewOpportunityPage from "./pages/NewOpportunityPage";
 
 export function defaultPathForRole(role: UserRole): string {
-	return role === "admin" ? "/admin" : "/discover";
+	if (role === "admin") return "/admin";
+	return role === "hirer" ? "/discover" : "/opportunities";
 }
 
 function RootRedirect() {
@@ -45,7 +51,14 @@ export const router = createBrowserRouter([
 				<AppLayout />
 			</ProtectedRoute>
 		),
-		children: [{ path: "/discover", element: <DiscoverPage /> }],
+		children: [
+			{ path: "/discover", element: <DiscoverPage /> },
+			{ path: "/shortlist", element: <ShortlistPage /> },
+			{ path: "/opportunities", element: <OpportunitiesPage /> },
+			{ path: "/opportunities/new", element: <NewOpportunityPage /> },
+			{ path: "/saved", element: <SavedPage /> },
+			{ path: "/messages", element: <MessagesPage /> },
+		],
 	},
 	{
 		element: (
