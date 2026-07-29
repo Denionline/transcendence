@@ -92,7 +92,8 @@ ci:
 	@echo "TEST    Start test database (wait for healthy)"
 	docker compose --env-file .env -f $(COMPOSE_FILE) up -d --wait database
 	@echo "TEST    Apply migrations"
-	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:5432/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
+	DBPORT="$$(grep -oP '(?<=^POSTGRES_HOST_PORT=).*' .env 2>/dev/null || echo 5432)"; \
+	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:$${DBPORT:-5432}/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
 		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
 	@echo "TEST    Backend tests"
 	npm test --prefix $(BACKEND_PATH)
