@@ -52,8 +52,11 @@ export default function LoginForm() {
 	return (
 		<form className="fieldset w-full" onSubmit={handleSubmit} noValidate>
 			<fieldset className="fieldset">
-				<label className="label">Email</label>
+				<label className="label" htmlFor="login-email">
+					Email
+				</label>
 				<input
+					id="login-email"
 					type="email"
 					name="email"
 					className="input validator w-full"
@@ -65,12 +68,17 @@ export default function LoginForm() {
 				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
 			</fieldset>
 
-			<label className="fieldset">
+			<fieldset className="fieldset">
 				<div className="flex justify-between">
-					<span className="label">Password</span>
-					<a className="text-primary font-semibold hover:underline">Forgot?</a>
+					<label className="label" htmlFor="login-password">
+						Password
+					</label>
+					<button type="button" className="text-primary font-semibold hover:underline">
+						Forgot?
+					</button>
 				</div>
 				<input
+					id="login-password"
 					type="password"
 					name="password"
 					className="input validator w-full"
@@ -82,7 +90,7 @@ export default function LoginForm() {
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
 					{errors.password}
 				</span>
-			</label>
+			</fieldset>
 
 			{formError && <p className="text-error text-sm mt-2">{formError}</p>}
 

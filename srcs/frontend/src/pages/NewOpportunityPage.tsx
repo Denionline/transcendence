@@ -203,8 +203,11 @@ export default function NewOpportunityPage() {
 						</h2>
 
 						<fieldset className="fieldset">
-							<label className="label">Title</label>
+							<label className="label" htmlFor="opportunity-title">
+								Title
+							</label>
 							<input
+								id="opportunity-title"
 								type="text"
 								name="title"
 								className="input validator w-full"
@@ -218,8 +221,11 @@ export default function NewOpportunityPage() {
 
 						<div className="flex flex-col gap-4 sm:flex-row">
 							<fieldset className="fieldset flex-1">
-								<label className="label">Category</label>
+								<label className="label" htmlFor="opportunity-category">
+									Category
+								</label>
 								<select
+									id="opportunity-category"
 									name="category"
 									className="select validator w-full"
 									value={values.category}
@@ -241,8 +247,11 @@ export default function NewOpportunityPage() {
 							</fieldset>
 
 							<fieldset className="fieldset flex-1">
-								<label className="label">Duration</label>
+								<label className="label" htmlFor="opportunity-duration">
+									Duration
+								</label>
 								<select
+									id="opportunity-duration"
 									name="duration"
 									className="select validator w-full"
 									value={values.duration}
@@ -271,8 +280,11 @@ export default function NewOpportunityPage() {
 						</h2>
 
 						<fieldset className="fieldset">
-							<label className="label">Description</label>
+							<label className="label" htmlFor="opportunity-description">
+								Description
+							</label>
 							<textarea
+								id="opportunity-description"
 								name="description"
 								className="textarea validator w-full"
 								rows={4}
@@ -306,8 +318,11 @@ export default function NewOpportunityPage() {
 						</h2>
 
 						<fieldset className="fieldset sm:w-56">
-							<label className="label">Applications close</label>
+							<label className="label" htmlFor="opportunity-applications-close">
+								Applications close
+							</label>
 							<input
+								id="opportunity-applications-close"
 								type="date"
 								name="applicationsClose"
 								className="input validator w-full"
@@ -328,8 +343,11 @@ export default function NewOpportunityPage() {
 
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-end">
 							<fieldset className="fieldset flex-1">
-								<label className="label">Location</label>
+								<label className="label" htmlFor="opportunity-location">
+									Location
+								</label>
 								<input
+									id="opportunity-location"
 									type="text"
 									name="location"
 									className="input validator w-full"

@@ -18,7 +18,7 @@ import OpportunityCard from "../features/opportunities/components/OpportunityCar
 type Section = "profile" | "preferences" | "notifications" | "appearance";
 
 const SECTIONS: { id: Section; label: string; icon: typeof UserRoundIcon }[] = [
-	{ id: "profile", label: "Profile", icon: UserRoundIcon },
+	// { id: "profile", label: "Profile", icon: UserRoundIcon },
 	// { id: "preferences", label: "Preferences", icon: SlidersHorizontalIcon },
 	// { id: "notifications", label: "Notifications", icon: BellIcon },
 	{ id: "appearance", label: "Appearance", icon: PaletteIcon },
@@ -27,7 +27,7 @@ const SECTIONS: { id: Section; label: string; icon: typeof UserRoundIcon }[] = [
 export default function SettingsPage() {
 	const navigate = useNavigate();
 	const { user, updateProfile } = useAuth();
-	const [activeSection, setActiveSection] = useState<Section>("profile");
+	const [activeSection, setActiveSection] = useState<Section>("appearance");
 
 	const [displayName, setDisplayName] = useState(user?.username ?? "");
 	const [email, setEmail] = useState(user?.email ?? "");
@@ -163,8 +163,11 @@ export default function SettingsPage() {
 
 								<div className="flex flex-col gap-4 sm:flex-row">
 									<fieldset className="fieldset flex-1">
-										<label className="label">Display name</label>
+										<label className="label" htmlFor="settings-display-name">
+											Display name
+										</label>
 										<input
+											id="settings-display-name"
 											type="text"
 											className="input w-full"
 											value={displayName}
@@ -175,8 +178,11 @@ export default function SettingsPage() {
 									</fieldset>
 
 									<fieldset className="fieldset flex-1">
-										<label className="label">Email</label>
+										<label className="label" htmlFor="settings-email">
+											Email
+										</label>
 										<input
+											id="settings-email"
 											type="email"
 											className="input w-full"
 											value={email}
@@ -188,8 +194,11 @@ export default function SettingsPage() {
 								</div>
 
 								<fieldset className="fieldset">
-									<label className="label">Bio</label>
+									<label className="label" htmlFor="settings-bio">
+										Bio
+									</label>
 									<textarea
+										id="settings-bio"
 										className="textarea w-full"
 										rows={3}
 										placeholder="Tell people what you do..."

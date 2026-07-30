@@ -54,8 +54,11 @@ export default function RegisterForm() {
 	return (
 		<form className="fieldset w-full" onSubmit={handleSubmit} noValidate>
 			<fieldset className="fieldset">
-				<label className="label">Name</label>
+				<label className="label" htmlFor="register-name">
+					Name
+				</label>
 				<input
+					id="register-name"
 					type="text"
 					name="name"
 					className="input validator w-full"
@@ -68,8 +71,11 @@ export default function RegisterForm() {
 			</fieldset>
 
 			<fieldset className="fieldset">
-				<label className="label">Email</label>
+				<label className="label" htmlFor="register-email">
+					Email
+				</label>
 				<input
+					id="register-email"
 					type="email"
 					name="email"
 					className="input validator w-full"
@@ -81,9 +87,12 @@ export default function RegisterForm() {
 				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
 			</fieldset>
 
-			<label className="fieldset">
-				<span className="label">Password</span>
+			<fieldset className="fieldset">
+				<label className="label" htmlFor="register-password">
+					Password
+				</label>
 				<input
+					id="register-password"
 					type="password"
 					name="password"
 					className="input validator w-full"
@@ -100,7 +109,7 @@ export default function RegisterForm() {
 					name={values.name}
 					email={values.email}
 				/>
-			</label>
+			</fieldset>
 
 			<fieldset className="fieldset">
 				<label className="label">I am signing up as</label>
