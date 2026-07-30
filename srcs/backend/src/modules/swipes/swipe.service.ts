@@ -2,7 +2,7 @@ import { prisma } from "../../lib/prisma.js";
 import { throwError } from "../../lib/http-error.js";
 import { AuthenticatedUser } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
-import { Prisma } from "../../../generated/prisma/client.js";
+import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
 
 interface SwipeData {
 	swiperId: string;
@@ -77,16 +77,19 @@ async function validateMatch(data: SwipeData): Promise<string | undefined> {
 	}
 }
 
-async function verifyCandidateLiked(data: SwipeData) {
-	const liked = await prisma.swipe.findFirst({
-		where: {
-			gigId: data.gigId,
-			swiperId: data.swipedId,
-			swipedId: data.swiperId,
-			liked: true,
-		},
+async function verifyCategoryMatch(userId: string, gigCategory: string) {
+	const profile = await prisma.artistProfile.findUnique({
+		where: { userId },
 	});
-	if (!liked) throwError(403, "NOT_A_CANDIDATE", "this artist hasn't shown interest in this gig");
+	if (!profile) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
+	if (profile.category !== gigCategory)
+		throwError(400, "CATEGORY_MISMATCH", "category doesn't match the gig");
+	return profile;
+}
+
+async function verifyArtistAvailability(profile: ArtistProfile) {
+	if (profile.availability === false)
+		throwError(409, "ARTIST_UNAVAILABLE", "this artist is not currently available");
 }
 
 export async function handleSwipe(
@@ -106,13 +109,15 @@ export async function handleSwipe(
 	if (swiper.role === UserRole.artist) {
 		data.swipedId = gig.hirerId;
 		data.artistId = swiper.id;
+		await verifyCategoryMatch(data.swiperId, gig.category);
 	} else {
+		if (!targetUserId) throwError(400, "VALIDATION_ERROR", "targetUserId is required");
 		if (gig.hirerId !== swiper.id) {
 			throwError(403, "FORBIDDEN", "this gig doesn't belong to you");
 		}
 		data.swipedId = targetUserId;
 		data.artistId = targetUserId;
-		await verifyCandidateLiked(data as SwipeData);
+		await verifyArtistAvailability(await verifyCategoryMatch(targetUserId, gig.category));
 	}
 	await verifyDuplicate(data as SwipeData);
 	await createSwipeRow(data as SwipeData);
