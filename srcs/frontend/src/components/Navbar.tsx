@@ -1,4 +1,4 @@
-import { PlusIcon, SearchIcon } from "lucide-react";
+import { LogOutIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -84,7 +84,14 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 						>
 							<li className="menu-title truncate">{user.username}</li>
 							<li>
+								<Link to="/settings">
+									<SettingsIcon className="size-4" />
+									Settings
+								</Link>
+							</li>
+							<li>
 								<button type="button" onClick={handleLogout} className="text-error">
+									<LogOutIcon className="size-4" />
 									Logout
 								</button>
 							</li>

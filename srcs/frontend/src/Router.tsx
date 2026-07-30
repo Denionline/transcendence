@@ -18,6 +18,7 @@ import MessagesPage from "./pages/MessagesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
 import SavedPage from "./pages/SavedPage";
 import NewOpportunityPage from "./pages/NewOpportunityPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export function defaultPathForRole(role: UserRole): string {
 	if (role === "admin") return "/admin";
@@ -64,6 +65,14 @@ export const router = createBrowserRouter([
 		element: (
 			<ProtectedRoute>
 				<NewOpportunityPage />
+			</ProtectedRoute>
+		),
+	},
+	{
+		path: "/settings",
+		element: (
+			<ProtectedRoute>
+				<SettingsPage />
 			</ProtectedRoute>
 		),
 	},
