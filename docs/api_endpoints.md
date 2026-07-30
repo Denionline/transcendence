@@ -8,23 +8,26 @@ Paginated lists accept `?page=1&pageSize=20` and return `{ items, page, pageSize
 
 ## Match flow (how it works)
 
-Artmate uses a **mutual swipe** model:
+Artmate uses a **gig-centric mutual swipe** model — every swipe and every match
+is anchored to a `Gig` (posted by a hirer), not a direct artist↔hirer pairing:
 
-1. A user (artist or hirer) browses the discovery feed and **swipes**
-   like or skip on candidates of the opposite kind (`POST /api/swipes`).
-2. Each swipe is recorded once per (swiper, swiped) pair — swiping the
-   same person again does not create a duplicate.
-3. When both sides have swiped **like** on each other, a `Match` is
-   created automatically and **chat is unlocked** between the two users.
-4. Messages only exist inside a match, so chat access is enforced by the
+1. An **artist** browses the discovery feed of open gigs and **swipes**
+   like/skip directly on a gig (`POST /api/swipes`).
+2. A **hirer** picks one of their own gigs, and reviews only the artists who
+   already liked that gig — swiping like/skip on each candidate, per gig.
+3. Each swipe is recorded once per (swiper, swiped, gig) combination —
+   swiping the same target again for the same gig does not create a duplicate.
+4. When both sides have swiped **like** on each other **for the same gig**, a
+   `Match` is created automatically and **chat is unlocked** between the two users.
+5. Messages only exist inside a match, so chat access is enforced by the
    URL structure itself (`/api/matches/:matchId/messages`).
 
 ```
-Artist ──like──▶  Hirer
-Artist ◀──like──  Hirer
+Artist ──like(gig)───────▶  Gig (posted by Hirer)
+Artist ◀──like(candidate)── Hirer (reviewing artists who liked that gig)
          │
          ▼
-   Match created
+   Match created (per gig)
    Chat unlocked
 ```
 
@@ -134,28 +137,37 @@ include `passwordHash`.
 
 ## Swipes `/api/swipes`
 
-The core Artmate mechanic. A swipe is **directional**: swiper → swiped, and only
-valid between users of different `kind`s (artist ↔ hirer) — an artist can only
-swipe hirers, and vice versa.
+The core Artmate mechanic. Every swipe is anchored to a **`Gig`** — there is no
+direct artist↔hirer swipe outside of a gig's context:
+
+- An **artist** swipes on the **gig itself**. The gig's owner (the hirer) is
+  looked up server-side from the gig record — the client only ever sends the
+  `gigId`. Eligibility is category-based: the artist's own profile `category`
+  must match the gig's.
+- A **hirer** swipes **artist candidates** for one of their own gigs, with the
+  same category rule applied to the candidate instead. Prior interest from the
+  artist is not required — a hirer may discover candidates either by category
+  or, optionally, narrowed to artists who already liked that gig, but the
+  swipe itself follows the same eligibility rule either way.
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| POST | `/` | logged-in | Body: `{ "swipedId": "...", "liked": true\|false }`. Swiper and swiped must have different `kind`s. One swipe per pair, ever → `409 SWIPE_EXISTS`. Cannot target yourself → `400 SELF_SWIPE`. If `liked: true` and the other side already liked back, **creates the Match in the same transaction** and the response includes `matchId` |
-| GET | `/next` | logged-in | Returns the next eligible candidate for the discovery feed: opposite `kind`, not already swiped by the caller, respecting eligibility rules (e.g. `availability`) |
-| GET | `/` | logged-in | My swipe history. `?direction=made\|received`, `?liked=true\|false` to filter |
+| POST | `/` | logged-in | Artist body: `{ "gigId": "...", "liked": true\|false }`. Hirer body: `{ "gigId": "...", "targetUserId": "...", "liked": true\|false }`. `gigId` must be a string, `liked` a boolean, and (hirer only) `targetUserId` a required string → `400 VALIDATION_ERROR`. Gig must be `open` → `409 GIG_CLOSED`. Hirer must own the gig → `403 FORBIDDEN`. The swiping artist (or, for a hirer, the target) must have an artist profile → `404 PROFILE_NOT_FOUND`, with a matching `category` → `400 CATEGORY_MISMATCH`, and (hirer only) `availability: true` → `409 ARTIST_UNAVAILABLE`. One swipe per (swiper, swiped, gig), ever → `409 SWIPE_EXISTS`. If `liked: true` and the other side already liked back **for the same gig**, **creates the Match in the same transaction** and the response includes `matchId` |
+| GET | `/next` | logged-in | Returns the next eligible candidate. Artist: next `open` gig not yet swiped by the caller. Hirer: `?gigId=...` (required), next artist matching the gig's category not yet reviewed by this hirer; `?onlyInterested=true` narrows this to artists who already liked the gig |
+| GET | `/` | logged-in | My swipe history. `?direction=made\|received`, `?liked=true\|false`, `?gigId=...` to filter |
 
 There is no accept/decline step — a swipe is final once made (re-swiping the
-same person is rejected, not overwritten), and a match forms automatically the
-moment both sides have liked each other.
+same target for the same gig is rejected, not overwritten), and a match forms
+automatically the moment both sides have liked each other for that gig.
 
 ## Matches `/api/matches`
 
-A match only ever exists because both users swiped **like** on each other.
+A match only ever exists because both users swiped **like** on each other **for the same gig**.
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl }` — exactly what the chat sidebar needs |
-| GET | `/:id` | member | Single match, with both users' info |
+| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl }` and `gig: { id, title }` — exactly what the chat sidebar needs |
+| GET | `/:id` | member | Single match, with both users' info and the gig |
 | DELETE | `/:id` | member | Unmatch — closes the chat and cascades its messages |
 
 ## Messages `/api/matches/:matchId/messages`
@@ -197,7 +209,11 @@ Chat is only reachable through a match — no match, no messages.
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `EMAIL_EXISTS` | 409 | Email already registered |
 | `PROFILE_EXISTS` | 409 | User already has a profile |
-| `SWIPE_EXISTS` | 409 | A swipe already exists for this pair |
+| `SWIPE_EXISTS` | 409 | A swipe already exists for this (swiper, swiped, gig) combination |
+| `GIG_CLOSED` | 409 | Tried to swipe on a gig that is no longer `open` |
+| `PROFILE_NOT_FOUND` | 404 | Hirer's swipe target has no artist profile |
+| `CATEGORY_MISMATCH` | 400 | Hirer's swipe target's profile category doesn't match the gig's |
+| `ARTIST_UNAVAILABLE` | 409 | Hirer tried to swipe an artist whose profile is marked unavailable |
 | `FRIENDSHIP_EXISTS` | 409 | Relation already exists in either direction |
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
 | `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
