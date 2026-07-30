@@ -27,7 +27,7 @@ model User {
   artistProfile   ArtistProfile?
   hirerProfile    HirerProfile?
   files           File[]
-  opportunities   Opportunity[]  @relation("OpportunitiesPosted")
+  gigs            Gig[]          @relation("GigsPosted")
   swipesMade      Swipe[]        @relation("SwipesMade")
   swipesReceived  Swipe[]        @relation("SwipesReceived")
   matchesAsArtist Match[]        @relation("MatchesAsArtist")
@@ -76,22 +76,22 @@ model File {
   createdAt DateTime @default(now())
 }
 
-enum OpportunityStatus {
+enum GigStatus {
   open
   closed
 }
 
-model Opportunity {
-  id          String            @id @default(uuid())
+model Gig {
+  id          String    @id @default(uuid())
   hirerId     String
-  hirer       User              @relation("OpportunitiesPosted", fields: [hirerId], references: [id], onDelete: Cascade)
+  hirer       User      @relation("GigsPosted", fields: [hirerId], references: [id], onDelete: Cascade)
   title       String
   description String?
   category    String
   location    String?
   rate        Int?
-  status      OpportunityStatus @default(open)
-  createdAt   DateTime          @default(now())
+  status      GigStatus @default(open)
+  createdAt   DateTime  @default(now())
 
   swipes  Swipe[]
   matches Match[]
@@ -103,25 +103,25 @@ model Swipe {
   swiper        User        @relation("SwipesMade", fields: [swiperId], references: [id], onDelete: Cascade)
   artistId      String
   artist        User        @relation("SwipesReceived", fields: [artistId], references: [id], onDelete: Cascade)
-  opportunityId String
-  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  gigId         String
+  gig           Gig         @relation(fields: [gigId], references: [id], onDelete: Cascade)
   liked         Boolean
   createdAt     DateTime    @default(now())
 
-  @@unique([opportunityId, artistId, swiperId])
+  @@unique([gigId, artistId, swiperId])
 }
 
 model Match {
   id            String      @id @default(uuid())
   artistId      String
   artist        User        @relation("MatchesAsArtist", fields: [artistId], references: [id], onDelete: Cascade)
-  opportunityId String
-  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  gigId         String
+  gig           Gig         @relation(fields: [gigId], references: [id], onDelete: Cascade)
   createdAt     DateTime    @default(now())
 
   messages ChatMessage[]
 
-  @@unique([artistId, opportunityId])
+  @@unique([artistId, gigId])
 }
 
 model ChatMessage {
