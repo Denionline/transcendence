@@ -98,26 +98,26 @@ model Gig {
 }
 
 model Swipe {
-  id            String      @id @default(uuid())
-  swiperId      String
-  swiper        User        @relation("SwipesMade", fields: [swiperId], references: [id], onDelete: Cascade)
-  artistId      String
-  artist        User        @relation("SwipesReceived", fields: [artistId], references: [id], onDelete: Cascade)
-  gigId         String
-  gig           Gig         @relation(fields: [gigId], references: [id], onDelete: Cascade)
-  liked         Boolean
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  swiperId  String
+  swiper    User     @relation("SwipesMade", fields: [swiperId], references: [id], onDelete: Cascade)
+  artistId  String
+  artist    User     @relation("SwipesReceived", fields: [artistId], references: [id], onDelete: Cascade)
+  gigId     String
+  gig       Gig      @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  liked     Boolean
+  createdAt DateTime @default(now())
 
   @@unique([gigId, artistId, swiperId])
 }
 
 model Match {
-  id            String      @id @default(uuid())
-  artistId      String
-  artist        User        @relation("MatchesAsArtist", fields: [artistId], references: [id], onDelete: Cascade)
-  gigId         String
-  gig           Gig         @relation(fields: [gigId], references: [id], onDelete: Cascade)
-  createdAt     DateTime    @default(now())
+  id        String   @id @default(uuid())
+  artistId  String
+  artist    User     @relation("MatchesAsArtist", fields: [artistId], references: [id], onDelete: Cascade)
+  gigId     String
+  gig       Gig      @relation(fields: [gigId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
   messages ChatMessage[]
 
