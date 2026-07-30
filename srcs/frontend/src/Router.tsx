@@ -55,10 +55,17 @@ export const router = createBrowserRouter([
 			{ path: "/discover", element: <DiscoverPage /> },
 			{ path: "/shortlist", element: <ShortlistPage /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
-			{ path: "/opportunities/new", element: <NewOpportunityPage /> },
 			{ path: "/saved", element: <SavedPage /> },
 			{ path: "/messages", element: <MessagesPage /> },
 		],
+	},
+	{
+		path: "/opportunities/new",
+		element: (
+			<ProtectedRoute>
+				<NewOpportunityPage />
+			</ProtectedRoute>
+		),
 	},
 	{
 		element: (

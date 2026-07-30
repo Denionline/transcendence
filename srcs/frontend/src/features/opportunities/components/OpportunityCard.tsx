@@ -1,54 +1,62 @@
-import { BadgeCheckIcon, StarIcon } from "lucide-react";
-import { COMMITMENTS } from "../constants";
-import type { Commitment } from "../types";
+import { BadgeCheckIcon } from "lucide-react";
 import { initials } from "../../../lib/format";
 
 export interface OpportunityCardData {
 	hirerName: string;
 	title: string;
+	description: string;
 	location: string;
+	remoteOk: boolean;
 	duration: string;
-	commitment: Commitment;
-	workTypes: string[];
+	tags: string[];
+	isNew?: boolean;
+	coverPhotoUrl?: string | null;
 }
 
 export default function OpportunityCard({
 	hirerName,
 	title,
+	description,
 	location,
+	remoteOk,
 	duration,
-	commitment,
-	workTypes,
+	tags,
+	isNew,
+	coverPhotoUrl,
 }: OpportunityCardData) {
-	const commitmentLabel = COMMITMENTS.find((c) => c.value === commitment)?.label ?? commitment;
-
 	return (
 		<div className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100">
 			<div className="relative aspect-4/3 bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-base-content)_6%,transparent)_0px,color-mix(in_oklab,var(--color-base-content)_6%,transparent)_10px,transparent_10px,transparent_20px)] bg-base-200">
-				<button
-					type="button"
-					className="btn btn-circle btn-xs absolute top-3 right-3 border-none bg-base-100/80"
-					disabled
-					aria-hidden="true"
-					tabIndex={-1}
-				>
-					<StarIcon className="size-3.5" />
-				</button>
-				<span className="absolute bottom-3 left-3 text-[10px] tracking-wide text-base-content/40 uppercase">
-					Venue / Brand shot
-				</span>
+				{isNew && (
+					<span className="badge badge-sm badge-primary absolute top-3 left-3 font-medium">
+						New
+					</span>
+				)}
+				{coverPhotoUrl ? (
+					<img src={coverPhotoUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+				) : (
+					<span className="absolute inset-0 flex items-center justify-center text-[10px] tracking-wide text-base-content/40 uppercase">
+						Cover photo
+					</span>
+				)}
 			</div>
 
 			<div className="flex flex-col gap-3 p-4">
 				<div className="flex items-center gap-2 text-sm">
-					<div className="avatar avatar-placeholder">
-						<div className="w-6 rounded-full bg-neutral text-neutral-content">
+					<div className="avatar avatar-placeholder shrink-0">
+						<div className="w-8 rounded-full bg-neutral text-neutral-content">
 							<span className="text-[10px]">{initials(hirerName || "?")}</span>
 						</div>
 					</div>
-					<span className="truncate font-medium">{hirerName || "Your brand"}</span>
-					<BadgeCheckIcon className="size-3.5 shrink-0 text-primary" />
-					<span className="truncate text-base-content/50">· {location || "Location TBD"}</span>
+					<div className="min-w-0">
+						<div className="flex items-center gap-1 truncate font-medium">
+							<span className="truncate">{hirerName || "Your brand"}</span>
+							<BadgeCheckIcon className="size-3.5 shrink-0 text-primary" />
+						</div>
+						<div className="truncate text-xs text-base-content/50">
+							Verified hirer · {remoteOk ? "Remote OK" : location || "Location TBD"}
+						</div>
+					</div>
 				</div>
 
 				<h3 className="leading-snug font-semibold">
@@ -56,19 +64,22 @@ export default function OpportunityCard({
 				</h3>
 
 				<div className="flex flex-wrap gap-2">
-					<span className="badge badge-sm badge-outline border-base-content/15">
-						{duration || "Duration TBD"}
-					</span>
-					<span className="badge badge-sm badge-outline border-base-content/15">
-						{commitmentLabel}
-					</span>
+					<span className="badge badge-sm badge-primary">{duration || "Duration TBD"}</span>
+					{remoteOk && (
+						<span className="badge badge-sm badge-outline border-base-content/15">Remote</span>
+					)}
 				</div>
 
-				{workTypes.length > 0 && (
+				<p className="line-clamp-2 text-sm text-base-content/60">
+					{description ||
+						"A short brief describing the work, the vibe, and what a good fit looks like."}
+				</p>
+
+				{tags.length > 0 && (
 					<div className="flex flex-wrap gap-1.5">
-						{workTypes.map((type) => (
-							<span key={type} className="badge badge-sm badge-ghost">
-								{type}
+						{tags.map((tag) => (
+							<span key={tag} className="badge badge-sm badge-ghost">
+								{tag}
 							</span>
 						))}
 					</div>

@@ -1,18 +1,29 @@
-import type { Commitment } from "./types";
-
-export const WORK_TYPES = [
+export const CATEGORIES = [
 	"Mural",
 	"Illustration",
 	"Photography",
 	"Set design",
-	"Lettering",
-	"Editorial",
-	"Poster",
-	"3D",
+	"Motion & 3D",
 ] as const;
 
-export const COMMITMENTS: { value: Commitment; label: string }[] = [
-	{ value: "on-site", label: "On-site" },
-	{ value: "remote", label: "Remote" },
-	{ value: "hybrid", label: "Hybrid" },
-];
+export const DURATION_PRESETS = [
+	"~1 week",
+	"~2 weeks",
+	"~3 weeks",
+	"~1 month",
+	"~2-3 months",
+	"3+ months",
+] as const;
+
+export const TAGS = [
+	"Mural",
+	"Illustration",
+	"Botanical",
+	"Editorial",
+	"3D/Motion",
+	"Set design",
+	"Lettering",
+	"Large-scale",
+] as const;
+
+export const MAX_TAGS = 4;

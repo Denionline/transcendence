@@ -1,13 +1,13 @@
-export type Commitment = "on-site" | "remote" | "hybrid";
-
 export interface Opportunity {
 	id: string;
 	hirerId: string;
 	title: string;
-	description: string;
-	workTypes: string[];
+	category: string;
 	duration: string;
-	commitment: Commitment;
+	description: string;
+	applicationsClose: string;
 	location: string;
+	remoteOk: boolean;
+	tags: string[];
 	createdAt: string;
 }
