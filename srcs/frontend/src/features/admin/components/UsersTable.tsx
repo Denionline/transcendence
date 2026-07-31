@@ -66,6 +66,7 @@ export default function UsersTable({
 							ref={headerCheckboxRef}
 							type="checkbox"
 							className="checkbox"
+							aria-label="Select all users on this page"
 							checked={allPageSelected}
 							disabled={pageSelectableIds.length === 0}
 							onChange={toggleSelectAllOnPage}

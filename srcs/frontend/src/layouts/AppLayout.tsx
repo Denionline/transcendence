@@ -1,9 +1,35 @@
 import { Outlet } from "react-router-dom";
+import Navbar, { type NavbarItem } from "../components/Navbar";
+import { useAuth } from "../features/auth/hooks/useAuth";
+
+const HIRER_ITEMS: NavbarItem[] = [
+	{ to: "/discover", label: "Discover", end: true },
+	{ to: "/shortlist", label: "Shortlist" },
+	{ to: "/messages", label: "Messages" },
+];
+
+const ARTIST_ITEMS: NavbarItem[] = [
+	{ to: "/opportunities", label: "Opportunities", end: true },
+	{ to: "/saved", label: "Saved" },
+	{ to: "/messages", label: "Messages" },
+];
 
 export default function AppLayout() {
+	const { user } = useAuth();
+	const isHirer = user?.role === "hirer";
+
 	return (
-		<div>
-			<Outlet />
+		<div className="min-h-screen bg-base-100">
+			<Navbar
+				items={isHirer ? HIRER_ITEMS : ARTIST_ITEMS}
+				searchPlaceholder={
+					isHirer ? "Search artists, skills, cities..." : "Search briefs, brands, cities..."
+				}
+				action={isHirer ? { to: "/opportunities/new", label: "Post opportunity" } : undefined}
+			/>
+			<main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+				<Outlet />
+			</main>
 		</div>
 	);
 }

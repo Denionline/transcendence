@@ -1,4 +1,16 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-	themes: forest --default;
+	themes:
+		forest --default,
+		light,
+		dark,
+		cupcake,
+		corporate,
+		synthwave,
+		cyberpunk,
+		dracula,
+		night,
+		winter,
+		luxury,
+		coffee;
 }
