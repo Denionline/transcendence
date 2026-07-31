@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import GigCard from "./GigCard";
+import GigDetailsModal from "./GigDetailsModal";
 import type { GigListing } from "../gigTypes";
 
 const SLOT_COUNT = 3;
@@ -21,6 +22,7 @@ export default function DesktopGigDeck({ gigs }: DesktopGigDeckProps) {
 		gigs.slice(0, SLOT_COUNT).map((gig) => ({ current: gig, outgoing: null, exitDir: null })),
 	);
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+	const [detail, setDetail] = useState<{ gig: GigListing; index: number } | null>(null);
 	const nextIndexRef = useRef(SLOT_COUNT);
 
 	function decide(index: number, dir: 1 | -1) {
@@ -63,45 +65,57 @@ export default function DesktopGigDeck({ gigs }: DesktopGigDeckProps) {
 	}
 
 	return (
-		<div className="grid h-[calc(100vh-19rem)] min-h-105 grid-cols-3 gap-6 overflow-hidden">
-			{slots.map((slot, index) => {
-				const { current, outgoing, exitDir } = slot;
-				return (
-					<div key={index} className="relative">
-						{current && (
-							<div
-								key={current.id}
-								className="absolute inset-0 z-0 animate-[swipe-card-in_360ms_cubic-bezier(0.16,1,0.3,1)]"
-							>
-								<GigCard
-									gig={current}
-									saved={savedIds.has(current.id)}
-									onToggleSave={() => toggleSave(current.id)}
-									onPass={() => decide(index, -1)}
-									onInterested={() => decide(index, 1)}
-								/>
-							</div>
-						)}
+		<>
+			<div className="grid h-[calc(100vh-19rem)] min-h-105 grid-cols-3 gap-6 overflow-hidden">
+				{slots.map((slot, index) => {
+					const { current, outgoing, exitDir } = slot;
+					return (
+						<div key={index} className="relative">
+							{current && (
+								<div
+									key={current.id}
+									className="absolute inset-0 z-0 animate-[swipe-card-in_360ms_cubic-bezier(0.16,1,0.3,1)]"
+								>
+									<GigCard
+										gig={current}
+										saved={savedIds.has(current.id)}
+										onToggleSave={() => toggleSave(current.id)}
+										onPass={() => decide(index, -1)}
+										onInterested={() => decide(index, 1)}
+										onOpenDetails={() => setDetail({ gig: current, index })}
+									/>
+								</div>
+							)}
 
-						{outgoing && (
-							<div
-								key={outgoing.id}
-								style={exitStyle(exitDir)}
-								className="pointer-events-none absolute inset-0 z-10"
-							>
-								<GigCard gig={outgoing} saved={savedIds.has(outgoing.id)} />
-							</div>
-						)}
+							{outgoing && (
+								<div
+									key={outgoing.id}
+									style={exitStyle(exitDir)}
+									className="pointer-events-none absolute inset-0 z-10"
+								>
+									<GigCard gig={outgoing} saved={savedIds.has(outgoing.id)} />
+								</div>
+							)}
 
-						{!current && !outgoing && (
-							<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-								<p className="font-medium">No more gigs</p>
-								<p className="text-sm">Check back later.</p>
-							</div>
-						)}
-					</div>
-				);
-			})}
-		</div>
+							{!current && !outgoing && (
+								<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
+									<p className="font-medium">No more gigs</p>
+									<p className="text-sm">Check back later.</p>
+								</div>
+							)}
+						</div>
+					);
+				})}
+			</div>
+
+			<GigDetailsModal
+				gig={detail?.gig ?? null}
+				saved={detail ? savedIds.has(detail.gig.id) : false}
+				onClose={() => setDetail(null)}
+				onToggleSave={() => detail && toggleSave(detail.gig.id)}
+				onPass={() => detail && decide(detail.index, -1)}
+				onInterested={() => detail && decide(detail.index, 1)}
+			/>
+		</>
 	);
 }

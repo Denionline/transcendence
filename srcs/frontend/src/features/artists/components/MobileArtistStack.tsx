@@ -2,10 +2,12 @@ import { useRef, useState } from "react";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { CheckIcon, StarIcon, Undo2Icon, XIcon } from "lucide-react";
 import ArtistCard from "./ArtistCard";
+import ArtistDetailsModal from "./ArtistDetailsModal";
 import type { Artist } from "../types";
 
 const EXIT_MS = 260;
 const SWIPE_THRESHOLD = 100;
+const TAP_THRESHOLD = 6;
 
 interface MobileArtistStackProps {
 	artists: Artist[];
@@ -16,7 +18,10 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 	const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
 	const [exitDir, setExitDir] = useState<1 | -1 | 0>(0);
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+	const [detailArtist, setDetailArtist] = useState<Artist | null>(null);
 	const startRef = useRef<{ x: number; y: number } | null>(null);
+	const wasDragRef = useRef(false);
+	const pointerDownTargetRef = useRef<EventTarget | null>(null);
 
 	const stackItems = [artists[index], artists[index + 1]].filter((a): a is Artist => Boolean(a));
 
@@ -48,17 +53,18 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 	function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
 		if (exitDir) return;
 		startRef.current = { x: e.clientX, y: e.clientY };
+		wasDragRef.current = false;
+		pointerDownTargetRef.current = e.target;
 		setDrag({ x: 0, y: 0, dragging: true });
 		e.currentTarget.setPointerCapture(e.pointerId);
 	}
 
 	function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
 		if (!startRef.current) return;
-		setDrag({
-			x: e.clientX - startRef.current.x,
-			y: e.clientY - startRef.current.y,
-			dragging: true,
-		});
+		const dx = e.clientX - startRef.current.x;
+		const dy = e.clientY - startRef.current.y;
+		if (Math.hypot(dx, dy) > TAP_THRESHOLD) wasDragRef.current = true;
+		setDrag({ x: dx, y: dy, dragging: true });
 	}
 
 	function handlePointerUp() {
@@ -69,6 +75,22 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 		} else {
 			setDrag({ x: 0, y: 0, dragging: false });
 		}
+	}
+
+	// Pointer capture retargets the compatibility `click` event to this wrapper
+	// (the capturing element) rather than whatever was actually tapped, so tap
+	// handling for the card body and its inner buttons is dispatched from here.
+	function handleFrontClick() {
+		const wasDrag = wasDragRef.current;
+		wasDragRef.current = false;
+		if (wasDrag || !front) return;
+
+		const downTarget = pointerDownTargetRef.current;
+		if (downTarget instanceof Element && downTarget.closest("[data-card-save]")) {
+			toggleSave(front.id);
+			return;
+		}
+		setDetailArtist(front);
 	}
 
 	const front = stackItems[0];
@@ -109,13 +131,9 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 								onPointerMove={handlePointerMove}
 								onPointerUp={handlePointerUp}
 								onPointerCancel={handlePointerUp}
+								onClick={handleFrontClick}
 							>
-								<ArtistCard
-									artist={artist}
-									size="stack"
-									saved={savedIds.has(artist.id)}
-									onToggleSave={() => toggleSave(artist.id)}
-								/>
+								<ArtistCard artist={artist} size="stack" saved={savedIds.has(artist.id)} />
 								<div
 									style={{ opacity: interestedOpacity }}
 									className="pointer-events-none absolute top-10 left-6 -rotate-12 rounded-lg border-4 border-primary px-3 py-1 text-xl font-black tracking-wider text-primary"
@@ -155,7 +173,7 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 					onClick={handleUndo}
 					disabled={!canUndo}
 					aria-label="Undo"
-					className="btn btn-circle border-base-content/15 bg-base-100 disabled:opacity-30"
+					className="btn btn-circle border-base-content/15 bg-base-100 transition-transform duration-150 hover:scale-110 disabled:opacity-30"
 				>
 					<Undo2Icon className="size-4 text-base-content/70" aria-hidden="true" />
 				</button>
@@ -164,7 +182,7 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 					onClick={() => commitSwipe(-1)}
 					disabled={!canAct}
 					aria-label="Pass"
-					className="btn btn-circle border-base-content/15 bg-base-100 disabled:opacity-30"
+					className="btn btn-circle border-base-content/15 bg-base-100 transition-[background-color,border-color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 disabled:opacity-30"
 				>
 					<XIcon className="size-5 text-error" aria-hidden="true" />
 				</button>
@@ -174,7 +192,7 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 					disabled={!canAct}
 					aria-label="Save"
 					aria-pressed={front ? savedIds.has(front.id) : undefined}
-					className="btn btn-circle border-base-content/15 bg-base-100 disabled:opacity-30"
+					className="btn btn-circle border-base-content/15 bg-base-100 transition-[background-color,border-color,transform] duration-150 hover:scale-110 hover:border-primary/50 hover:bg-primary/10 disabled:opacity-30"
 				>
 					<StarIcon
 						className={`size-4 ${front && savedIds.has(front.id) ? "fill-primary text-primary" : "text-base-content/70"}`}
@@ -186,11 +204,24 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 					onClick={() => commitSwipe(1)}
 					disabled={!canAct}
 					aria-label="Interested"
-					className="btn btn-circle btn-primary btn-lg disabled:opacity-30"
+					className="btn btn-circle btn-primary btn-lg transition-transform duration-150 hover:scale-110 disabled:opacity-30"
 				>
 					<CheckIcon className="size-6" aria-hidden="true" />
 				</button>
 			</div>
+
+			<ArtistDetailsModal
+				artist={detailArtist}
+				saved={detailArtist ? savedIds.has(detailArtist.id) : false}
+				onClose={() => setDetailArtist(null)}
+				onToggleSave={() => detailArtist && toggleSave(detailArtist.id)}
+				onPass={() => {
+					if (detailArtist && detailArtist.id === front?.id) commitSwipe(-1);
+				}}
+				onInterested={() => {
+					if (detailArtist && detailArtist.id === front?.id) commitSwipe(1);
+				}}
+			/>
 		</div>
 	);
 }

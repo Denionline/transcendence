@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import ArtistCard from "./ArtistCard";
+import ArtistDetailsModal from "./ArtistDetailsModal";
 import type { Artist } from "../types";
 
 const SLOT_COUNT = 3;
@@ -23,6 +24,7 @@ export default function DesktopArtistDeck({ artists }: DesktopArtistDeckProps) {
 			.map((artist) => ({ current: artist, outgoing: null, exitDir: null })),
 	);
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+	const [detail, setDetail] = useState<{ artist: Artist; index: number } | null>(null);
 	const nextIndexRef = useRef(SLOT_COUNT);
 
 	function decide(index: number, dir: 1 | -1) {
@@ -66,45 +68,57 @@ export default function DesktopArtistDeck({ artists }: DesktopArtistDeckProps) {
 	}
 
 	return (
-		<div className="grid h-[calc(100vh-19rem)] min-h-105 grid-cols-3 gap-6 overflow-hidden">
-			{slots.map((slot, index) => {
-				const { current, outgoing, exitDir } = slot;
-				return (
-					<div key={index} className="relative">
-						{current && (
-							<div
-								key={current.id}
-								className="absolute inset-0 z-0 animate-[swipe-card-in_360ms_cubic-bezier(0.16,1,0.3,1)]"
-							>
-								<ArtistCard
-									artist={current}
-									saved={savedIds.has(current.id)}
-									onToggleSave={() => toggleSave(current.id)}
-									onPass={() => decide(index, -1)}
-									onInterested={() => decide(index, 1)}
-								/>
-							</div>
-						)}
+		<>
+			<div className="grid h-[calc(100vh-19rem)] min-h-105 grid-cols-3 gap-6 overflow-hidden">
+				{slots.map((slot, index) => {
+					const { current, outgoing, exitDir } = slot;
+					return (
+						<div key={index} className="relative">
+							{current && (
+								<div
+									key={current.id}
+									className="absolute inset-0 z-0 animate-[swipe-card-in_360ms_cubic-bezier(0.16,1,0.3,1)]"
+								>
+									<ArtistCard
+										artist={current}
+										saved={savedIds.has(current.id)}
+										onToggleSave={() => toggleSave(current.id)}
+										onPass={() => decide(index, -1)}
+										onInterested={() => decide(index, 1)}
+										onOpenDetails={() => setDetail({ artist: current, index })}
+									/>
+								</div>
+							)}
 
-						{outgoing && (
-							<div
-								key={outgoing.id}
-								style={exitStyle(exitDir)}
-								className="pointer-events-none absolute inset-0 z-10"
-							>
-								<ArtistCard artist={outgoing} saved={savedIds.has(outgoing.id)} />
-							</div>
-						)}
+							{outgoing && (
+								<div
+									key={outgoing.id}
+									style={exitStyle(exitDir)}
+									className="pointer-events-none absolute inset-0 z-10"
+								>
+									<ArtistCard artist={outgoing} saved={savedIds.has(outgoing.id)} />
+								</div>
+							)}
 
-						{!current && !outgoing && (
-							<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-								<p className="font-medium">No more matches</p>
-								<p className="text-sm">Check back later.</p>
-							</div>
-						)}
-					</div>
-				);
-			})}
-		</div>
+							{!current && !outgoing && (
+								<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
+									<p className="font-medium">No more matches</p>
+									<p className="text-sm">Check back later.</p>
+								</div>
+							)}
+						</div>
+					);
+				})}
+			</div>
+
+			<ArtistDetailsModal
+				artist={detail?.artist ?? null}
+				saved={detail ? savedIds.has(detail.artist.id) : false}
+				onClose={() => setDetail(null)}
+				onToggleSave={() => detail && toggleSave(detail.artist.id)}
+				onPass={() => detail && decide(detail.index, -1)}
+				onInterested={() => detail && decide(detail.index, 1)}
+			/>
+		</>
 	);
 }
