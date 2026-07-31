@@ -12,6 +12,7 @@ export const MOCK_ARTISTS: Artist[] = [
 		priceTier: "€€",
 		tags: ["Botanical"],
 		verified: true,
+		bio: "Muralist working in bold botanical linework, mostly on cafés, courtyards, and community walls across Lisbon. Comfortable with large scale and tight timelines.",
 	},
 	{
 		id: "2",
@@ -23,6 +24,7 @@ export const MOCK_ARTISTS: Artist[] = [
 		availabilityTone: "soon",
 		priceTier: "€€€",
 		tags: ["Editorial"],
+		bio: "Editorial photographer with a moody, film-inspired style. Regular contributor to music and culture magazines, available for on-site shoots around Porto.",
 	},
 	{
 		id: "3",
@@ -35,6 +37,7 @@ export const MOCK_ARTISTS: Artist[] = [
 		priceTier: "€€",
 		tags: ["3D"],
 		verified: true,
+		bio: "Motion designer blending 3D renders with clean typography for brand launches and social campaigns. Fully remote, quick turnaround on short-form content.",
 	},
 	{
 		id: "4",
@@ -46,6 +49,7 @@ export const MOCK_ARTISTS: Artist[] = [
 		availabilityTone: "available",
 		priceTier: "€€",
 		tags: ["Lettering"],
+		bio: "Illustrator and hand-letterer with a soft, editorial touch. Loves packaging and signage work, open to both remote briefs and on-site collaborations.",
 	},
 	{
 		id: "5",
@@ -58,6 +62,7 @@ export const MOCK_ARTISTS: Artist[] = [
 		priceTier: "€€€",
 		tags: ["Large-scale"],
 		verified: true,
+		bio: "Large-scale muralist known for geometric patterns rooted in North African tilework. Has led community wall projects across Marrakesh and beyond.",
 	},
 	{
 		id: "6",
@@ -69,5 +74,6 @@ export const MOCK_ARTISTS: Artist[] = [
 		availabilityTone: "available",
 		priceTier: "€€",
 		tags: ["Editorial"],
+		bio: "Editorial and product photographer with a clean, natural-light style. Ships fast, fully remote-friendly workflow with same-week delivery.",
 	},
 ];

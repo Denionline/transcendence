@@ -10,4 +10,5 @@ export interface Artist {
 	tags: string[];
 	verified?: boolean;
 	photoUrl?: string | null;
+	bio: string;
 }
