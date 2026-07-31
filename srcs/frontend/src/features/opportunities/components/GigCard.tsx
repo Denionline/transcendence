@@ -1,4 +1,5 @@
 import { BadgeCheckIcon, StarIcon, XIcon } from "lucide-react";
+import type { MouseEvent } from "react";
 import { initials } from "../../../lib/format";
 import type { GigListing } from "../gigTypes";
 
@@ -9,6 +10,7 @@ interface GigCardProps {
 	onToggleSave?: () => void;
 	onPass?: () => void;
 	onInterested?: () => void;
+	onOpenDetails?: () => void;
 }
 
 export default function GigCard({
@@ -18,7 +20,23 @@ export default function GigCard({
 	onToggleSave,
 	onPass,
 	onInterested,
+	onOpenDetails,
 }: GigCardProps) {
+	function handleSaveClick(e: MouseEvent) {
+		e.stopPropagation();
+		onToggleSave?.();
+	}
+
+	function handlePassClick(e: MouseEvent) {
+		e.stopPropagation();
+		onPass?.();
+	}
+
+	function handleInterestedClick(e: MouseEvent) {
+		e.stopPropagation();
+		onInterested?.();
+	}
+
 	const {
 		hirerName,
 		verified,
@@ -43,7 +61,10 @@ export default function GigCard({
 	);
 
 	return (
-		<div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-xl">
+		<div
+			onClick={onOpenDetails}
+			className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-xl"
+		>
 			<div className="relative min-h-0 flex-1 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
 				{photo}
 				<span
@@ -53,10 +74,11 @@ export default function GigCard({
 				</span>
 				<button
 					type="button"
-					onClick={onToggleSave}
+					data-card-save
+					onClick={handleSaveClick}
 					aria-label={saved ? "Remove from saved" : "Save gig"}
 					aria-pressed={saved}
-					className="btn btn-circle btn-sm absolute top-3 right-3 border-none bg-base-100/80 backdrop-blur hover:bg-base-100"
+					className="btn btn-circle btn-sm absolute top-3 right-3 border-none bg-base-100/80 backdrop-blur transition-[background-color,color,transform] duration-150 hover:scale-110 hover:bg-base-100 hover:text-primary"
 				>
 					<StarIcon
 						className={`size-4 ${saved ? "fill-primary text-primary" : "text-base-content/70"}`}
@@ -110,18 +132,18 @@ export default function GigCard({
 						<div className="flex items-center gap-2 overflow-hidden pt-0 opacity-0 transition-opacity delay-75 duration-200 group-hover:pt-1 group-hover:opacity-100">
 							<button
 								type="button"
-								onClick={onPass}
+								onClick={handlePassClick}
 								aria-label={`Pass on ${title}`}
-								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent"
+								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-4" aria-hidden="true" />
 							</button>
 							<button
 								type="button"
-								onClick={onToggleSave}
+								onClick={handleSaveClick}
 								aria-label={saved ? "Remove from saved" : "Save gig"}
 								aria-pressed={saved}
-								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent"
+								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
 							>
 								<StarIcon
 									className={`size-4 ${saved ? "fill-primary text-primary" : ""}`}
@@ -130,8 +152,8 @@ export default function GigCard({
 							</button>
 							<button
 								type="button"
-								onClick={onInterested}
-								className="btn btn-primary flex-1 rounded-full"
+								onClick={handleInterestedClick}
+								className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
 							>
 								Interested
 							</button>
