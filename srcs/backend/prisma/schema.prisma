@@ -27,7 +27,7 @@ model User {
   artistProfile   ArtistProfile?
   hirerProfile    HirerProfile?
   files           File[]
-  gigsPosted      Gig[]          @relation("GigsPosted")
+  gigs            Gig[]          @relation("GigsPosted")
   swipesMade      Swipe[]        @relation("SwipesMade")
   swipesReceived  Swipe[]        @relation("SwipesReceived")
   matchesAsArtist Match[]        @relation("MatchesAsArtist")
