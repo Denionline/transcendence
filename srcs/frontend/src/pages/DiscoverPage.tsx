@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
-import { MOCK_ARTISTS } from "../features/artists/mock";
+import { listProfiles } from "../features/profiles/api";
+import { mapProfileToArtist } from "../features/artists/mapProfile";
+import { sendInterest } from "../features/interests/api";
+import { ApiError } from "../lib/apiClient";
+import type { Artist } from "../features/artists/types";
 
 const DISCIPLINES = ["Illustration", "Photography", "Motion & 3D", "Mural & street"];
 const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
@@ -13,12 +17,42 @@ export default function DiscoverPage() {
 	const [remoteOnly, setRemoteOnly] = useState(false);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
+	const [artists, setArtists] = useState<Artist[]>([]);
+	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		let cancelled = false;
+		listProfiles({ kind: "artist" })
+			.then((res) => {
+				if (cancelled) return;
+				setArtists(res.items.map(mapProfileToArtist));
+				setStatus("ready");
+			})
+			.catch((err: unknown) => {
+				if (cancelled) return;
+				setError(
+					err instanceof ApiError ? err.message : "Couldn't load artists. Please try again.",
+				);
+				setStatus("error");
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
 	function toggleDiscipline(discipline: string) {
 		setDisciplines((prev) => {
 			const next = new Set(prev);
 			if (next.has(discipline)) next.delete(discipline);
 			else next.add(discipline);
 			return next;
+		});
+	}
+
+	function handleInterested(artist: Artist) {
+		sendInterest(artist.userId).catch((err: unknown) => {
+			console.error("Failed to send interest:", err);
 		});
 	}
 
@@ -95,7 +129,9 @@ export default function DiscoverPage() {
 					<div>
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
 						<p className="text-sm text-base-content/50">
-							{MOCK_ARTISTS.length} matches · sorted by fit
+							{status === "ready"
+								? `${artists.length} matches · sorted by fit`
+								: "Loading matches…"}
 						</p>
 					</div>
 
@@ -123,12 +159,29 @@ export default function DiscoverPage() {
 					</div>
 				</div>
 
-				<div className="hidden md:block">
-					<DesktopArtistDeck artists={MOCK_ARTISTS} />
-				</div>
-				<div className="md:hidden">
-					<MobileArtistStack artists={MOCK_ARTISTS} />
-				</div>
+				{status === "error" && (
+					<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
+						<p className="font-medium">Couldn&rsquo;t load artists</p>
+						<p className="text-error/80">{error}</p>
+					</div>
+				)}
+
+				{status === "loading" && (
+					<div className="flex h-[calc(100vh-19rem)] min-h-105 items-center justify-center text-sm text-base-content/50">
+						Loading matches…
+					</div>
+				)}
+
+				{status === "ready" && (
+					<>
+						<div className="hidden md:block">
+							<DesktopArtistDeck artists={artists} onInterested={handleInterested} />
+						</div>
+						<div className="md:hidden">
+							<MobileArtistStack artists={artists} onInterested={handleInterested} />
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);
