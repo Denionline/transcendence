@@ -54,9 +54,7 @@ export default function GigCard({
 		isNew,
 		title,
 		description,
-		budget,
 		duration,
-		tags,
 		coverPhotoUrl,
 	} = gig;
 
@@ -122,7 +120,7 @@ export default function GigCard({
 				<h3 className="line-clamp-2 leading-snug font-semibold">{title}</h3>
 
 				<div className="flex flex-wrap gap-2">
-					<span className="badge badge-sm badge-primary">{budget}</span>
+					{/* <span className="badge badge-sm badge-primary">{budget}</span> */}
 					<span className="badge badge-sm badge-outline border-base-content/15">{duration}</span>
 					<span className="badge badge-sm badge-outline border-base-content/15">
 						{remoteOk ? "Remote" : "On-site"}
@@ -131,13 +129,13 @@ export default function GigCard({
 
 				{size === "stack" && <p className="text-sm text-base-content/60">{description}</p>}
 
-				<div className="flex flex-wrap gap-1.5">
+				{/* <div className="flex flex-wrap gap-1.5">
 					{tags.map((tag) => (
 						<span key={tag} className="badge badge-sm badge-ghost">
 							{tag}
 						</span>
 					))}
-				</div>
+				</div> */}
 
 				{size === "grid" && (
 					<div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr]">

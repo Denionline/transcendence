@@ -68,7 +68,7 @@ export default function GigDetailsModal({
 						</h2>
 
 						<div className="flex flex-wrap gap-2">
-							<span className="badge badge-sm badge-primary">{gig.budget}</span>
+							{/* <span className="badge badge-sm badge-primary">{gig.budget}</span> */}
 							<span className="badge badge-sm badge-outline border-base-content/15">
 								{gig.duration}
 							</span>
@@ -79,13 +79,13 @@ export default function GigDetailsModal({
 
 						<p className="text-sm leading-relaxed text-base-content/70">{gig.description}</p>
 
-						<div className="flex flex-wrap gap-1.5">
+						{/* <div className="flex flex-wrap gap-1.5">
 							{gig.tags.map((tag) => (
 								<span key={tag} className="badge badge-sm badge-ghost">
 									{tag}
 								</span>
 							))}
-						</div>
+						</div> */}
 
 						<div className="flex items-center gap-2 pt-2">
 							<button
