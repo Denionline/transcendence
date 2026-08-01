@@ -6,13 +6,13 @@ import express from "express";
 import jwt from "jsonwebtoken";
 
 import { SECRET } from "../src/lib/env.js";
-import { verifyToken } from "../src/middlewares/auth.middleware.js";
+import { requireAuth } from "../src/middlewares/auth.middleware.js";
 import { errorHandler } from "../src/middlewares/error.middleware.js";
 import { UserRole } from "../generated/prisma/client.js";
 
 function makeTestApp() {
 	const app = express();
-	app.get("/protected", verifyToken, (req, res) => {
+	app.get("/protected", requireAuth, (req, res) => {
 		res.json({ userId: req.user?.id });
 	});
 	app.use(errorHandler);
@@ -34,26 +34,26 @@ async function requestProtected(headers: Record<string, string> = {}) {
 	}
 }
 
-test("verifyToken rejects missing Authorization header", async () => {
+test("requireAuth rejects missing Authorization header", async () => {
 	const { status, body } = await requestProtected();
 	assert.equal(status, 401);
 	assert.equal(body.error, "MISSING_TOKEN");
 	assert.equal(body.message, "Missing or malformed Authorization header");
 });
 
-test("verifyToken rejects malformed Authorization header (no Bearer prefix)", async () => {
+test("requireAuth rejects malformed Authorization header (no Bearer prefix)", async () => {
 	const { status } = await requestProtected({ Authorization: "abc123" });
 	assert.equal(status, 401);
 });
 
-test("verifyToken rejects an invalid token", async () => {
+test("requireAuth rejects an invalid token", async () => {
 	const { status, body } = await requestProtected({ Authorization: "Bearer not-a-real-token" });
 	assert.equal(status, 401);
 	assert.equal(body.error, "INVALID_TOKEN");
 	assert.equal(body.message, "Invalid token");
 });
 
-test("verifyToken rejects an expired token", async () => {
+test("requireAuth rejects an expired token", async () => {
 	const expired = jwt.sign({ userId: 1, role: UserRole.artist }, SECRET, {
 		algorithm: "HS256",
 		expiresIn: -10,
@@ -64,7 +64,7 @@ test("verifyToken rejects an expired token", async () => {
 	assert.equal(body.message, "Token expired");
 });
 
-test("verifyToken accepts a valid token and attaches req.user", async () => {
+test("requireAuth accepts a valid token and attaches req.user", async () => {
 	const token = jwt.sign({ userId: 42, role: UserRole.artist }, SECRET, {
 		algorithm: "HS256",
 		expiresIn: "15m",
