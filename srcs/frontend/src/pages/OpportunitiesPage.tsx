@@ -6,13 +6,13 @@ import { MOCK_GIGS } from "../features/opportunities/mockGigs";
 
 const GIG_TYPES = ["Mural", "Illustration", "Set design", "Lettering"];
 const SORT_OPTIONS = ["Newest", "Best match", "Closing soon"];
-const BUDGET_MIN = 200;
-const BUDGET_MAX = 5000;
+// const BUDGET_MIN = 200;
+// const BUDGET_MAX = 5000;
 
 export default function OpportunitiesPage() {
 	const [gigTypes, setGigTypes] = useState<Set<string>>(new Set(["Set design"]));
 	const [duration, setDuration] = useState<"any" | "short">("any");
-	const [budget, setBudget] = useState(1200);
+	// const [budget, setBudget] = useState(1200);
 	const [remoteOnly, setRemoteOnly] = useState(false);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
@@ -76,7 +76,7 @@ export default function OpportunitiesPage() {
 						</div>
 					</div>
 
-					<div>
+					{/* <div>
 						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Budget
 						</h3>
@@ -93,7 +93,7 @@ export default function OpportunitiesPage() {
 							<span>€{BUDGET_MIN}</span>
 							<span>€{Math.round(BUDGET_MAX / 1000)}k+</span>
 						</div>
-					</div>
+					</div> */}
 
 					<div>
 						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
@@ -106,7 +106,7 @@ export default function OpportunitiesPage() {
 								checked={remoteOnly}
 								onChange={() => setRemoteOnly((v) => !v)}
 							/>
-							<span>Remote OK</span>
+							<span>Remote</span>
 						</label>
 					</div>
 				</div>

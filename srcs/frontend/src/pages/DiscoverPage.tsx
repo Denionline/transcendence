@@ -118,7 +118,7 @@ export default function DiscoverPage() {
 								checked={remoteOnly}
 								onChange={() => setRemoteOnly((v) => !v)}
 							/>
-							<span>Remote OK</span>
+							<span>Remote</span>
 						</label>
 					</div>
 				</div>
