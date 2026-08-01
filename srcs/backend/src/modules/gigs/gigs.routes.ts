@@ -82,6 +82,24 @@ router.post("/", requireAuth, async (req: Request, res) => {
 	res.status(201).json(gig);
 });
 
+router.get("/", requireAuth, async (req: Request, res) => {
+	const { page, pageSize } = parsePagination(req.query);
+	const status = parseStatus(req.query.status);
+	const category = typeof req.query.category === "string" ? req.query.category : undefined;
+
+	let hirerId: string | undefined;
+	let wantsMine = false;
+	if (typeof req.query.mine === "string") {
+		wantsMine = true;
+	}
+	if (wantsMine === true) {
+		hirerId = req.user!.id;
+	}
+
+	const result = await listGigs({ page, pageSize, status, category, hirerId });
+	res.status(200).json(result);
+});
+
 router.get("/:id", requireAuth, async (req: Request, res) => {
 	const gigId = parseId(req.params.id);
 	const gig = await getGigById(gigId);
