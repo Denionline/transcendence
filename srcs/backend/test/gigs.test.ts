@@ -323,3 +323,110 @@ test("GET /api/gigs?mine returns only the caller's gigs", async () => {
 		for (const item of items) assert.equal(item.hirerId, hirer.id);
 	});
 });
+
+test("PUT /api/gigs/:id lets the owner edit their gig (200)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(hirer, { title: "Old title" });
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${gig.id}`, {
+			token: tokenFor(hirer),
+			body: { title: "New title" },
+		});
+
+		assert.equal(status, 200);
+		assert.equal(body?.title, "New title");
+	});
+});
+
+test("PUT /api/gigs/:id archives a gig via status: closed (200)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(hirer, { status: GigStatus.open });
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${gig.id}`, {
+			token: tokenFor(hirer),
+			body: { status: "closed" },
+		});
+
+		assert.equal(status, 200);
+		assert.equal(body?.status, "closed");
+	});
+});
+
+test("PUT /api/gigs/:id lets an admin edit anyone's gig (200)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const admin = await makeUser(UserRole.admin);
+	const gig = await makeGig(hirer, { title: "Owned by hirer" });
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${gig.id}`, {
+			token: tokenFor(admin),
+			body: { title: "Edited by admin" },
+		});
+
+		assert.equal(status, 200);
+		assert.equal(body?.title, "Edited by admin");
+	});
+});
+
+test("PUT /api/gigs/:id forbids a different hirer from editing (403)", async () => {
+	const owner = await makeUser(UserRole.hirer);
+	const otherHirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(owner);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${gig.id}`, {
+			token: tokenFor(otherHirer),
+			body: { title: "hijack" },
+		});
+
+		assert.equal(status, 403);
+		assert.equal(body?.error, "FORBIDDEN");
+	});
+});
+
+test("PUT /api/gigs/:id returns 404 (not 403) for an unknown id — load-then-authorize ordering", async () => {
+	const stranger = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${crypto.randomUUID()}`, {
+			token: tokenFor(stranger),
+			body: { title: "whatever" },
+		});
+
+		assert.equal(status, 404);
+		assert.equal(body?.error, "GIG_NOT_FOUND");
+	});
+});
+
+test("PUT /api/gigs/:id rejects an empty body (400 VALIDATION_ERROR)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${gig.id}`, {
+			token: tokenFor(hirer),
+			body: {},
+		});
+
+		assert.equal(status, 400);
+		assert.equal(body?.error, "VALIDATION_ERROR");
+	});
+});
+
+test("PUT /api/gigs/:id ignores a hirerId in the body — ownership is immutable", async () => {
+	const owner = await makeUser(UserRole.hirer);
+	const otherHirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(owner);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "PUT", `/api/gigs/${gig.id}`, {
+			token: tokenFor(owner),
+			body: { title: "still mine", hirerId: otherHirer.id },
+		});
+
+		assert.equal(status, 200);
+		assert.equal(body?.hirerId, owner.id); // unchanged
+	});
+});
