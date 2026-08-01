@@ -2,7 +2,7 @@ import { Router, Request } from "express";
 import { throwError } from "../../lib/http-error.js";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { GigStatus, UserRole } from "../../../generated/prisma/client.js";
-import { createGig, getGigById, listGigs } from "./gigs.service.js";
+import { createGig, getGigById, listGigs, updateGig } from "./gigs.service.js";
 
 const router = Router();
 
