@@ -2,7 +2,7 @@ import { Router, Request } from "express";
 import { throwError } from "../../lib/http-error.js";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { GigStatus, UserRole } from "../../../generated/prisma/client.js";
-import { createGig, getGigById, listGigs, updateGig } from "./gigs.service.js";
+import { createGig, deleteGig, getGigById, listGigs, updateGig } from "./gigs.service.js";
 
 const router = Router();
 
@@ -134,6 +134,28 @@ router.put("/:id", requireAuth, async (req: Request, res) => {
 		status: body.status,
 	});
 	res.status(200).json(updated);
+});
+
+router.delete("/:id", requireAuth, async (req: Request, res) => {
+	const gigId = parseId(req.params.id);
+	const caller = req.user!;
+
+	const gig = await getGigById(gigId);
+
+	let callerIsAdmin = false;
+	if (caller.role === UserRole.admin) {
+		callerIsAdmin = true;
+	}
+	let callerOwnsGig = false;
+	if (gig.hirerId === caller.id) {
+		callerOwnsGig = true;
+	}
+	if (callerIsAdmin === false && callerOwnsGig === false) {
+		throwError(403, "FORBIDDEN", "you cannot delete this gig");
+	}
+
+	await deleteGig(gigId);
+	res.status(204).send();
 });
 
 export default router;
