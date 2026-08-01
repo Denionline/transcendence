@@ -238,3 +238,88 @@ test("POST /api/gigs ignores a hirerId in the body — the owner is always the c
 		if (typeof body?.id === "string") createdGigIds.push(body.id);
 	});
 });
+
+test("GET /api/gigs returns the paginated envelope { items, page, pageSize, total }", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const category = `cat-${crypto.randomUUID()}`;
+	await makeGig(hirer, { category });
+	await makeGig(hirer, { category });
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(
+			baseUrl,
+			"GET",
+			`/api/gigs?category=${category}&page=1&pageSize=20`,
+			{ token: tokenFor(hirer) },
+		);
+
+		assert.equal(status, 200);
+		assert.ok(Array.isArray(body?.items));
+		assert.equal(body?.page, 1);
+		assert.equal(body?.pageSize, 20);
+		assert.equal(body?.total, 2);
+	});
+});
+
+test("GET /api/gigs paginates and clamps pageSize to 100", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const category = `cat-${crypto.randomUUID()}`;
+	await makeGig(hirer, { category });
+	await makeGig(hirer, { category });
+	await makeGig(hirer, { category });
+
+	await withServer(async (baseUrl) => {
+		const firstPage = await api(baseUrl, "GET", `/api/gigs?category=${category}&pageSize=2`, {
+			token: tokenFor(hirer),
+		});
+		assert.equal(firstPage.status, 200);
+		assert.equal((firstPage.body?.items as unknown[]).length, 2);
+		assert.equal(firstPage.body?.total, 3);
+
+		const clamped = await api(baseUrl, "GET", "/api/gigs?pageSize=9999", {
+			token: tokenFor(hirer),
+		});
+		assert.equal(clamped.body?.pageSize, 100);
+	});
+});
+
+test("GET /api/gigs?status= filters by status", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const category = `cat-${crypto.randomUUID()}`;
+	await makeGig(hirer, { category, status: GigStatus.open });
+	await makeGig(hirer, { category, status: GigStatus.closed });
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(
+			baseUrl,
+			"GET",
+			`/api/gigs?category=${category}&status=closed`,
+			{ token: tokenFor(hirer) },
+		);
+
+		assert.equal(status, 200);
+		assert.equal(body?.total, 1);
+		const items = body?.items as Array<Record<string, unknown>>;
+		assert.equal(items[0]?.status, "closed");
+	});
+});
+
+test("GET /api/gigs?mine returns only the caller's gigs", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const otherHirer = await makeUser(UserRole.hirer);
+	const category = `cat-${crypto.randomUUID()}`;
+	await makeGig(hirer, { category });
+	await makeGig(hirer, { category });
+	await makeGig(otherHirer, { category });
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", `/api/gigs?mine&category=${category}`, {
+			token: tokenFor(hirer),
+		});
+
+		assert.equal(status, 200);
+		assert.equal(body?.total, 2);
+		const items = body?.items as Array<Record<string, unknown>>;
+		for (const item of items) assert.equal(item.hirerId, hirer.id);
+	});
+});
