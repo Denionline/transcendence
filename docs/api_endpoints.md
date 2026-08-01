@@ -122,6 +122,27 @@ include `passwordHash`.
 > **Create** a user via `POST /api/auth/register` (see Auth). This module covers
 > read/update/delete only.
 
+## Gigs `/api/gigs`
+
+A **gig** is a hirer-posted opportunity. Create is **hirer-only**; managing an
+existing gig is **owner-or-admin** (the "owner-or-admin" analogue of the users
+module's "self-or-admin", except ownership is a **column on the row** —
+`gig.hirerId` — not the id in the URL, so update/delete load the gig first and
+then authorize). Every route requires a valid access token (`requireAuth`).
+
+Responses use the public gig shape — `id, hirerId, title, description, category,
+location, rate, status, createdAt`. `status` is the `GigStatus` enum, **`open` or
+`closed`** (there is no separate `archived` value — "archiving" a gig is just
+`PUT` with `{ "status": "closed" }`).
+
+| Method | Path | Who | Notes |
+|---|---|---|---|
+| POST | `/` | hirer only | Body: `title` + `category` required non-empty strings; `description`/`location` optional strings; `rate` optional non-negative integer; `status` optional (`open`/`closed`). `hirerId` is taken from the token, **never** the body. Non-hirer (artist/admin) → `403 FORBIDDEN`. Invalid body → `400 VALIDATION_ERROR`. Returns `201` with the created gig |
+| GET | `/` | any logged-in | Paginated list. Query: `?page=1&pageSize=20` (`pageSize` capped at 100, floored at 1), `?status=open\|closed`, `?category=` (exact match), `?mine` (any value → only the caller's own gigs, for management). Ordered `createdAt` desc. Returns `{ items, page, pageSize, total }` |
+| GET | `/:id` | any logged-in | A single gig (gigs are browsable, so no ownership check). Unknown id → `404 GIG_NOT_FOUND` |
+| PUT | `/:id` | owner or admin | Update `title`, `description`, `category`, `location`, `rate`, and/or `status` — **archive** by sending `{ "status": "closed" }`. `hirerId` is immutable (ignored if sent). A non-owner non-admin → `403 FORBIDDEN`. Empty/invalid body → `400 VALIDATION_ERROR`. Unknown id → `404 GIG_NOT_FOUND` |
+| DELETE | `/:id` | owner or admin | **Hard delete** — removes the gig and cascades its `Swipe`/`Match` rows via `onDelete: Cascade`. A non-owner non-admin → `403 FORBIDDEN`. Unknown id → `404 GIG_NOT_FOUND`. Returns `204 No Content` |
+
 ## Profiles `/api/profiles`
 
 | Method | Path | Who | Notes |
