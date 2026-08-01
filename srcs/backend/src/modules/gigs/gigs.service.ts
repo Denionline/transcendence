@@ -1,5 +1,5 @@
 import { throwError } from "../../lib/http-error.js";
-import { Prisma } from "../../../generated/prisma/client.js";
+import { GigStatus, Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 
 // Explicit projection so the response shape stays stable if columns are added
