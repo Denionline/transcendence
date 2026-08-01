@@ -3,16 +3,15 @@ import { ChevronDownIcon } from "lucide-react";
 import DesktopGigDeck from "../features/opportunities/components/DesktopGigDeck";
 import MobileGigStack from "../features/opportunities/components/MobileGigStack";
 import { MOCK_GIGS } from "../features/opportunities/mockGigs";
+import { useMediaQuery } from "../lib/useMediaQuery";
 
 const GIG_TYPES = ["Mural", "Illustration", "Set design", "Lettering"];
 const SORT_OPTIONS = ["Newest", "Best match", "Closing soon"];
-// const BUDGET_MIN = 200;
-// const BUDGET_MAX = 5000;
 
 export default function OpportunitiesPage() {
+	const isDesktop = useMediaQuery("(min-width: 1024px)");
 	const [gigTypes, setGigTypes] = useState<Set<string>>(new Set(["Set design"]));
 	const [duration, setDuration] = useState<"any" | "short">("any");
-	// const [budget, setBudget] = useState(1200);
 	const [remoteOnly, setRemoteOnly] = useState(false);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
@@ -26,8 +25,8 @@ export default function OpportunitiesPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-8 md:mx-[calc(50%-50vw)] md:flex-row md:items-start md:px-6 lg:px-10">
-			<aside className="hidden w-56 shrink-0 md:block">
+		<div className="flex flex-col gap-8 lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
+			<aside className="hidden w-56 shrink-0 lg:block">
 				<h2 className="mb-4 text-sm font-semibold">Filters</h2>
 
 				<div className="flex flex-col gap-6 text-sm">
@@ -76,25 +75,6 @@ export default function OpportunitiesPage() {
 						</div>
 					</div>
 
-					{/* <div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Budget
-						</h3>
-						<input
-							type="range"
-							min={BUDGET_MIN}
-							max={BUDGET_MAX}
-							step={100}
-							value={budget}
-							onChange={(e) => setBudget(Number(e.target.value))}
-							className="range range-primary range-sm"
-						/>
-						<div className="mt-1 flex justify-between text-xs text-base-content/50">
-							<span>€{BUDGET_MIN}</span>
-							<span>€{Math.round(BUDGET_MAX / 1000)}k+</span>
-						</div>
-					</div> */}
-
 					<div>
 						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Location
@@ -121,7 +101,7 @@ export default function OpportunitiesPage() {
 						</p>
 					</div>
 
-					<div className="dropdown dropdown-end hidden md:block">
+					<div className="dropdown dropdown-end hidden lg:block">
 						<div
 							tabIndex={0}
 							role="button"
@@ -145,12 +125,7 @@ export default function OpportunitiesPage() {
 					</div>
 				</div>
 
-				<div className="hidden md:block">
-					<DesktopGigDeck gigs={MOCK_GIGS} />
-				</div>
-				<div className="md:hidden">
-					<MobileGigStack gigs={MOCK_GIGS} />
-				</div>
+				{isDesktop ? <DesktopGigDeck gigs={MOCK_GIGS} /> : <MobileGigStack gigs={MOCK_GIGS} />}
 			</div>
 		</div>
 	);

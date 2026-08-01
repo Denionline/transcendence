@@ -6,12 +6,14 @@ import { listProfiles } from "../features/profiles/api";
 import { mapProfileToArtist } from "../features/artists/mapProfile";
 import { sendInterest } from "../features/interests/api";
 import { ApiError } from "../lib/apiClient";
+import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 
 const DISCIPLINES = ["Illustration", "Photography", "Motion & 3D", "Mural & street"];
 const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
 
 export default function DiscoverPage() {
+	const isDesktop = useMediaQuery("(min-width: 1024px)");
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set(["Motion & 3D"]));
 	const [availability, setAvailability] = useState<"now" | "soon" | null>("now");
 	const [remoteOnly, setRemoteOnly] = useState(false);
@@ -57,8 +59,8 @@ export default function DiscoverPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-8 md:mx-[calc(50%-50vw)] md:flex-row md:items-start md:px-6 lg:px-10">
-			<aside className="hidden w-56 shrink-0 md:block">
+		<div className="flex flex-col gap-8 lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
+			<aside className="hidden w-56 shrink-0 lg:block">
 				<h2 className="mb-4 text-sm font-semibold">Filters</h2>
 
 				<div className="flex flex-col gap-6 text-sm">
@@ -135,7 +137,7 @@ export default function DiscoverPage() {
 						</p>
 					</div>
 
-					<div className="dropdown dropdown-end hidden md:block">
+					<div className="dropdown dropdown-end hidden lg:block">
 						<div
 							tabIndex={0}
 							role="button"
@@ -172,16 +174,12 @@ export default function DiscoverPage() {
 					</div>
 				)}
 
-				{status === "ready" && (
-					<>
-						<div className="hidden md:block">
-							<DesktopArtistDeck artists={artists} onInterested={handleInterested} />
-						</div>
-						<div className="md:hidden">
-							<MobileArtistStack artists={artists} onInterested={handleInterested} />
-						</div>
-					</>
-				)}
+				{status === "ready" &&
+					(isDesktop ? (
+						<DesktopArtistDeck artists={artists} onInterested={handleInterested} />
+					) : (
+						<MobileArtistStack artists={artists} onInterested={handleInterested} />
+					))}
 			</div>
 		</div>
 	);

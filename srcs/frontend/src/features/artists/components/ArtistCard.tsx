@@ -1,5 +1,5 @@
 import { BadgeCheckIcon, StarIcon, XIcon } from "lucide-react";
-import type { MouseEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import type { Artist } from "../types";
 
 interface ArtistCardProps {
@@ -47,6 +47,14 @@ export default function ArtistCard({
 	function handleInterestedClick(e: MouseEvent) {
 		e.stopPropagation();
 		onInterested?.();
+	}
+
+	function handleCardKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+		if (e.target !== e.currentTarget) return;
+		if (e.key === "Enter" || e.key === " ") {
+			e.preventDefault();
+			onOpenDetails?.();
+		}
 	}
 
 	const photo = photoUrl ? (
@@ -126,7 +134,11 @@ export default function ArtistCard({
 	return (
 		<div
 			onClick={onOpenDetails}
-			className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-xl"
+			onKeyDown={handleCardKeyDown}
+			role="button"
+			tabIndex={0}
+			aria-label={`View details for ${name}`}
+			className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 		>
 			<div className="relative min-h-0 flex-1 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
 				{photo}
@@ -149,8 +161,8 @@ export default function ArtistCard({
 
 				{tagBadges}
 
-				<div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr]">
-					<div className="flex items-center gap-2 overflow-hidden pt-0 opacity-0 transition-opacity delay-75 duration-200 group-hover:pt-1 group-hover:opacity-100">
+				<div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr] group-focus-within:grid-rows-[1fr]">
+					<div className="flex items-center gap-2 overflow-hidden pt-0 opacity-0 transition-opacity delay-75 duration-200 group-hover:pt-1 group-hover:opacity-100 group-focus-within:pt-1 group-focus-within:opacity-100">
 						<button
 							type="button"
 							onClick={handlePassClick}

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { XIcon } from "lucide-react";
@@ -11,6 +11,8 @@ interface ModalProps {
 }
 
 export default function Modal({ open, onClose, labelledBy, children }: ModalProps) {
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+
 	useEffect(() => {
 		if (!open) return;
 		function handleKeyDown(e: KeyboardEvent) {
@@ -19,6 +21,7 @@ export default function Modal({ open, onClose, labelledBy, children }: ModalProp
 		window.addEventListener("keydown", handleKeyDown);
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = "hidden";
+		closeButtonRef.current?.focus();
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			document.body.style.overflow = previousOverflow;
@@ -40,6 +43,7 @@ export default function Modal({ open, onClose, labelledBy, children }: ModalProp
 				className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
 			>
 				<button
+					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
 					aria-label="Close"

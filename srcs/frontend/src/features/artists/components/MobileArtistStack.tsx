@@ -154,7 +154,7 @@ export default function MobileArtistStack({ artists, onInterested }: MobileArtis
 					return (
 						<div
 							key={artist.id}
-							className="absolute inset-0 z-0 scale-95 translate-y-3 opacity-60 transition-all duration-200 ease-out"
+							className="pointer-events-none absolute inset-0 z-0 scale-95 translate-y-3 opacity-60 transition-all duration-200 ease-out"
 						>
 							<ArtistCard artist={artist} size="stack" />
 						</div>
