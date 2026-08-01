@@ -163,3 +163,13 @@ export async function updateGig(id: string, input: UpdateGigInput) {
 		throw error;
 	}
 }
+
+export async function deleteGig(id: string) {
+	try {
+		await prisma.gig.delete({ where: { id } });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
+			throwError(404, "GIG_NOT_FOUND", "gig not found");
+		throw error;
+	}
+}
