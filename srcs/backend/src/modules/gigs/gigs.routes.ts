@@ -100,6 +100,8 @@ router.get("/", requireAuth, async (req: Request, res) => {
 	res.status(200).json(result);
 });
 
+// Reading a gig needs no ownership check — gigs are browsable by any logged-in
+// user. Just prove who you are.
 router.get("/:id", requireAuth, async (req: Request, res) => {
 	const gigId = parseId(req.params.id);
 	const gig = await getGigById(gigId);
