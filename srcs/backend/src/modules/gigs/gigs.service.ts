@@ -23,6 +23,34 @@ export async function getGigById(id: string) {
 	return gig;
 }
 
+export interface ListGigsOptions {
+	page: number;
+	pageSize: number;
+	status?: GigStatus;
+	category?: string;
+	hirerId?: string;
+}
+
+export async function listGigs({ page, pageSize, status, category, hirerId }: ListGigsOptions) {
+	const where: Prisma.GigWhereInput = {};
+	if (status) where.status = status;
+	if (category) where.category = category;
+	if (hirerId) where.hirerId = hirerId;
+
+	const [items, total] = await prisma.$transaction([
+		prisma.gig.findMany({
+			where,
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+			orderBy: { createdAt: "desc" },
+			select: publicGigSelect,
+		}),
+		prisma.gig.count({ where }),
+	]);
+
+	return { items, page, pageSize, total };
+}
+
 export interface CreateGigInput {
 	title?: unknown;
 	description?: unknown;
