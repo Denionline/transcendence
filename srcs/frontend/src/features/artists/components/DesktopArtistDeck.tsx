@@ -15,9 +15,10 @@ interface Slot {
 
 interface DesktopArtistDeckProps {
 	artists: Artist[];
+	onInterested?: (artist: Artist) => void;
 }
 
-export default function DesktopArtistDeck({ artists }: DesktopArtistDeckProps) {
+export default function DesktopArtistDeck({ artists, onInterested }: DesktopArtistDeckProps) {
 	const [slots, setSlots] = useState<Slot[]>(() =>
 		artists
 			.slice(0, SLOT_COUNT)
@@ -28,6 +29,8 @@ export default function DesktopArtistDeck({ artists }: DesktopArtistDeckProps) {
 	const nextIndexRef = useRef(SLOT_COUNT);
 
 	function decide(index: number, dir: 1 | -1) {
+		const slot = slots[index];
+		if (slot?.current && !slot.outgoing && dir === 1) onInterested?.(slot.current);
 		setSlots((prev) => {
 			const slot = prev[index];
 			if (!slot.current || slot.outgoing) return prev;

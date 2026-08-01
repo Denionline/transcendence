@@ -11,9 +11,10 @@ const TAP_THRESHOLD = 6;
 
 interface MobileArtistStackProps {
 	artists: Artist[];
+	onInterested?: (artist: Artist) => void;
 }
 
-export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
+export default function MobileArtistStack({ artists, onInterested }: MobileArtistStackProps) {
 	const [index, setIndex] = useState(0);
 	const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
 	const [exitDir, setExitDir] = useState<1 | -1 | 0>(0);
@@ -36,6 +37,7 @@ export default function MobileArtistStack({ artists }: MobileArtistStackProps) {
 
 	function commitSwipe(dir: 1 | -1) {
 		if (exitDir || index >= artists.length) return;
+		if (dir === 1 && front) onInterested?.(front);
 		setExitDir(dir);
 		setDrag((d) => ({ ...d, dragging: false }));
 		window.setTimeout(() => {
