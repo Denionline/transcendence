@@ -141,3 +141,100 @@ test("GET /api/gigs/:id rejects a malformed token (401)", async () => {
 		assert.equal(status, 401);
 	});
 });
+
+test("POST /api/gigs lets a hirer create a gig (201, owned by the caller, defaults to open)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(hirer),
+			body: { title: "Wedding band", category: "music", rate: 500 },
+		});
+
+		assert.equal(status, 201);
+		assert.equal(body?.hirerId, hirer.id);
+		assert.equal(body?.title, "Wedding band");
+		assert.equal(body?.category, "music");
+		assert.equal(body?.rate, 500);
+		assert.equal(body?.status, "open");
+		if (typeof body?.id === "string") createdGigIds.push(body.id);
+	});
+});
+
+test("POST /api/gigs forbids an artist from creating a gig (403)", async () => {
+	const artist = await makeUser(UserRole.artist);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(artist),
+			body: { title: "Wedding band", category: "music" },
+		});
+
+		assert.equal(status, 403);
+		assert.equal(body?.error, "FORBIDDEN");
+	});
+});
+
+test("POST /api/gigs rejects a missing title (400 VALIDATION_ERROR)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(hirer),
+			body: { category: "music" },
+		});
+
+		assert.equal(status, 400);
+		assert.equal(body?.error, "VALIDATION_ERROR");
+	});
+});
+
+test("POST /api/gigs rejects a missing category (400 VALIDATION_ERROR)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(hirer),
+			body: { title: "Wedding band" },
+		});
+
+		assert.equal(status, 400);
+		assert.equal(body?.error, "VALIDATION_ERROR");
+	});
+});
+
+test("POST /api/gigs rejects a negative or non-integer rate (400 VALIDATION_ERROR)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const negative = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(hirer),
+			body: { title: "x", category: "music", rate: -5 },
+		});
+		assert.equal(negative.status, 400);
+		assert.equal(negative.body?.error, "VALIDATION_ERROR");
+
+		const fractional = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(hirer),
+			body: { title: "x", category: "music", rate: 12.5 },
+		});
+		assert.equal(fractional.status, 400);
+		assert.equal(fractional.body?.error, "VALIDATION_ERROR");
+	});
+});
+
+test("POST /api/gigs ignores a hirerId in the body — the owner is always the caller", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const otherHirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "POST", "/api/gigs", {
+			token: tokenFor(hirer),
+			body: { title: "Wedding band", category: "music", hirerId: otherHirer.id },
+		});
+
+		assert.equal(status, 201);
+		assert.equal(body?.hirerId, hirer.id); // NOT otherHirer.id
+		if (typeof body?.id === "string") createdGigIds.push(body.id);
+	});
+});
