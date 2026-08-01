@@ -430,3 +430,77 @@ test("PUT /api/gigs/:id ignores a hirerId in the body — ownership is immutable
 		assert.equal(body?.hirerId, owner.id); // unchanged
 	});
 });
+
+test("DELETE /api/gigs/:id lets the owner delete their gig (204, then 404 on read)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(hirer);
+
+	await withServer(async (baseUrl) => {
+		const del = await api(baseUrl, "DELETE", `/api/gigs/${gig.id}`, { token: tokenFor(hirer) });
+		assert.equal(del.status, 204);
+
+		const read = await api(baseUrl, "GET", `/api/gigs/${gig.id}`, { token: tokenFor(hirer) });
+		assert.equal(read.status, 404);
+	});
+});
+
+test("DELETE /api/gigs/:id lets an admin delete anyone's gig (204)", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const admin = await makeUser(UserRole.admin);
+	const gig = await makeGig(hirer);
+
+	await withServer(async (baseUrl) => {
+		const del = await api(baseUrl, "DELETE", `/api/gigs/${gig.id}`, { token: tokenFor(admin) });
+		assert.equal(del.status, 204);
+	});
+});
+
+test("DELETE /api/gigs/:id forbids a non-owner non-admin (403)", async () => {
+	const owner = await makeUser(UserRole.hirer);
+	const otherHirer = await makeUser(UserRole.hirer);
+	const gig = await makeGig(owner);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "DELETE", `/api/gigs/${gig.id}`, {
+			token: tokenFor(otherHirer),
+		});
+
+		assert.equal(status, 403);
+		assert.equal(body?.error, "FORBIDDEN");
+	});
+});
+
+test("DELETE /api/gigs/:id returns 404 GIG_NOT_FOUND for an unknown id", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "DELETE", `/api/gigs/${crypto.randomUUID()}`, {
+			token: tokenFor(hirer),
+		});
+
+		assert.equal(status, 404);
+		assert.equal(body?.error, "GIG_NOT_FOUND");
+	});
+});
+
+test("DELETE /api/gigs/:id cascades — its swipes and matches are removed too", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const artist = await makeUser(UserRole.artist);
+	const gig = await makeGig(hirer);
+
+	await prisma.swipe.create({
+		data: { swiperId: artist.id, swipedId: hirer.id, gigId: gig.id, liked: true },
+	});
+	await prisma.match.create({
+		data: { artistId: artist.id, gigId: gig.id },
+	});
+
+	await withServer(async (baseUrl) => {
+		const del = await api(baseUrl, "DELETE", `/api/gigs/${gig.id}`, { token: tokenFor(hirer) });
+		assert.equal(del.status, 204);
+	});
+
+	assert.equal(await prisma.gig.count({ where: { id: gig.id } }), 0);
+	assert.equal(await prisma.swipe.count({ where: { gigId: gig.id } }), 0);
+	assert.equal(await prisma.match.count({ where: { gigId: gig.id } }), 0);
+});
