@@ -106,4 +106,34 @@ router.get("/:id", requireAuth, async (req: Request, res) => {
 	res.status(200).json(gig);
 });
 
+router.put("/:id", requireAuth, async (req: Request, res) => {
+	const gigId = parseId(req.params.id);
+	const caller = req.user!;
+
+	const gig = await getGigById(gigId);
+
+	let callerIsAdmin = false;
+	if (caller.role === UserRole.admin) {
+		callerIsAdmin = true;
+	}
+	let callerOwnsGig = false;
+	if (gig.hirerId === caller.id) {
+		callerOwnsGig = true;
+	}
+	if (callerIsAdmin === false && callerOwnsGig === false) {
+		throwError(403, "FORBIDDEN", "you cannot update this gig");
+	}
+
+	const body = req.body ?? {};
+	const updated = await updateGig(gigId, {
+		title: body.title,
+		description: body.description,
+		category: body.category,
+		location: body.location,
+		rate: body.rate,
+		status: body.status,
+	});
+	res.status(200).json(updated);
+});
+
 export default router;
