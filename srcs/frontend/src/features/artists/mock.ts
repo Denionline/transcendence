@@ -3,6 +3,7 @@ import type { Artist } from "./types";
 export const MOCK_ARTISTS: Artist[] = [
 	{
 		id: "1",
+		userId: "1",
 		name: "Nadia Okonkwo",
 		discipline: "Muralist",
 		location: "Lisbon",
@@ -16,6 +17,7 @@ export const MOCK_ARTISTS: Artist[] = [
 	},
 	{
 		id: "2",
+		userId: "2",
 		name: "Théo Marchand",
 		discipline: "Photographer",
 		location: "Porto",
@@ -28,6 +30,7 @@ export const MOCK_ARTISTS: Artist[] = [
 	},
 	{
 		id: "3",
+		userId: "3",
 		name: "Sara Køhler",
 		discipline: "Motion designer",
 		location: "Remote",
@@ -41,6 +44,7 @@ export const MOCK_ARTISTS: Artist[] = [
 	},
 	{
 		id: "4",
+		userId: "4",
 		name: "Yuki Tanaka",
 		discipline: "Illustrator",
 		location: "Berlin",
@@ -53,6 +57,7 @@ export const MOCK_ARTISTS: Artist[] = [
 	},
 	{
 		id: "5",
+		userId: "5",
 		name: "Omar Haddad",
 		discipline: "Muralist",
 		location: "Marrakesh",
@@ -66,6 +71,7 @@ export const MOCK_ARTISTS: Artist[] = [
 	},
 	{
 		id: "6",
+		userId: "6",
 		name: "Elena Petrova",
 		discipline: "Photographer",
 		location: "Remote",

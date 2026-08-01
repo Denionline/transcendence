@@ -1,5 +1,6 @@
 export interface Artist {
 	id: string;
+	userId: string;
 	name: string;
 	discipline: string;
 	location: string;
