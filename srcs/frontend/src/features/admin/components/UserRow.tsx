@@ -1,7 +1,8 @@
 import { Ban, CircleCheck, Pencil, Trash2 } from "lucide-react";
 import type { ManagedUser } from "../types";
-import { formatDate, initials } from "../../../lib/format";
+import { formatDate } from "../../../lib/format";
 import { ROLE_BADGE } from "../constants";
+import Avatar from "../../../components/Avatar";
 
 export default function UserRow({
 	user,
@@ -33,11 +34,7 @@ export default function UserRow({
 			</th>
 			<td>
 				<div className="flex items-center gap-3">
-					<div className="avatar avatar-placeholder">
-						<div className="w-10 rounded-full bg-neutral text-neutral-content">
-							<span className="text-xs">{initials(user.username)}</span>
-						</div>
-					</div>
+					<Avatar username={user.username} avatarUrl={user.avatarUrl} size="md" />
 					<div>
 						<div className="font-bold">
 							{user.username}

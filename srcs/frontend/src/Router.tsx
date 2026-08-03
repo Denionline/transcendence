@@ -10,6 +10,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import type { UserRole } from "./features/auth/types";
 import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
+import ProfilePage from "./pages/ProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 
@@ -40,7 +41,10 @@ export const router = createBrowserRouter([
 				<AppLayout />
 			</ProtectedRoute>
 		),
-		children: [{ path: "/discover", element: <DiscoverPage /> }],
+		children: [
+			{ path: "/discover", element: <DiscoverPage /> },
+			{ path: "/profile", element: <ProfilePage /> },
+		],
 	},
 	{
 		element: (

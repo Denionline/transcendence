@@ -64,11 +64,12 @@ export async function logoutRequest(): Promise<void> {
 
 export async function updateProfileRequest(
 	id: string,
-	updates: { username: string; email: string },
+	updates: { username?: string; email?: string; avatarUrl?: string | null },
 ): Promise<User> {
-	void id;
-	void updates;
-	throw new Error("Editing your profile is not available yet");
+	return request(`/users/${id}`, {
+		method: "PUT",
+		body: JSON.stringify(updates),
+	});
 }
 
 export async function updatePasswordRequest(
