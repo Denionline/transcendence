@@ -61,10 +61,11 @@ export default function AdminUsersPage() {
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<h1 className="text-xl font-bold">Users</h1>
 				<label className="input">
-					<SearchIcon className="text-base-content opacity-50" />
+					<SearchIcon className="text-base-content opacity-50" aria-hidden="true" />
 					<input
 						type="search"
 						placeholder="Search by name, email, role or status"
+						aria-label="Search by name, email, role or status"
 						value={search}
 						onChange={(e) => {
 							setSearch(e.target.value);

@@ -46,7 +46,14 @@ export async function loginRequest(credentials: Credentials): Promise<User> {
 	return user as User;
 }
 
+// Readable companion to the HttpOnly refreshToken cookie: lets the frontend
+// know a session might exist without ever exposing the token itself.
+export function hasSessionMarker(): boolean {
+	return document.cookie.split("; ").some((c) => c.startsWith("hasSession="));
+}
+
 export async function fetchMe(): Promise<User | null> {
+	if (!hasSessionMarker()) return null;
 	try {
 		const { token } = await request("/auth/refresh", { method: "POST" });
 		setAccessToken(token);

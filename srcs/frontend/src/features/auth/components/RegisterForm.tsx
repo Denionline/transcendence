@@ -4,6 +4,7 @@ import type { ChangeEvent, SubmitEvent } from "react";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
+import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
@@ -53,45 +54,62 @@ export default function RegisterForm() {
 	return (
 		<form className="fieldset w-full" onSubmit={handleSubmit} noValidate>
 			<fieldset className="fieldset">
-				<label className="label">Name</label>
+				<label className="label" htmlFor="register-name">
+					Name
+				</label>
 				<input
+					id="register-name"
 					type="text"
 					name="name"
 					className="input validator w-full"
 					placeholder="Fulano de tal"
 					value={values.name}
 					onChange={handleChange}
+					aria-invalid={errors.name ? "true" : "false"}
 				/>
 				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>{errors.name}</p>
 			</fieldset>
 
 			<fieldset className="fieldset">
-				<label className="label">Email</label>
+				<label className="label" htmlFor="register-email">
+					Email
+				</label>
 				<input
+					id="register-email"
 					type="email"
 					name="email"
 					className="input validator w-full"
 					placeholder="you@email.com"
 					value={values.email}
 					onChange={handleChange}
+					aria-invalid={errors.email ? "true" : "false"}
 				/>
 				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
 			</fieldset>
 
-			<label className="fieldset">
-				<span className="label">Password</span>
+			<fieldset className="fieldset">
+				<label className="label" htmlFor="register-password">
+					Password
+				</label>
 				<input
+					id="register-password"
 					type="password"
 					name="password"
 					className="input validator w-full"
 					placeholder="••••••••"
 					value={values.password}
 					onChange={handleChange}
+					aria-invalid={errors.password ? "true" : "false"}
 				/>
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
 					{errors.password}
 				</span>
-			</label>
+				<PasswordStrengthChecklist
+					password={values.password}
+					name={values.name}
+					email={values.email}
+				/>
+			</fieldset>
 
 			<fieldset className="fieldset">
 				<label className="label">I am signing up as</label>
