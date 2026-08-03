@@ -15,7 +15,11 @@ interface AuthContextValue {
 	login: (credentials: Credentials) => Promise<User>;
 	register: (data: RegisterData) => Promise<void>;
 	logout: () => Promise<void>;
-	updateProfile: (updates: { username: string; email: string }) => Promise<User>;
+	updateProfile: (updates: {
+		username?: string;
+		email?: string;
+		avatarUrl?: string | null;
+	}) => Promise<User>;
 	updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
@@ -77,7 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		}
 	}
 
-	async function updateProfile(updates: { username: string; email: string }) {
+	async function updateProfile(updates: {
+		username?: string;
+		email?: string;
+		avatarUrl?: string | null;
+	}) {
 		if (!user) throw new Error("Not authenticated");
 		const updated = await updateProfileRequest(user.id, updates);
 		setUser(updated);
