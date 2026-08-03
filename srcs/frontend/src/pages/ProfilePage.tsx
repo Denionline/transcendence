@@ -61,12 +61,11 @@ export default function ProfilePage() {
 				category: category.trim(),
 				bio: bio.trim() || null,
 				location: location.trim() || null,
-				availability,
 			};
 			const payload: Partial<ArtistProfileFields & HirerProfileFields> =
 				user.role === "hirer"
 					? { ...base, organizationName: organizationName.trim() }
-					: { ...base, rate: rate.trim() === "" ? null : Number(rate) };
+					: { ...base, rate: rate.trim() === "" ? null : Number(rate), availability };
 			await saveMyProfile(payload);
 			setDetailsStatus({ type: "success", text: "Details updated successfully." });
 		} catch (err) {
@@ -230,15 +229,17 @@ export default function ProfilePage() {
 							</label>
 						)}
 
-						<label className="fieldset-label flex items-center gap-2">
-							<input
-								type="checkbox"
-								className="toggle"
-								checked={availability}
-								onChange={(e) => setAvailability(e.target.checked)}
-							/>
-							<span className="text-sm font-medium">Available for work</span>
-						</label>
+						{user.role === "artist" && (
+							<label className="fieldset-label flex items-center gap-2">
+								<input
+									type="checkbox"
+									className="toggle"
+									checked={availability}
+									onChange={(e) => setAvailability(e.target.checked)}
+								/>
+								<span className="text-sm font-medium">Available for work</span>
+							</label>
+						)}
 
 						<div>
 							<button type="submit" className="btn btn-primary btn-sm" disabled={isSavingDetails}>
