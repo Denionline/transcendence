@@ -1,0 +1,90 @@
+import { BadgeCheckIcon } from "lucide-react";
+import { initials } from "../../../lib/format";
+
+export interface OpportunityCardData {
+	hirerName: string;
+	title: string;
+	description: string;
+	location: string;
+	remoteOk: boolean;
+	duration: string;
+	tags: string[];
+	isNew?: boolean;
+	coverPhotoUrl?: string | null;
+}
+
+export default function OpportunityCard({
+	hirerName,
+	title,
+	description,
+	location,
+	remoteOk,
+	duration,
+	tags,
+	isNew,
+	coverPhotoUrl,
+}: OpportunityCardData) {
+	return (
+		<div className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100">
+			<div className="relative aspect-4/3 bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-base-content)_6%,transparent)_0px,color-mix(in_oklab,var(--color-base-content)_6%,transparent)_10px,transparent_10px,transparent_20px)] bg-base-200">
+				{isNew && (
+					<span className="badge badge-sm badge-primary absolute top-3 left-3 font-medium">
+						New
+					</span>
+				)}
+				{coverPhotoUrl ? (
+					<img src={coverPhotoUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+				) : (
+					<span className="absolute inset-0 flex items-center justify-center text-[10px] tracking-wide text-base-content/40 uppercase">
+						Cover photo
+					</span>
+				)}
+			</div>
+
+			<div className="flex flex-col gap-3 p-4">
+				<div className="flex items-center gap-2 text-sm">
+					<div className="avatar avatar-placeholder shrink-0">
+						<div className="w-8 rounded-full bg-neutral text-neutral-content">
+							<span className="text-[10px]">{initials(hirerName || "?")}</span>
+						</div>
+					</div>
+					<div className="min-w-0">
+						<div className="flex items-center gap-1 truncate font-medium">
+							<span className="truncate">{hirerName || "Your brand"}</span>
+							<BadgeCheckIcon className="size-3.5 shrink-0 text-primary" />
+						</div>
+						<div className="truncate text-xs text-base-content/50">
+							Verified hirer · {remoteOk ? "Remote OK" : location || "Location TBD"}
+						</div>
+					</div>
+				</div>
+
+				<h3 className="leading-snug font-semibold">
+					{title || "Your opportunity title goes here"}
+				</h3>
+
+				<div className="flex flex-wrap gap-2">
+					<span className="badge badge-sm badge-primary">{duration || "Duration TBD"}</span>
+					{remoteOk && (
+						<span className="badge badge-sm badge-outline border-base-content/15">Remote</span>
+					)}
+				</div>
+
+				<p className="line-clamp-2 text-sm text-base-content/60">
+					{description ||
+						"A short brief describing the work, the vibe, and what a good fit looks like."}
+				</p>
+
+				{tags.length > 0 && (
+					<div className="flex flex-wrap gap-1.5">
+						{tags.map((tag) => (
+							<span key={tag} className="badge badge-sm badge-ghost">
+								{tag}
+							</span>
+						))}
+					</div>
+				)}
+			</div>
+		</div>
+	);
+}

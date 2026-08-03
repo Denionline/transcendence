@@ -1,45 +1,37 @@
-import { LogOutIcon, UserRoundIcon } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Navbar, { type NavbarItem } from "../components/Navbar";
 import { useAuth } from "../features/auth/hooks/useAuth";
-import Avatar from "../components/Avatar";
+
+const HIRER_ITEMS: NavbarItem[] = [
+	{ to: "/discover", label: "Discover", end: true },
+	{ to: "/shortlist", label: "Shortlist" },
+	{ to: "/messages", label: "Messages" },
+	{ to: "/profile", label: "Profile" },
+];
+
+const ARTIST_ITEMS: NavbarItem[] = [
+	{ to: "/opportunities", label: "Opportunities", end: true },
+	{ to: "/saved", label: "Saved" },
+	{ to: "/messages", label: "Messages" },
+	{ to: "/profile", label: "Profile" },
+];
 
 export default function AppLayout() {
-	const { user, logout } = useAuth();
-	const navigate = useNavigate();
-
-	async function handleLogout() {
-		await logout();
-		navigate("/login");
-	}
+	const { user } = useAuth();
+	const isHirer = user?.role === "hirer";
 
 	return (
-		<div className="flex min-h-screen flex-col">
-			<nav className="navbar w-full border-b border-base-content/10 bg-base-100">
-				<div className="flex-1 px-4 font-semibold">Artmate</div>
-				{user && (
-					<div className="flex items-center gap-2 px-4">
-						<NavLink to="/discover" className="btn btn-ghost btn-sm">
-							Discover
-						</NavLink>
-						<NavLink to="/profile" className="btn btn-ghost btn-sm">
-							<UserRoundIcon className="size-4" />
-							Profile
-						</NavLink>
-						<Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
-						<button
-							type="button"
-							className="btn btn-ghost btn-sm text-error"
-							onClick={handleLogout}
-						>
-							<LogOutIcon className="size-4" />
-							Logout
-						</button>
-					</div>
-				)}
-			</nav>
-			<div className="flex-1 p-4">
+		<div className="min-h-screen bg-base-100">
+			<Navbar
+				items={isHirer ? HIRER_ITEMS : ARTIST_ITEMS}
+				searchPlaceholder={
+					isHirer ? "Search artists, skills, cities..." : "Search briefs, brands, cities..."
+				}
+				action={isHirer ? { to: "/opportunities/new", label: "Post opportunity" } : undefined}
+			/>
+			<main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
 				<Outlet />
-			</div>
+			</main>
 		</div>
 	);
 }

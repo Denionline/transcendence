@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
+import { PublicRoute } from "./features/auth/components/PublicRoute";
 import { useAuth } from "./features/auth/hooks/useAuth";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -13,9 +14,16 @@ import DiscoverPage from "./pages/DiscoverPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
+import ShortlistPage from "./pages/ShortlistPage";
+import MessagesPage from "./pages/MessagesPage";
+import OpportunitiesPage from "./pages/OpportunitiesPage";
+import SavedPage from "./pages/SavedPage";
+import NewOpportunityPage from "./pages/NewOpportunityPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export function defaultPathForRole(role: UserRole): string {
-	return role === "admin" ? "/admin" : "/discover";
+	if (role === "admin") return "/admin";
+	return role === "hirer" ? "/discover" : "/opportunities";
 }
 
 function RootRedirect() {
@@ -29,7 +37,11 @@ function RootRedirect() {
 export const router = createBrowserRouter([
 	{ path: "/", element: <RootRedirect /> },
 	{
-		element: <AuthLayout />,
+		element: (
+			<PublicRoute>
+				<AuthLayout />
+			</PublicRoute>
+		),
 		children: [
 			{ path: "/login", element: <LoginPage /> },
 			{ path: "/register", element: <RegisterPage /> },
@@ -44,7 +56,27 @@ export const router = createBrowserRouter([
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
 			{ path: "/profile", element: <ProfilePage /> },
+			{ path: "/shortlist", element: <ShortlistPage /> },
+			{ path: "/opportunities", element: <OpportunitiesPage /> },
+			{ path: "/saved", element: <SavedPage /> },
+			{ path: "/messages", element: <MessagesPage /> },
 		],
+	},
+	{
+		path: "/opportunities/new",
+		element: (
+			<ProtectedRoute>
+				<NewOpportunityPage />
+			</ProtectedRoute>
+		),
+	},
+	{
+		path: "/settings",
+		element: (
+			<ProtectedRoute>
+				<SettingsPage />
+			</ProtectedRoute>
+		),
 	},
 	{
 		element: (

@@ -27,6 +27,7 @@ export default function UserRow({
 				<input
 					type="checkbox"
 					className="checkbox"
+					aria-label={`Select ${user.username}`}
 					checked={selected}
 					disabled={isSelf}
 					onChange={onToggleSelect}
@@ -55,12 +56,26 @@ export default function UserRow({
 			<td>{formatDate(user.createdAt)}</td>
 			<td>
 				<div className="flex justify-end gap-1">
-					<button className="btn btn-ghost btn-xs tooltip" data-tip="Edit user" onClick={onEdit}>
+					<button
+						type="button"
+						className="btn btn-ghost btn-xs tooltip"
+						data-tip="Edit user"
+						aria-label="Edit user"
+						onClick={onEdit}
+					>
 						<Pencil className="size-4" />
 					</button>
 					<button
+						type="button"
 						className={`btn btn-ghost btn-xs tooltip ${isSelf ? "tooltip-left" : ""}`}
 						data-tip={
+							isSelf
+								? "You can't modify your own account"
+								: user.isActive
+									? "Disable user"
+									: "Enable user"
+						}
+						aria-label={
 							isSelf
 								? "You can't modify your own account"
 								: user.isActive
@@ -73,8 +88,10 @@ export default function UserRow({
 						{user.isActive ? <Ban className="size-4" /> : <CircleCheck className="size-4" />}
 					</button>
 					<button
+						type="button"
 						className="btn btn-ghost btn-xs text-error tooltip tooltip-left"
 						data-tip={isSelf ? "You can't delete your own account" : "Delete user"}
+						aria-label={isSelf ? "You can't delete your own account" : "Delete user"}
 						disabled={isSelf}
 						onClick={onDelete}
 					>
