@@ -19,9 +19,9 @@ async function getOpenGig(id: string) {
 	return gig;
 }
 
-async function createSwipeRow(data: SwipeData) {
+async function createSwipeRow(tx: Prisma.TransactionClient, data: SwipeData) {
 	try {
-		await prisma.swipe.create({
+		await tx.swipe.create({
 			data: {
 				swiperId: data.swiperId,
 				swipedId: data.swipedId,
@@ -50,8 +50,11 @@ async function verifyDuplicate(data: SwipeData) {
 	if (existing) throwError(409, "SWIPE_EXISTS", "you already swiped this gig");
 }
 
-async function validateMatch(data: SwipeData): Promise<string | undefined> {
-	const match = await prisma.swipe.findUnique({
+async function validateMatch(
+	tx: Prisma.TransactionClient,
+	data: SwipeData,
+): Promise<string | undefined> {
+	const match = await tx.swipe.findUnique({
 		where: {
 			gigId_swipedId_swiperId: {
 				gigId: data.gigId,
@@ -62,13 +65,13 @@ async function validateMatch(data: SwipeData): Promise<string | undefined> {
 	});
 	if (!match || match.liked === false) return undefined;
 	try {
-		const created = await prisma.match.create({
+		const created = await tx.match.create({
 			data: { gigId: data.gigId, artistId: data.artistId },
 		});
 		return created.id;
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-			const existing = await prisma.match.findUnique({
+			const existing = await tx.match.findUnique({
 				where: { artistId_gigId: { artistId: data.artistId, gigId: data.gigId } },
 			});
 			return existing?.id;
@@ -120,9 +123,11 @@ export async function handleSwipe(
 		await verifyArtistAvailability(await verifyCategoryMatch(targetUserId, gig.category));
 	}
 	await verifyDuplicate(data as SwipeData);
-	await createSwipeRow(data as SwipeData);
-	if (data.liked !== true) return { matchId: undefined };
-	const matchId = await validateMatch(data as SwipeData);
+	const matchId = await prisma.$transaction(async (tx) => {
+		await createSwipeRow(tx, data as SwipeData);
+		if (data.liked !== true) return undefined;
+		return validateMatch(tx, data as SwipeData);
+	});
 	return { matchId };
 }
 
