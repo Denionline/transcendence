@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { throwError } from "../../lib/http-error.js";
-import { handleSwipe } from "./swipe.service.js";
+import { handleSwipe, handleNext } from "./swipe.service.js";
+import { parseId } from "../gigs/gigs.routes.js";
+import { UserRole } from "../../../generated/prisma/enums.js";
 
 const router = Router();
 
@@ -18,6 +20,12 @@ router.post("/", requireAuth, async (req, res) => {
 	res.status(201).json({ result });
 });
 
-// router.get("/next", requireAuth, async (req, res) => {});
+router.get("/next", requireAuth, async (req, res) => {
+	const user = req.user!;
+	const gigId = user.role === UserRole.hirer ? parseId(req.query.gigId) : undefined;
+
+	const result = await handleNext(user, gigId);
+	res.status(200).json({ result });
+});
 
 export default router;
