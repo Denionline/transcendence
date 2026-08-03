@@ -10,7 +10,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
-function parseId(value: string | string[] | undefined): string {
+export function parseId(value: unknown): string {
 	if (typeof value !== "string") {
 		throwError(400, "VALIDATION_ERROR", "invalid id parameter");
 	}

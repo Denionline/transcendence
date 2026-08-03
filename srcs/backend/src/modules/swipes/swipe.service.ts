@@ -3,6 +3,7 @@ import { throwError } from "../../lib/http-error.js";
 import { AuthenticatedUser } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
+import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.service.js";
 
 interface SwipeData {
 	swiperId: string;
@@ -12,9 +13,8 @@ interface SwipeData {
 	liked: boolean;
 }
 
-async function getGigById(id: string) {
-	const gig = await prisma.gig.findUnique({ where: { id } });
-	if (!gig) throwError(404, "GIG_NOT_FOUND", "gig not found");
+async function getOpenGig(id: string) {
+	const gig = await getPublicGig(id);
 	if (gig.status !== "open") throwError(409, "GIG_CLOSED", "this gig is no longer open");
 	return gig;
 }
@@ -105,7 +105,7 @@ export async function handleSwipe(
 	data.swiperId = swiper.id;
 	data.gigId = gigId;
 	data.liked = liked;
-	const gig = await getGigById(gigId);
+	const gig = await getOpenGig(gigId);
 	if (swiper.role === UserRole.artist) {
 		data.swipedId = gig.hirerId;
 		data.artistId = swiper.id;
@@ -124,4 +124,56 @@ export async function handleSwipe(
 	if (data.liked !== true) return { matchId: undefined };
 	const matchId = await validateMatch(data as SwipeData);
 	return { matchId };
+}
+
+const publicArtistSelect = {
+	id: true,
+	userId: true,
+	category: true,
+	bio: true,
+	location: true,
+	availability: true,
+} satisfies Prisma.ArtistProfileSelect;
+
+async function getNextGigForArtist(user: AuthenticatedUser) {
+	const artist = await prisma.artistProfile.findUnique({ where: { userId: user.id } });
+	if (!artist) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
+	const gig = await prisma.gig.findFirst({
+		where: {
+			status: "open",
+			category: artist.category,
+			swipes: { none: { swiperId: user.id } },
+		},
+		orderBy: { createdAt: "asc" },
+		select: publicGigSelect,
+	});
+	if (!gig) throwError(404, "NO_MORE_CANDIDATES", "no more gigs to show");
+	return gig;
+}
+
+async function getNextCandidateForHirer(user: AuthenticatedUser, gigId: string) {
+	const gig = await getOpenGig(gigId);
+	if (gig.hirerId !== user.id) throwError(403, "FORBIDDEN", "this gig doesn't belong to you");
+	const artist = await prisma.artistProfile.findFirst({
+		where: {
+			category: gig.category,
+			availability: true,
+			user: {
+				swipesReceived: { none: { swiperId: user.id, gigId } },
+			},
+		},
+		orderBy: { createdAt: "asc" },
+		select: publicArtistSelect,
+	});
+	if (!artist) throwError(404, "NO_MORE_CANDIDATES", "no more candidates to show");
+	return artist;
+}
+
+export async function handleNext(user: AuthenticatedUser, gigId: string | undefined) {
+	if (user.role !== UserRole.artist && user.role !== UserRole.hirer) {
+		throwError(403, "FORBIDDEN", "only artists and hirers can browse swipe candidates");
+	}
+	if (user.role === UserRole.artist) return await getNextGigForArtist(user);
+	if (!gigId) throwError(400, "VALIDATION_ERROR", "gigId is required");
+	return await getNextCandidateForHirer(user, gigId);
 }

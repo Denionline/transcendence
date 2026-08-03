@@ -2,7 +2,7 @@ import { throwError } from "../../lib/http-error.js";
 import { GigStatus, Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 
-const publicGigSelect = {
+export const publicGigSelect = {
 	id: true,
 	hirerId: true,
 	title: true,
