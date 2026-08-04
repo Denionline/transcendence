@@ -13,7 +13,7 @@ interface AuthContextValue {
 	user: User | null;
 	isLoading: boolean;
 	login: (credentials: Credentials) => Promise<User>;
-	register: (data: RegisterData) => Promise<void>;
+	register: (data: RegisterData) => Promise<User>;
 	logout: () => Promise<void>;
 	updateProfile: (updates: {
 		username?: string;
@@ -68,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await registerRequest(data);
 			setUser(user);
 			console.log("Registered as:", user);
+			return user;
 		} finally {
 			setIsLoading(false);
 		}
