@@ -17,7 +17,7 @@ router.post("/", requireAuth, async (req, res) => {
 		throwError(400, "VALIDATION_ERROR", "targetUserId must be a string");
 
 	const result = await handleSwipe(swiper, gigId, liked, targetUserId);
-	res.status(201).json({ result });
+	res.status(201).json(result);
 });
 
 router.get("/next", requireAuth, async (req, res) => {
@@ -25,7 +25,7 @@ router.get("/next", requireAuth, async (req, res) => {
 	const gigId = user.role === UserRole.hirer ? parseId(req.query.gigId) : undefined;
 
 	const result = await handleNext(user, gigId);
-	res.status(200).json({ result });
+	res.status(200).json(result);
 });
 
 export default router;
