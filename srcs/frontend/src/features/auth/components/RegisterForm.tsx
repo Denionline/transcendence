@@ -1,15 +1,18 @@
 import { ArrowRight, Pencil, Search } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
+import { defaultPathForRole } from "../../../Router";
 import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
 export default function RegisterForm() {
 	const { register, isLoading } = useAuth();
+	const navigate = useNavigate();
 	const [values, setValues] = useState<RegisterFormValues>({
 		name: "",
 		email: "",
@@ -45,7 +48,8 @@ export default function RegisterForm() {
 		setErrors({});
 		setFormError(null);
 		try {
-			await register(result.data);
+			const user = await register(result.data);
+			navigate(defaultPathForRole(user.role), { replace: true });
 		} catch (error) {
 			setFormError(error instanceof Error ? error.message : "Failed to create account");
 		}

@@ -4,7 +4,7 @@
 
 ## 1. Product Vision Statement
 
-**For** performing and visual artists who struggle to find paid work, **and** venues, event organizers, and individuals who struggle to find the right talent, **[Project Name]** is a web platform that matches artists with hirers through a fast, swipe-based discovery experience. **Unlike** generic job boards or scattered social media outreach, our platform makes the matching mutual: a conversation only opens when both sides express interest, cutting spam and wasted time for everyone.
+**For** performing and visual artists who struggle to find paid work, **and** venues, event organizers, and individuals who struggle to find the right talent, **Artmate** is a web platform that matches artists with hirers through a fast, swipe-based discovery experience. **Unlike** generic job boards or scattered social media outreach, our platform makes the matching mutual: a conversation only opens when both sides express interest, cutting spam and wasted time for everyone.
 
 One-liner: *"Tinder for gigs — artists and hirers match, then talk."*
 

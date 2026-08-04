@@ -1,7 +1,7 @@
 import { HomeIcon, LogOutIcon, SettingsIcon, SidebarIcon, UsersIcon } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
-import { initials } from "../lib/format";
+import Avatar from "../components/Avatar";
 
 const NAV_ITEMS = [
 	{ to: "/admin", label: "Dashboard", icon: HomeIcon, end: true },
@@ -53,11 +53,12 @@ export default function AdminLayout() {
 					{user && (
 						<>
 							<div className="flex w-full items-center gap-3 p-4">
-								<div className="avatar avatar-placeholder shrink-0">
-									<div className="w-9 rounded-full bg-neutral text-neutral-content">
-										<span className="text-xs">{initials(user.username)}</span>
-									</div>
-								</div>
+								<Avatar
+									username={user.username}
+									avatarUrl={user.avatarUrl}
+									size="sm"
+									className="shrink-0"
+								/>
 								<div className="min-w-0 flex-1 is-drawer-close:hidden">
 									<div className="truncate text-sm font-medium">{user.username}</div>
 									<div className="truncate text-xs text-base-content/60">{user.email}</div>
