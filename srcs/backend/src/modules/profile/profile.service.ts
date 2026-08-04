@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
 import { throwError } from "../../lib/http-error.js";
-import { Prisma } from "../../../generated/prisma/client.js";
+import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 
 export interface ArtistProfileInput {
 	category?: unknown;
@@ -15,6 +15,55 @@ export interface HirerProfileInput {
 	organizationName?: unknown;
 	location?: unknown;
 	availability?: unknown;
+}
+
+export const publicArtistSelect = {
+	category: true,
+	bio: true,
+	location: true,
+	availability: true,
+} satisfies Prisma.ArtistProfileSelect;
+
+const publicHirerSelect = {
+	category: true,
+	organizationName: true,
+	bio: true,
+	location: true,
+	availability: true,
+} satisfies Prisma.HirerProfileSelect;
+
+async function addArtistProfileData(userId: string, data: Prisma.ArtistProfileUpdateInput) {
+	const user = await prisma.artistProfile.findUnique({ where: { userId } });
+	if (!user && data.category === undefined)
+		throwError(
+			400,
+			"VALIDATION_ERROR",
+			"category is required when creating a profile for the first time",
+		);
+	const profile = await prisma.artistProfile.upsert({
+		where: { userId },
+		update: data,
+		create: { userId, ...data } as Prisma.ArtistProfileUncheckedCreateInput,
+		select: publicArtistSelect,
+	});
+	return profile;
+}
+
+async function addHirerProfileData(userId: string, data: Prisma.HirerProfileUpdateInput) {
+	const user = await prisma.hirerProfile.findUnique({ where: { userId } });
+	if (!user && (data.category === undefined || data.organizationName === undefined))
+		throwError(
+			400,
+			"VALIDATION_ERROR",
+			"category and organizationName are required when creating a profile for the first time",
+		);
+	const profile = await prisma.hirerProfile.upsert({
+		where: { userId },
+		update: data,
+		create: { userId, ...data } as Prisma.HirerProfileUncheckedCreateInput,
+		select: publicHirerSelect,
+	});
+	return profile;
 }
 
 export async function upsertArtistProfile(userId: string, input: ArtistProfileInput) {
@@ -42,6 +91,7 @@ export async function upsertArtistProfile(userId: string, input: ArtistProfileIn
 			throwError(400, "VALIDATION_ERROR", "availability must be a boolean");
 		data.availability = input.availability;
 	}
+	return await addArtistProfileData(userId, data);
 }
 
 export async function upsertHirerProfile(userId: string, input: HirerProfileInput) {
@@ -77,4 +127,14 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 			throwError(400, "VALIDATION_ERROR", "availability must be a boolean");
 		data.availability = input.availability;
 	}
+	return await addHirerProfileData(userId, data);
+}
+
+export async function getCallerProfile(userId: string, role: string) {
+	const result =
+		role === UserRole.artist
+			? await prisma.artistProfile.findUnique({ where: { userId }, select: publicArtistSelect })
+			: await prisma.hirerProfile.findUnique({ where: { userId }, select: publicHirerSelect });
+	if (!result) throwError(404, "PROFILE_NOT_FOUND", `${role} profile not found`);
+	return result;
 }

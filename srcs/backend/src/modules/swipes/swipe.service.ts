@@ -4,6 +4,7 @@ import { AuthenticatedUser } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
 import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.service.js";
+import { publicArtistSelect } from "../profile/profile.service.js";
 
 interface SwipeData {
 	swiperId: string;
@@ -130,15 +131,6 @@ export async function handleSwipe(
 	});
 	return { matchId };
 }
-
-const publicArtistSelect = {
-	id: true,
-	userId: true,
-	category: true,
-	bio: true,
-	location: true,
-	availability: true,
-} satisfies Prisma.ArtistProfileSelect;
 
 async function getNextGigForArtist(user: AuthenticatedUser) {
 	const artist = await prisma.artistProfile.findUnique({ where: { userId: user.id } });
