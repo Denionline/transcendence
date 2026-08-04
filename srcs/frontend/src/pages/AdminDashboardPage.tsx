@@ -3,7 +3,8 @@ import { Ban, CircleCheck, ShieldCheck, Users2 } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
 import { ROLE_BADGE } from "../features/admin/constants";
-import { formatDate, initials } from "../lib/format";
+import { formatDate } from "../lib/format";
+import Avatar from "../components/Avatar";
 
 export default function AdminDashboardPage() {
 	const { user } = useAuth();
@@ -97,11 +98,7 @@ export default function AdminDashboardPage() {
 										key={u.id}
 										className="flex items-center gap-3 border-t border-base-content/10 p-4 first:border-t-0"
 									>
-										<div className="avatar avatar-placeholder">
-											<div className="w-10 rounded-full bg-neutral text-neutral-content">
-												<span className="text-xs">{initials(u.username)}</span>
-											</div>
-										</div>
+										<Avatar username={u.username} avatarUrl={u.avatarUrl} size="md" />
 										<div className="min-w-0 flex-1">
 											<div className="truncate font-medium">{u.username}</div>
 											<div className="truncate text-sm text-base-content/60">{u.email}</div>

@@ -11,6 +11,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import type { UserRole } from "./features/auth/types";
 import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
+import ProfilePage from "./pages/ProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import ShortlistPage from "./pages/ShortlistPage";
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
 		),
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
+			{ path: "/profile", element: <ProfilePage /> },
 			{ path: "/shortlist", element: <ShortlistPage /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
 			{ path: "/saved", element: <SavedPage /> },
