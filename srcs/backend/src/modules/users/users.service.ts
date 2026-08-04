@@ -10,18 +10,14 @@ const publicUserSelect = {
 	email: true,
 	username: true,
 	role: true,
+	avatarUrl: true,
 	createdAt: true,
 } satisfies Prisma.UserSelect;
 
 export async function getUserById(id: string) {
-	const user = await prisma.user.findUnique({ where: { id } });
+	const user = await prisma.user.findUnique({ where: { id }, select: publicUserSelect });
 	if (!user) throwError(404, "USER_NOT_FOUND", "user not found");
-	return {
-		id: user.id,
-		email: user.email,
-		username: user.username,
-		role: user.role,
-	};
+	return user;
 }
 
 export interface ListUsersOptions {

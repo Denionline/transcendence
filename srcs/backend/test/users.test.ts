@@ -196,6 +196,36 @@ test("PUT /api/users/:id blocks an admin from demoting themselves (409 SELF_DEMO
 	});
 });
 
+test("avatarUrl round-trips through PUT /api/users/:id and GET /api/users/:id", async () => {
+	const artist = await makeUser(UserRole.artist);
+	await withServer(async (baseUrl) => {
+		const put = await api(baseUrl, "PUT", `/api/users/${artist.id}`, {
+			token: tokenFor(artist),
+			body: { avatarUrl: "https://example.com/a.png" },
+		});
+		assert.equal(put.status, 200);
+		assert.equal(put.body?.avatarUrl, "https://example.com/a.png");
+
+		const get = await api(baseUrl, "GET", `/api/users/${artist.id}`, {
+			token: tokenFor(artist),
+		});
+		assert.equal(get.status, 200);
+		assert.equal(get.body?.avatarUrl, "https://example.com/a.png");
+	});
+});
+
+test("GET /api/users/:id returns avatarUrl: null (not omitted) when unset", async () => {
+	const artist = await makeUser(UserRole.artist);
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", `/api/users/${artist.id}`, {
+			token: tokenFor(artist),
+		});
+		assert.equal(status, 200);
+		assert.equal("avatarUrl" in (body as object), true, "avatarUrl key must be present");
+		assert.equal(body?.avatarUrl, null);
+	});
+});
+
 // ---------------------------------------------------------------------------
 // Task 4 — delete a user (hard delete + guards)
 // ---------------------------------------------------------------------------
