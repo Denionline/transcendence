@@ -22,7 +22,7 @@ services:
       context: ./backend
     image: trans_be
     container_name: express_backend
-    env_file: ./backend/.env
+    env_file: ../.env
     ports:
       - "9000:9000"
     environment:
