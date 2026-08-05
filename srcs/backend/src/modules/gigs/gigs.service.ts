@@ -12,6 +12,7 @@ export const publicGigSelect = {
 	rate: true,
 	status: true,
 	createdAt: true,
+	hirer: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.GigSelect;
 
 export async function getGigById(id: string) {

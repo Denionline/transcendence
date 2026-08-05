@@ -138,6 +138,7 @@ const publicArtistSelect = {
 	bio: true,
 	location: true,
 	availability: true,
+	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.ArtistProfileSelect;
 
 async function getNextGigForArtist(user: AuthenticatedUser) {
