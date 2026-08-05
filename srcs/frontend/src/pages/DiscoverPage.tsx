@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
+import PickGigModal from "../features/artists/components/PickGigModal";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
 import { mapArtistCandidateToArtist } from "../features/artists/mapCandidate";
-import { listMyOpenGigs } from "../features/gigs/api";
+import { listMyGigs } from "../features/gigs/api";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
@@ -14,6 +15,7 @@ import type { GigDto } from "../features/gigs/types";
 const DISCIPLINES = ["Illustration", "Photography", "Motion & 3D", "Mural & street"];
 const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
+const ALL_ARTISTS_VALUE = "";
 
 export default function DiscoverPage() {
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -25,43 +27,33 @@ export default function DiscoverPage() {
 	const [remoteOnly, setRemoteOnly] = useState(false);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
-	const [myGigs, setMyGigs] = useState<GigDto[]>([]);
-	const [activeGigId, setActiveGigId] = useState<string | null>(null);
+	const [searchParams, setSearchParams] = useSearchParams();
+	// No gigId in the URL means "browse everyone" — a hirer can look at artist
+	// cards without an opportunity to review them against.
+	const [activeGigId, setActiveGigId] = useState<string | null>(searchParams.get("gigId"));
+	const [myOpenGigs, setMyOpenGigs] = useState<GigDto[]>([]);
 	const [artists, setArtists] = useState<Artist[]>([]);
-	const [status, setStatus] = useState<"loading" | "ready" | "error" | "no-gigs">("loading");
+	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [error, setError] = useState<string | null>(null);
+	const [pendingInterest, setPendingInterest] = useState<Artist | null>(null);
 
-	// Load the hirer's own open gigs — candidates are always reviewed in the
-	// context of one specific gig.
+	// The hirer's own open gigs — used for the "reviewing for" picker and for
+	// the "which opportunity is this for?" prompt when liking someone while
+	// browsing without one selected.
 	useEffect(() => {
-		let cancelled = false;
-		listMyOpenGigs()
-			.then((gigs) => {
-				if (cancelled) return;
-				setMyGigs(gigs);
-				if (gigs.length === 0) {
-					setStatus("no-gigs");
-					return;
-				}
-				setActiveGigId(gigs[0].id);
-			})
+		listMyGigs({ status: "open" })
+			.then(setMyOpenGigs)
 			.catch((err: unknown) => {
-				if (cancelled) return;
-				setError(err instanceof ApiError ? err.message : "Couldn't load your gigs.");
-				setStatus("error");
+				console.error("Failed to load your opportunities:", err);
 			});
-		return () => {
-			cancelled = true;
-		};
 	}, []);
 
-	async function fetchOne(gigId: string): Promise<Artist | null> {
-		const dto = await getNextArtistCandidate(gigId);
+	async function fetchOne(gigId: string | null): Promise<Artist | null> {
+		const dto = await getNextArtistCandidate(gigId ?? undefined);
 		return dto ? mapArtistCandidateToArtist(dto) : null;
 	}
 
 	useEffect(() => {
-		if (!activeGigId) return;
 		let cancelled = false;
 		(async () => {
 			setStatus("loading");
@@ -93,11 +85,31 @@ export default function DiscoverPage() {
 		});
 	}
 
+	function handleGigChange(gigId: string) {
+		setActiveGigId(gigId || null);
+		setSearchParams(
+			(prev) => {
+				const next = new URLSearchParams(prev);
+				if (gigId) next.set("gigId", gigId);
+				else next.delete("gigId");
+				return next;
+			},
+			{ replace: true },
+		);
+	}
+
 	function handleSwipe(artist: Artist, liked: boolean) {
-		if (!activeGigId) return;
-		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
-			console.error("Failed to record swipe:", err);
-		});
+		if (activeGigId) {
+			postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch(
+				(err: unknown) => {
+					console.error("Failed to record swipe:", err);
+				},
+			);
+		} else if (liked) {
+			// Browsing without an opportunity: find out which one this is for
+			// before we actually record the swipe.
+			setPendingInterest(artist);
+		}
 		fetchOne(activeGigId)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
@@ -105,6 +117,17 @@ export default function DiscoverPage() {
 			.catch((err: unknown) => {
 				console.error("Failed to load next artist:", err);
 			});
+	}
+
+	function handlePickGig(gigId: string) {
+		if (pendingInterest) {
+			postSwipe({ gigId, liked: true, targetUserId: pendingInterest.userId }).catch(
+				(err: unknown) => {
+					console.error("Failed to record swipe:", err);
+				},
+			);
+		}
+		setPendingInterest(null);
 	}
 
 	return (
@@ -182,27 +205,24 @@ export default function DiscoverPage() {
 						<p className="text-sm text-base-content/50">
 							{status === "ready"
 								? `${artists.length} matches · sorted by fit`
-								: status === "no-gigs"
-									? "No open gigs yet"
-									: "Loading matches…"}
+								: "Loading matches…"}
 						</p>
 					</div>
 
 					<div className="flex items-center gap-2">
-						{myGigs.length > 0 && (
-							<select
-								value={activeGigId ?? ""}
-								onChange={(e) => setActiveGigId(e.target.value)}
-								aria-label="Gig to review candidates for"
-								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-							>
-								{myGigs.map((gig) => (
-									<option key={gig.id} value={gig.id}>
-										{gig.title}
-									</option>
-								))}
-							</select>
-						)}
+						<select
+							value={activeGigId ?? ALL_ARTISTS_VALUE}
+							onChange={(e) => handleGigChange(e.target.value)}
+							aria-label="Reviewing for opportunity"
+							className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
+						>
+							<option value={ALL_ARTISTS_VALUE}>All artists</option>
+							{myOpenGigs.map((gig) => (
+								<option key={gig.id} value={gig.id}>
+									{gig.title}
+								</option>
+							))}
+						</select>
 
 						<div className="dropdown dropdown-end hidden lg:block">
 							<div
@@ -229,15 +249,6 @@ export default function DiscoverPage() {
 					</div>
 				</div>
 
-				{status === "no-gigs" && (
-					<div className="flex h-[calc(100vh-19rem)] min-h-105 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-						<p className="font-medium">Post a gig to start discovering artists</p>
-						<Link to="/opportunities/new" className="btn btn-primary btn-sm mt-2 rounded-full">
-							New opportunity
-						</Link>
-					</div>
-				)}
-
 				{status === "error" && (
 					<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
 						<p className="font-medium">Couldn&rsquo;t load artists</p>
@@ -258,6 +269,13 @@ export default function DiscoverPage() {
 						<MobileArtistStack artists={artists} onSwipe={handleSwipe} />
 					))}
 			</div>
+
+			<PickGigModal
+				artist={pendingInterest}
+				gigs={myOpenGigs}
+				onPick={handlePickGig}
+				onClose={() => setPendingInterest(null)}
+			/>
 		</div>
 	);
 }

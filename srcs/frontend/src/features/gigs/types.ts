@@ -20,3 +20,11 @@ export interface GigListResponse {
 	pageSize: number;
 	total: number;
 }
+
+export interface CreateGigInput {
+	title: string;
+	category: string;
+	description?: string;
+	location?: string;
+	rate?: number;
+}

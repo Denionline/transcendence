@@ -19,6 +19,8 @@ import MessagesPage from "./pages/MessagesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
 import SavedPage from "./pages/SavedPage";
 import NewOpportunityPage from "./pages/NewOpportunityPage";
+import MyOpportunitiesPage from "./pages/MyOpportunitiesPage";
+import OpportunityDetailPage from "./pages/OpportunityDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 
 export function defaultPathForRole(role: UserRole): string {
@@ -57,6 +59,8 @@ export const router = createBrowserRouter([
 			{ path: "/discover", element: <DiscoverPage /> },
 			{ path: "/shortlist", element: <ShortlistPage /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
+			{ path: "/opportunities/mine", element: <MyOpportunitiesPage /> },
+			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
 			{ path: "/saved", element: <SavedPage /> },
 			{ path: "/messages", element: <MessagesPage /> },
 			{ path: "/profile", element: <ProfilePage /> },
