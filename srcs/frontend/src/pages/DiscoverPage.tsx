@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
-import PickGigModal from "../features/artists/components/PickGigModal";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
 import { mapArtistCandidateToArtist } from "../features/artists/mapCandidate";
 import { listMyGigs } from "../features/gigs/api";
@@ -15,7 +14,6 @@ import type { GigDto } from "../features/gigs/types";
 const DISCIPLINES = ["Illustration", "Photography", "Motion & 3D", "Mural & street"];
 const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
-const ALL_ARTISTS_VALUE = "";
 
 export default function DiscoverPage() {
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -28,33 +26,59 @@ export default function DiscoverPage() {
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [searchParams, setSearchParams] = useSearchParams();
-	// No gigId in the URL means "browse everyone" — a hirer can look at artist
-	// cards without an opportunity to review them against.
+	// GET /swipes/next requires a gigId for hirers — candidates are always
+	// reviewed in the context of one of the hirer's own open gigs.
 	const [activeGigId, setActiveGigId] = useState<string | null>(searchParams.get("gigId"));
 	const [myOpenGigs, setMyOpenGigs] = useState<GigDto[]>([]);
 	const [artists, setArtists] = useState<Artist[]>([]);
-	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+	const [status, setStatus] = useState<"loading" | "ready" | "error" | "no-gigs">("loading");
 	const [error, setError] = useState<string | null>(null);
-	const [pendingInterest, setPendingInterest] = useState<Artist | null>(null);
+	// /next is stateless — it deterministically keeps handing back the same
+	// not-yet-reviewed candidate until that candidate is actually swiped on.
+	// Track every id already pulled into the deck this session so a second
+	// (or third) fetch never adds a duplicate of a card already showing.
+	const seenIds = useRef<Set<string>>(new Set());
 
-	// The hirer's own open gigs — used for the "reviewing for" picker and for
-	// the "which opportunity is this for?" prompt when liking someone while
-	// browsing without one selected.
+	// Load the hirer's own open gigs — candidates are always reviewed in the
+	// context of one specific gig, so default to the first one unless the URL
+	// already named one (e.g. arriving via "Search related artists").
 	useEffect(() => {
+		let cancelled = false;
 		listMyGigs({ status: "open" })
-			.then(setMyOpenGigs)
+			.then((gigs) => {
+				if (cancelled) return;
+				setMyOpenGigs(gigs);
+				if (activeGigId) return;
+				if (gigs.length === 0) {
+					setStatus("no-gigs");
+					return;
+				}
+				setActiveGigId(gigs[0].id);
+			})
 			.catch((err: unknown) => {
-				console.error("Failed to load your opportunities:", err);
+				if (cancelled) return;
+				setError(err instanceof ApiError ? err.message : "Couldn't load your opportunities.");
+				setStatus("error");
 			});
+		return () => {
+			cancelled = true;
+		};
+		// Only ever run once — activeGigId changes afterwards come from the
+		// picker or the URL, not from this initial load.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	async function fetchOne(gigId: string | null): Promise<Artist | null> {
-		const dto = await getNextArtistCandidate(gigId ?? undefined);
-		return dto ? mapArtistCandidateToArtist(dto) : null;
+	async function fetchOne(gigId: string): Promise<Artist | null> {
+		const dto = await getNextArtistCandidate(gigId);
+		if (!dto || seenIds.current.has(dto.id)) return null;
+		seenIds.current.add(dto.id);
+		return mapArtistCandidateToArtist(dto);
 	}
 
 	useEffect(() => {
+		if (!activeGigId) return;
 		let cancelled = false;
+		seenIds.current = new Set();
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
@@ -86,12 +110,11 @@ export default function DiscoverPage() {
 	}
 
 	function handleGigChange(gigId: string) {
-		setActiveGigId(gigId || null);
+		setActiveGigId(gigId);
 		setSearchParams(
 			(prev) => {
 				const next = new URLSearchParams(prev);
-				if (gigId) next.set("gigId", gigId);
-				else next.delete("gigId");
+				next.set("gigId", gigId);
 				return next;
 			},
 			{ replace: true },
@@ -99,17 +122,10 @@ export default function DiscoverPage() {
 	}
 
 	function handleSwipe(artist: Artist, liked: boolean) {
-		if (activeGigId) {
-			postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch(
-				(err: unknown) => {
-					console.error("Failed to record swipe:", err);
-				},
-			);
-		} else if (liked) {
-			// Browsing without an opportunity: find out which one this is for
-			// before we actually record the swipe.
-			setPendingInterest(artist);
-		}
+		if (!activeGigId) return;
+		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
+			console.error("Failed to record swipe:", err);
+		});
 		fetchOne(activeGigId)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
@@ -117,17 +133,6 @@ export default function DiscoverPage() {
 			.catch((err: unknown) => {
 				console.error("Failed to load next artist:", err);
 			});
-	}
-
-	function handlePickGig(gigId: string) {
-		if (pendingInterest) {
-			postSwipe({ gigId, liked: true, targetUserId: pendingInterest.userId }).catch(
-				(err: unknown) => {
-					console.error("Failed to record swipe:", err);
-				},
-			);
-		}
-		setPendingInterest(null);
 	}
 
 	return (
@@ -205,24 +210,27 @@ export default function DiscoverPage() {
 						<p className="text-sm text-base-content/50">
 							{status === "ready"
 								? `${artists.length} matches · sorted by fit`
-								: "Loading matches…"}
+								: status === "no-gigs"
+									? "No open opportunities yet"
+									: "Loading matches…"}
 						</p>
 					</div>
 
 					<div className="flex items-center gap-2">
-						<select
-							value={activeGigId ?? ALL_ARTISTS_VALUE}
-							onChange={(e) => handleGigChange(e.target.value)}
-							aria-label="Reviewing for opportunity"
-							className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-						>
-							<option value={ALL_ARTISTS_VALUE}>All artists</option>
-							{myOpenGigs.map((gig) => (
-								<option key={gig.id} value={gig.id}>
-									{gig.title}
-								</option>
-							))}
-						</select>
+						{myOpenGigs.length > 0 && (
+							<select
+								value={activeGigId ?? ""}
+								onChange={(e) => handleGigChange(e.target.value)}
+								aria-label="Reviewing for opportunity"
+								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
+							>
+								{myOpenGigs.map((gig) => (
+									<option key={gig.id} value={gig.id}>
+										{gig.title}
+									</option>
+								))}
+							</select>
+						)}
 
 						<div className="dropdown dropdown-end hidden lg:block">
 							<div
@@ -249,6 +257,15 @@ export default function DiscoverPage() {
 					</div>
 				</div>
 
+				{status === "no-gigs" && (
+					<div className="flex h-[calc(100vh-19rem)] min-h-105 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
+						<p className="font-medium">Post a gig to start discovering artists</p>
+						<Link to="/opportunities/new" className="btn btn-primary btn-sm mt-2 rounded-full">
+							New opportunity
+						</Link>
+					</div>
+				)}
+
 				{status === "error" && (
 					<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
 						<p className="font-medium">Couldn&rsquo;t load artists</p>
@@ -269,13 +286,6 @@ export default function DiscoverPage() {
 						<MobileArtistStack artists={artists} onSwipe={handleSwipe} />
 					))}
 			</div>
-
-			<PickGigModal
-				artist={pendingInterest}
-				gigs={myOpenGigs}
-				onPick={handlePickGig}
-				onClose={() => setPendingInterest(null)}
-			/>
 		</div>
 	);
 }

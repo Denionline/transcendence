@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import DesktopGigDeck from "../features/opportunities/components/DesktopGigDeck";
 import MobileGigStack from "../features/opportunities/components/MobileGigStack";
@@ -25,10 +25,17 @@ export default function OpportunitiesPage() {
 	const [gigs, setGigs] = useState<GigListing[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [error, setError] = useState<string | null>(null);
+	// /next is stateless — it deterministically keeps handing back the same
+	// not-yet-swiped gig until that gig is actually swiped on. Track every id
+	// we've already pulled into the deck this session so a second (or third)
+	// fetch never adds a duplicate of a card that's already showing.
+	const seenIds = useRef<Set<string>>(new Set());
 
 	async function fetchOne(): Promise<GigListing | null> {
 		const dto = await getNextGig();
-		return dto ? mapGigToListing(dto) : null;
+		if (!dto || seenIds.current.has(dto.id)) return null;
+		seenIds.current.add(dto.id);
+		return mapGigToListing(dto);
 	}
 
 	useEffect(() => {

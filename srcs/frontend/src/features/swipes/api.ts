@@ -17,12 +17,9 @@ export function getNextGig(): Promise<GigDto | null> {
 	return fetchNext<GigDto>("");
 }
 
-/**
- * Hirer mode: next artist candidate. With a gigId, scoped to that gig's
- * category and swipe history; without one, browses every available artist.
- */
-export function getNextArtistCandidate(gigId?: string): Promise<ArtistCandidateDto | null> {
-	return fetchNext<ArtistCandidateDto>(gigId ? `?gigId=${encodeURIComponent(gigId)}` : "");
+/** Hirer mode: next artist candidate for one of the caller's own gigs. */
+export function getNextArtistCandidate(gigId: string): Promise<ArtistCandidateDto | null> {
+	return fetchNext<ArtistCandidateDto>(`?gigId=${encodeURIComponent(gigId)}`);
 }
 
 export async function postSwipe(input: SwipeInput): Promise<SwipeResult> {
