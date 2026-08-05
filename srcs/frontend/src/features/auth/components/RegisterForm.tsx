@@ -7,7 +7,6 @@ import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
 import { defaultPathForRole } from "../../../Router";
 import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
-import { defaultPathForRole } from "../../../Router";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
