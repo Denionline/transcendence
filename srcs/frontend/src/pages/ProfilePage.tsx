@@ -1,8 +1,9 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { Briefcase, UserRound } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import Avatar from "../components/Avatar";
 import {
+	fetchMyProfile,
 	saveMyProfile,
 	type ArtistProfileFields,
 	type HirerProfileFields,
@@ -27,6 +28,19 @@ export default function ProfilePage() {
 	const [availability, setAvailability] = useState(true);
 	const [detailsStatus, setDetailsStatus] = useState<Status>(null);
 	const [isSavingDetails, setIsSavingDetails] = useState(false);
+
+	useEffect(() => {
+		fetchMyProfile()
+			.then((profile) => {
+				setCategory(profile.category);
+				setBio(profile.bio ?? "");
+				setLocation(profile.location ?? "");
+				setAvailability(profile.availability);
+				if ("organizationName" in profile) setOrganizationName(profile.organizationName);
+			})
+			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
+			.catch(() => {});
+	}, []);
 
 	if (!user) return null;
 
