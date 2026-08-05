@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import GigCard from "./GigCard";
 import GigDetailsModal from "./GigDetailsModal";
@@ -25,6 +25,24 @@ export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detail, setDetail] = useState<{ gig: GigListing; index: number } | null>(null);
 	const nextIndexRef = useRef(SLOT_COUNT);
+
+	// The replacement for a swiped card arrives asynchronously — the parent
+	// only fetches it once the swipe itself is recorded — so `gigs` grows
+	// after this component has already rendered the empty slot. Backfill any
+	// empty slot as soon as a new candidate shows up, instead of waiting for
+	// another interaction to notice it.
+	useEffect(() => {
+		setSlots((prev) => {
+			const filled = prev.map((slot) => {
+				if (slot.current) return slot;
+				if (nextIndexRef.current >= gigs.length) return slot;
+				const gig = gigs[nextIndexRef.current];
+				nextIndexRef.current += 1;
+				return { ...slot, current: gig };
+			});
+			return filled.some((slot, i) => slot !== prev[i]) ? filled : prev;
+		});
+	}, [gigs]);
 
 	function decide(index: number, dir: 1 | -1) {
 		const slot = slots[index];

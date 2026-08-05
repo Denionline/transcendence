@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import ArtistCard from "./ArtistCard";
 import ArtistDetailsModal from "./ArtistDetailsModal";
@@ -27,6 +27,24 @@ export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDec
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detail, setDetail] = useState<{ artist: Artist; index: number } | null>(null);
 	const nextIndexRef = useRef(SLOT_COUNT);
+
+	// The replacement for a swiped card arrives asynchronously — the parent
+	// only fetches it once the swipe itself is recorded — so `artists` grows
+	// after this component has already rendered the empty slot. Backfill any
+	// empty slot as soon as a new candidate shows up, instead of waiting for
+	// another interaction to notice it.
+	useEffect(() => {
+		setSlots((prev) => {
+			const filled = prev.map((slot) => {
+				if (slot.current) return slot;
+				if (nextIndexRef.current >= artists.length) return slot;
+				const artist = artists[nextIndexRef.current];
+				nextIndexRef.current += 1;
+				return { ...slot, current: artist };
+			});
+			return filled.some((slot, i) => slot !== prev[i]) ? filled : prev;
+		});
+	}, [artists]);
 
 	function decide(index: number, dir: 1 | -1) {
 		const slot = slots[index];
