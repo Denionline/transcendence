@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
+import { defaultPathForRole } from "../../../Router";
 import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
 import { defaultPathForRole } from "../../../Router";
 

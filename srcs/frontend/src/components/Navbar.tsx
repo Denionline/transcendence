@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { LogOutIcon, MenuIcon, PlusIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
+import Avatar from "./Avatar";
 import { useAuth } from "../features/auth/hooks/useAuth";
-import { initials } from "../lib/format";
 
 export interface NavbarItem {
 	to: string;
@@ -103,15 +103,8 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 
 					{user && (
 						<div className="dropdown dropdown-end">
-							<div
-								tabIndex={0}
-								role="button"
-								aria-label="Account menu"
-								className="avatar avatar-placeholder"
-							>
-								<div className="w-10 rounded-full bg-neutral text-neutral-content cursor-pointer">
-									<span className="text-xs">{initials(user.username)}</span>
-								</div>
+							<div tabIndex={0} role="button" aria-label="Account menu" className="cursor-pointer">
+								<Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
 							</div>
 							<ul
 								tabIndex={0}
