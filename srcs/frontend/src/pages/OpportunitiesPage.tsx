@@ -30,19 +30,32 @@ export default function OpportunitiesPage() {
 	// already pulled into the deck this session and pass it as excludeIds so
 	// the backend skips straight to a genuinely different gig for each slot.
 	const seenIds = useRef<Set<string>>(new Set());
+	// StrictMode runs this effect twice on mount (mount → cleanup → mount
+	// again). Both invocations share the same `seenIds` ref, so without this
+	// guard the first (cancelled) invocation's in-flight request can still
+	// resolve and mark a gig as "seen" after the second, live invocation has
+	// already reset seenIds — making the live fetch wrongly skip the very
+	// first candidate as a false duplicate. Each effect run gets its own
+	// generation id, and a fetch only commits to seenIds if its generation is
+	// still the current one.
+	const generationRef = useRef(0);
 
-	async function fetchOne(): Promise<GigListing | null> {
+	async function fetchOne(generation: number): Promise<GigListing | null> {
 		const dto = await getNextGig(Array.from(seenIds.current));
+		if (generation !== generationRef.current) return null;
 		if (!dto || seenIds.current.has(dto.id)) return null;
 		seenIds.current.add(dto.id);
 		return mapGigToListing(dto);
 	}
 
 	useEffect(() => {
+		generationRef.current += 1;
+		const generation = generationRef.current;
+		seenIds.current = new Set();
 		let cancelled = false;
 		(async () => {
 			for (let i = 0; i < slotCount; i++) {
-				const gig = await fetchOne();
+				const gig = await fetchOne(generation);
 				if (cancelled) return;
 				if (!gig) break;
 				setGigs((prev) => [...prev, gig]);
@@ -72,7 +85,7 @@ export default function OpportunitiesPage() {
 		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchOne()
+		fetchOne(generationRef.current)
 			.then((next) => {
 				if (next) setGigs((prev) => [...prev, next]);
 			})

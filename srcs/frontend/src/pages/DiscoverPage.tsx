@@ -39,6 +39,16 @@ export default function DiscoverPage() {
 	// excludeIds so the backend skips straight to a genuinely different
 	// candidate for each slot.
 	const seenIds = useRef<Set<string>>(new Set());
+	// StrictMode runs the fetch effect below twice on mount (and it can also
+	// legitimately re-run when the hirer switches gigs). Every run shares the
+	// same `seenIds` ref, so without this guard a stale invocation's in-flight
+	// request can resolve after a newer one has already reset seenIds and mark
+	// the very first real candidate as a false duplicate — the deck ends up
+	// empty on first load even though candidates exist (fixed by picking a
+	// gig again, since that starts a fresh, non-racing run). Each effect run
+	// gets its own generation id; a fetch only commits to seenIds if its
+	// generation is still current.
+	const generationRef = useRef(0);
 
 	// Load the hirer's own open gigs — candidates are always reviewed in the
 	// context of one specific gig, so default to the first one unless the URL
@@ -69,8 +79,9 @@ export default function DiscoverPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	async function fetchOne(gigId: string): Promise<Artist | null> {
+	async function fetchOne(gigId: string, generation: number): Promise<Artist | null> {
 		const dto = await getNextArtistCandidate(gigId, Array.from(seenIds.current));
+		if (generation !== generationRef.current) return null;
 		if (!dto || seenIds.current.has(dto.id)) return null;
 		seenIds.current.add(dto.id);
 		return mapArtistCandidateToArtist(dto);
@@ -78,13 +89,15 @@ export default function DiscoverPage() {
 
 	useEffect(() => {
 		if (!activeGigId) return;
-		let cancelled = false;
+		generationRef.current += 1;
+		const generation = generationRef.current;
 		seenIds.current = new Set();
+		let cancelled = false;
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
 			for (let i = 0; i < slotCount; i++) {
-				const artist = await fetchOne(activeGigId);
+				const artist = await fetchOne(activeGigId, generation);
 				if (cancelled) return;
 				if (!artist) break;
 				setArtists((prev) => [...prev, artist]);
@@ -127,7 +140,7 @@ export default function DiscoverPage() {
 		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchOne(activeGigId)
+		fetchOne(activeGigId, generationRef.current)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
