@@ -35,8 +35,9 @@ export default function DiscoverPage() {
 	const [error, setError] = useState<string | null>(null);
 	// /next is stateless — it deterministically keeps handing back the same
 	// not-yet-reviewed candidate until that candidate is actually swiped on.
-	// Track every id already pulled into the deck this session so a second
-	// (or third) fetch never adds a duplicate of a card already showing.
+	// Track every id already pulled into the deck this session and pass it as
+	// excludeIds so the backend skips straight to a genuinely different
+	// candidate for each slot.
 	const seenIds = useRef<Set<string>>(new Set());
 
 	// Load the hirer's own open gigs — candidates are always reviewed in the
@@ -69,7 +70,7 @@ export default function DiscoverPage() {
 	}, []);
 
 	async function fetchOne(gigId: string): Promise<Artist | null> {
-		const dto = await getNextArtistCandidate(gigId);
+		const dto = await getNextArtistCandidate(gigId, Array.from(seenIds.current));
 		if (!dto || seenIds.current.has(dto.id)) return null;
 		seenIds.current.add(dto.id);
 		return mapArtistCandidateToArtist(dto);
