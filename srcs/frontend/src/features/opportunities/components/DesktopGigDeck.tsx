@@ -15,9 +15,10 @@ interface Slot {
 
 interface DesktopGigDeckProps {
 	gigs: GigListing[];
+	onSwipe?: (gig: GigListing, liked: boolean) => void;
 }
 
-export default function DesktopGigDeck({ gigs }: DesktopGigDeckProps) {
+export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
 	const [slots, setSlots] = useState<Slot[]>(() =>
 		gigs.slice(0, SLOT_COUNT).map((gig) => ({ current: gig, outgoing: null, exitDir: null })),
 	);
@@ -26,6 +27,8 @@ export default function DesktopGigDeck({ gigs }: DesktopGigDeckProps) {
 	const nextIndexRef = useRef(SLOT_COUNT);
 
 	function decide(index: number, dir: 1 | -1) {
+		const slot = slots[index];
+		if (slot?.current && !slot.outgoing) onSwipe?.(slot.current, dir === 1);
 		setSlots((prev) => {
 			const slot = prev[index];
 			if (!slot.current || slot.outgoing) return prev;

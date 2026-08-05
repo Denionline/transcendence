@@ -13,3 +13,17 @@ export interface Artist {
 	photoUrl?: string | null;
 	bio: string;
 }
+
+/** Shape returned by GET /swipes/next for a hirer (an artist candidate for one of their gigs). */
+export interface ArtistCandidateDto {
+	id: string;
+	userId: string;
+	category: string;
+	bio: string | null;
+	location: string | null;
+	availability: boolean;
+	user?: {
+		username: string;
+		avatarUrl: string | null;
+	} | null;
+}

@@ -1,19 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import DesktopGigDeck from "../features/opportunities/components/DesktopGigDeck";
 import MobileGigStack from "../features/opportunities/components/MobileGigStack";
-import { MOCK_GIGS } from "../features/opportunities/mockGigs";
+import { getNextGig, postSwipe } from "../features/swipes/api";
+import { mapGigToListing } from "../features/opportunities/mapGig";
+import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
+import type { GigListing } from "../features/opportunities/gigTypes";
 
 const GIG_TYPES = ["Mural", "Illustration", "Set design", "Lettering"];
 const SORT_OPTIONS = ["Newest", "Best match", "Closing soon"];
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export default function OpportunitiesPage() {
-	const isDesktop = useMediaQuery("(min-width: 1024px)");
+	const isDesktop = useMediaQuery(DESKTOP_QUERY);
+	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
+	// mount so the initial fetch burst matches whichever layout is live.
+	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
 	const [gigTypes, setGigTypes] = useState<Set<string>>(new Set(["Set design"]));
 	const [duration, setDuration] = useState<"any" | "short">("any");
 	const [remoteOnly, setRemoteOnly] = useState(false);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
+
+	const [gigs, setGigs] = useState<GigListing[]>([]);
+	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+	const [error, setError] = useState<string | null>(null);
+
+	async function fetchOne(): Promise<GigListing | null> {
+		const dto = await getNextGig();
+		return dto ? mapGigToListing(dto) : null;
+	}
+
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			for (let i = 0; i < slotCount; i++) {
+				const gig = await fetchOne();
+				if (cancelled) return;
+				if (!gig) break;
+				setGigs((prev) => [...prev, gig]);
+			}
+			if (!cancelled) setStatus("ready");
+		})().catch((err: unknown) => {
+			if (cancelled) return;
+			setError(err instanceof ApiError ? err.message : "Couldn't load gigs. Please try again.");
+			setStatus("error");
+		});
+		return () => {
+			cancelled = true;
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	function toggleGigType(type: string) {
 		setGigTypes((prev) => {
@@ -22,6 +59,19 @@ export default function OpportunitiesPage() {
 			else next.add(type);
 			return next;
 		});
+	}
+
+	function handleSwipe(gig: GigListing, liked: boolean) {
+		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
+			console.error("Failed to record swipe:", err);
+		});
+		fetchOne()
+			.then((next) => {
+				if (next) setGigs((prev) => [...prev, next]);
+			})
+			.catch((err: unknown) => {
+				console.error("Failed to load next gig:", err);
+			});
 	}
 
 	return (
@@ -97,7 +147,9 @@ export default function OpportunitiesPage() {
 					<div>
 						<h1 className="text-2xl font-semibold">Opportunities</h1>
 						<p className="text-sm text-base-content/50">
-							{MOCK_GIGS.length} gigs · sorted by {sort.toLowerCase()}
+							{status === "ready"
+								? `${gigs.length} gigs · sorted by ${sort.toLowerCase()}`
+								: "Loading gigs…"}
 						</p>
 					</div>
 
@@ -125,7 +177,25 @@ export default function OpportunitiesPage() {
 					</div>
 				</div>
 
-				{isDesktop ? <DesktopGigDeck gigs={MOCK_GIGS} /> : <MobileGigStack gigs={MOCK_GIGS} />}
+				{status === "error" && (
+					<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
+						<p className="font-medium">Couldn&rsquo;t load gigs</p>
+						<p className="text-error/80">{error}</p>
+					</div>
+				)}
+
+				{status === "loading" && (
+					<div className="flex h-[calc(100vh-19rem)] min-h-105 items-center justify-center text-sm text-base-content/50">
+						Loading gigs…
+					</div>
+				)}
+
+				{status === "ready" &&
+					(isDesktop ? (
+						<DesktopGigDeck gigs={gigs} onSwipe={handleSwipe} />
+					) : (
+						<MobileGigStack gigs={gigs} onSwipe={handleSwipe} />
+					))}
 			</div>
 		</div>
 	);

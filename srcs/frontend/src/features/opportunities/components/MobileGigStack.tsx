@@ -11,9 +11,10 @@ const TAP_THRESHOLD = 6;
 
 interface MobileGigStackProps {
 	gigs: GigListing[];
+	onSwipe?: (gig: GigListing, liked: boolean) => void;
 }
 
-export default function MobileGigStack({ gigs }: MobileGigStackProps) {
+export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 	const [index, setIndex] = useState(0);
 	const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
 	const [exitDir, setExitDir] = useState<1 | -1 | 0>(0);
@@ -36,6 +37,7 @@ export default function MobileGigStack({ gigs }: MobileGigStackProps) {
 
 	function commitSwipe(dir: 1 | -1) {
 		if (exitDir || index >= gigs.length) return;
+		if (front) onSwipe?.(front, dir === 1);
 		setExitDir(dir);
 		setDrag((d) => ({ ...d, dragging: false }));
 		window.setTimeout(() => {
