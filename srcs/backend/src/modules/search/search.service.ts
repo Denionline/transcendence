@@ -1,6 +1,7 @@
 import { GigStatus, Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { buildMeta } from "../../lib/pagination.js";
+import { GigSort } from "./search.params.js";
 
 const searchGigSelect = {
 	id: true,
@@ -24,6 +25,7 @@ export interface SearchGigsOptions {
 	minRate?: number;
 	maxRate?: number;
 	status?: GigStatus;
+	sort: GigSort;
 }
 
 function buildGigWhere(options: SearchGigsOptions): Prisma.GigWhereInput {
