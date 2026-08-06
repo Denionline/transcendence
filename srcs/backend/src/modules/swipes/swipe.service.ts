@@ -4,6 +4,7 @@ import { AuthenticatedUser } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
 import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.service.js";
+import { publicArtistSelect } from "../profile/profile.service.js";
 
 interface SwipeData {
 	swiperId: string;

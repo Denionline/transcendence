@@ -6,7 +6,7 @@ export const setAccessToken = (t: string | null) => {
 };
 export const getAccessToken = () => accessToken;
 
-async function request(path: string, options: RequestInit = {}) {
+export async function request(path: string, options: RequestInit = {}) {
 	const res = await fetch(`/api${path}`, {
 		...options,
 		credentials: "include",
