@@ -6,6 +6,7 @@ import usersRoutes from "./modules/users/users.routes.js";
 import gigsRoutes from "./modules/gigs/gigs.routes.js";
 import swipesRoutes from "./modules/swipes/swipe.routes.js";
 import profileRoutes from "./modules/profile/profile.routes.js";
+import searchRoutes from "./modules/search/search.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
