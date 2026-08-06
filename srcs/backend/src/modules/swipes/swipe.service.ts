@@ -179,9 +179,12 @@ export async function handleNext(user: AuthenticatedUser, gigId: string | undefi
 	return await getNextCandidateForHirer(user, gigId);
 }
 
-async function getArtistSwipeHistory(userId: string) {
+async function getArtistSwipeHistory(userId: string, liked: boolean | undefined) {
 	const swipes = await prisma.swipe.findMany({
-		where: { swiperId: userId },
+		where: {
+			swiperId: userId,
+			...(liked !== undefined ? { liked } : {}),
+		},
 		select: {
 			liked: true,
 			createdAt: true,
@@ -198,9 +201,17 @@ async function getArtistSwipeHistory(userId: string) {
 	return swipes;
 }
 
-async function getHirerSwipeHistory(userId: string) {
+async function getHirerSwipeHistory(
+	userId: string,
+	liked: boolean | undefined,
+	gigId: string | undefined,
+) {
 	const swipes = await prisma.swipe.findMany({
-		where: { swiperId: userId },
+		where: {
+			swiperId: userId,
+			...(liked !== undefined ? { liked } : {}),
+			...(gigId !== undefined ? { gigId } : {}),
+		},
 		select: {
 			liked: true,
 			createdAt: true,
@@ -218,10 +229,14 @@ async function getHirerSwipeHistory(userId: string) {
 	return swipes;
 }
 
-export async function handleSwipeHistory(user: AuthenticatedUser) {
+export async function handleSwipeHistory(
+	user: AuthenticatedUser,
+	liked: boolean | undefined,
+	gigId: string | undefined,
+) {
 	if (user.role !== UserRole.artist && user.role !== UserRole.hirer) {
 		throwError(403, "FORBIDDEN", "only artists and hirers can view swipe history");
 	}
-	if (user.role === UserRole.artist) return await getArtistSwipeHistory(user.id);
-	return await getHirerSwipeHistory(user.id);
+	if (user.role === UserRole.artist) return await getArtistSwipeHistory(user.id, liked);
+	return await getHirerSwipeHistory(user.id, liked, gigId);
 }

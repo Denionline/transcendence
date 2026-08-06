@@ -28,10 +28,18 @@ router.get("/next", requireAuth, async (req, res) => {
 	res.status(200).json(result);
 });
 
-router.get("/history", requireAuth, async (req, res) => {
+function parseLiked(value: unknown): boolean | undefined {
+	if (value === "true") return true;
+	if (value === "false") return false;
+	return undefined;
+}
+
+router.get("/", requireAuth, async (req, res) => {
 	const user = req.user!;
 
-	const result = await handleSwipeHistory(user);
+	const liked = parseLiked(req.query.liked);
+	const gigId = typeof req.query.gigId === "string" ? req.query.gigId : undefined;
+	const result = await handleSwipeHistory(user, liked, gigId);
 	res.status(200).json(result);
 });
 

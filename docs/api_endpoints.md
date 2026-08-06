@@ -21,6 +21,11 @@ is anchored to a `Gig` (posted by a hirer), not a direct artist↔hirer pairing:
    `Match` is created automatically and **chat is unlocked** between the two users.
 5. Messages only exist inside a match, so chat access is enforced by the
    URL structure itself (`/api/matches/:matchId/messages`).
+6. A gig accepts exactly **one** match: the moment a `Match` is created, the gig
+   itself is set to `status: "closed"` in the same transaction. There is no
+   multi-hire flow — a hirer looking to book more than one artist needs a
+   separate gig per hire. Once closed, the gig no longer appears as swipeable
+   (`GIG_CLOSED` on `POST /api/swipes`), and `GET /next` skips it.
 
 ```
 Artist ──like(gig)───────▶  Gig (posted by Hirer)
@@ -136,7 +141,9 @@ then authorize). Every route requires a valid access token (`requireAuth`).
 Responses use the public gig shape — `id, hirerId, title, description, category,
 location, rate, status, createdAt`. `status` is the `GigStatus` enum, **`open` or
 `closed`** (there is no separate `archived` value — "archiving" a gig is just
-`PUT` with `{ "status": "closed" }`).
+`PUT` with `{ "status": "closed" }`). A gig also closes **automatically** the
+moment a `Match` is created for it (see "Match flow" above) — a gig only ever
+accepts one match.
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
@@ -173,9 +180,9 @@ direct artist↔hirer swipe outside of a gig's context:
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| POST | `/` | logged-in | Artist body: `{ "gigId": "...", "liked": true\|false }`. Hirer body: `{ "gigId": "...", "targetUserId": "...", "liked": true\|false }`. `gigId` must be a string, `liked` a boolean, and (hirer only) `targetUserId` a required string → `400 VALIDATION_ERROR`. Gig must be `open` → `409 GIG_CLOSED`. Hirer must own the gig → `403 FORBIDDEN`. The swiping artist (or, for a hirer, the target) must have an artist profile → `404 PROFILE_NOT_FOUND`, with a matching `category` → `400 CATEGORY_MISMATCH`, and (hirer only) `availability: true` → `409 ARTIST_UNAVAILABLE`. One swipe per (swiper, swiped, gig), ever → `409 SWIPE_EXISTS`. If `liked: true` and the other side already liked back **for the same gig**, **creates the Match in the same transaction** and the response includes `matchId` |
+| POST | `/` | logged-in | Artist body: `{ "gigId": "...", "liked": true\|false }`. Hirer body: `{ "gigId": "...", "targetUserId": "...", "liked": true\|false }`. `gigId` must be a string, `liked` a boolean, and (hirer only) `targetUserId` a required string → `400 VALIDATION_ERROR`. Gig must be `open` → `409 GIG_CLOSED`. Hirer must own the gig → `403 FORBIDDEN`. The swiping artist (or, for a hirer, the target) must have an artist profile → `404 PROFILE_NOT_FOUND`, with a matching `category` → `400 CATEGORY_MISMATCH`, and (hirer only) `availability: true` → `409 ARTIST_UNAVAILABLE`. One swipe per (swiper, swiped, gig), ever → `409 SWIPE_EXISTS`. If `liked: true` and the other side already liked back **for the same gig**, **creates the Match and closes the gig in the same transaction** and the response includes `matchId` |
 | GET | `/next` | logged-in | Returns the next eligible candidate. Artist: next `open` gig not yet swiped by the caller. Hirer: `?gigId=...` (required), next artist matching the gig's category not yet reviewed by this hirer; `?onlyInterested=true` narrows this to artists who already liked the gig |
-| GET | `/` | logged-in | My swipe history. `?direction=made\|received`, `?liked=true\|false`, `?gigId=...` to filter |
+| GET | `/` | logged-in | My swipe history — swipes the caller made (not received). `?liked=true\|false` filters for both roles; `?gigId=...` only narrows results for a **hirer** (an artist swipes once per gig, so filtering their own history by gig is a no-op) |
 
 There is no accept/decline step — a swipe is final once made (re-swiping the
 same target for the same gig is rejected, not overwritten), and a match forms
