@@ -46,6 +46,9 @@ model ArtistProfile {
   location     String?
   availability Boolean  @default(true)
   createdAt    DateTime @default(now())
+
+  @@index([category])
+  @@index([category, availability])
 }
 
 model HirerProfile {
@@ -95,6 +98,10 @@ model Gig {
 
   swipes  Swipe[]
   matches Match[]
+
+  @@index([status, createdAt])
+  @@index([status, category])
+  @@index([category])
 }
 
 model Swipe {
