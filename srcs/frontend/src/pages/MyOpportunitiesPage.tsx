@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRightIcon, PlusIcon } from "lucide-react";
+import { ChevronRightIcon, PlusIcon, UsersIcon } from "lucide-react";
 import { listMyGigs } from "../features/gigs/api";
 import { formatDate } from "../lib/format";
 import { ApiError } from "../lib/apiClient";
@@ -73,10 +73,13 @@ export default function MyOpportunitiesPage() {
 			{status === "ready" && gigs.length > 0 && (
 				<ul className="flex flex-col gap-3">
 					{gigs.map((gig) => (
-						<li key={gig.id}>
+						<li
+							key={gig.id}
+							className="flex items-center gap-2 rounded-2xl border border-base-content/10 bg-base-100 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5"
+						>
 							<Link
 								to={`/opportunities/mine/${gig.id}`}
-								className="group flex items-center justify-between gap-4 rounded-2xl border border-base-content/10 bg-base-100 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5"
+								className="group flex min-w-0 flex-1 items-center gap-4"
 							>
 								<div className="min-w-0">
 									<div className="flex items-center gap-2">
@@ -98,6 +101,14 @@ export default function MyOpportunitiesPage() {
 									className="size-4 shrink-0 text-base-content/30 transition-transform group-hover:translate-x-0.5"
 									aria-hidden="true"
 								/>
+							</Link>
+
+							<Link
+								to={`/matches?gigId=${gig.id}`}
+								className="btn btn-ghost btn-sm shrink-0 gap-1.5 rounded-full"
+							>
+								<UsersIcon className="size-4" aria-hidden="true" />
+								<span className="hidden sm:inline">Matches</span>
 							</Link>
 						</li>
 					))}

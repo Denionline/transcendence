@@ -5,16 +5,14 @@ import { useAuth } from "../features/auth/hooks/useAuth";
 const HIRER_ITEMS: NavbarItem[] = [
 	{ to: "/discover", label: "Discover", end: true },
 	{ to: "/opportunities/mine", label: "My opportunities" },
-	{ to: "/shortlist", label: "Shortlist" },
+	{ to: "/matches", label: "Matches" },
 	{ to: "/messages", label: "Messages" },
-	{ to: "/profile", label: "Profile" },
 ];
 
 const ARTIST_ITEMS: NavbarItem[] = [
 	{ to: "/opportunities", label: "Opportunities", end: true },
 	{ to: "/saved", label: "Saved" },
 	{ to: "/messages", label: "Messages" },
-	{ to: "/profile", label: "Profile" },
 ];
 
 export default function AppLayout() {
