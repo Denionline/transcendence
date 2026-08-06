@@ -20,3 +20,30 @@ export function planBucketPage(skip: number, pageSize: number, countA: number): 
 	const takeA = countA - skip;
 	return { skipA: skip, takeA, skipB: 0, takeB: pageSize - takeA };
 }
+
+export type BucketFetcher<T> = (skip: number, take: number) => Promise<T[]>;
+
+//	One bucket is empty in both non-straddle branches, so skip the round trip.
+async function fetchBucket<T>(
+	fetch: BucketFetcher<T>,
+	skip: number,
+	take: number,
+): Promise<T[]> {
+	if (take === 0) return [];
+	return await fetch(skip, take);
+}
+
+export async function fetchBucketPage<T>(
+	page: number,
+	pageSize: number,
+	countA: number,
+	fetchA: BucketFetcher<T>,
+	fetchB: BucketFetcher<T>,
+): Promise<T[]> {
+	const plan = planBucketPage((page - 1) * pageSize, pageSize, countA);
+	const [itemsA, itemsB] = await Promise.all([
+		fetchBucket(fetchA, plan.skipA, plan.takeA),
+		fetchBucket(fetchB, plan.skipB, plan.takeB),
+	]);
+	return [...itemsA, ...itemsB];
+}
