@@ -77,7 +77,7 @@ export async function searchGigs(options: SearchGigsOptions) {
 			where,
 			skip: (page - 1) * pageSize,
 			take: pageSize,
-			orderBy: { createdAt: "desc" },
+			orderBy: buildGigOrderBy(options.sort),
 			select: searchGigSelect,
 		}),
 		prisma.gig.count({ where }),
