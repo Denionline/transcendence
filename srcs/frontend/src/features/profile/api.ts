@@ -1,4 +1,4 @@
-import { request } from "../auth/api";
+import { apiRequest } from "../../lib/apiClient";
 
 export interface ArtistProfileFields {
 	category: string;
@@ -19,12 +19,12 @@ export interface HirerProfileFields {
 export type ProfileFields = ArtistProfileFields | HirerProfileFields;
 
 export async function saveMyProfile(updates: Partial<ProfileFields>): Promise<ProfileFields> {
-	return await request("/profile/me", {
+	return await apiRequest<ProfileFields>("/profile/me", {
 		method: "PATCH",
 		body: JSON.stringify(updates),
 	});
 }
 
 export async function fetchMyProfile(): Promise<ProfileFields> {
-	return request("/profile/me");
+	return apiRequest<ProfileFields>("/profile/me");
 }
