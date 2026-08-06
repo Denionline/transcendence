@@ -24,11 +24,7 @@ export function planBucketPage(skip: number, pageSize: number, countA: number): 
 export type BucketFetcher<T> = (skip: number, take: number) => Promise<T[]>;
 
 //	One bucket is empty in both non-straddle branches, so skip the round trip.
-async function fetchBucket<T>(
-	fetch: BucketFetcher<T>,
-	skip: number,
-	take: number,
-): Promise<T[]> {
+async function fetchBucket<T>(fetch: BucketFetcher<T>, skip: number, take: number): Promise<T[]> {
 	if (take === 0) return [];
 	return await fetch(skip, take);
 }

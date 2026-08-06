@@ -107,13 +107,7 @@ async function searchGigsByRelevance(
 		prisma.gig.count({ where: whereB }),
 	]);
 
-	const items = await fetchBucketPage(
-		page,
-		pageSize,
-		countA,
-		gigBucket(whereA),
-		gigBucket(whereB),
-	);
+	const items = await fetchBucketPage(page, pageSize, countA, gigBucket(whereA), gigBucket(whereB));
 
 	return { items, ...buildMeta(page, pageSize, countA + countB) };
 }
