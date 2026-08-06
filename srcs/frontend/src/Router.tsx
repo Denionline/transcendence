@@ -64,7 +64,6 @@ export const router = createBrowserRouter([
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
 			{ path: "/saved", element: <SavedPage /> },
 			{ path: "/messages", element: <MessagesPage /> },
-			{ path: "/profile", element: <ProfilePage /> },
 		],
 	},
 	{
