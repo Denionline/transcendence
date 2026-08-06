@@ -2,7 +2,7 @@ import { GigStatus, Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { GigSort } from "./search.params.js";
-import { planBucketPage } from "./search.relevance.js";
+import { fetchBucketPage } from "./search.relevance.js";
 
 const searchGigSelect = {
 	id: true,
@@ -80,15 +80,15 @@ function buildGigOrderBy(sort: GigSort): Prisma.GigOrderByWithRelationInput[] {
 	return [{ createdAt: "desc" }, { id: "asc" }];
 }
 
-function fetchGigBucket(where: Prisma.GigWhereInput, skip: number, take: number) {
-	if (take === 0) return [];
-	return prisma.gig.findMany({
-		where,
-		skip,
-		take,
-		orderBy: RELEVANCE_ORDER,
-		select: searchGigSelect,
-	});
+function gigBucket(where: Prisma.GigWhereInput) {
+	return (skip: number, take: number) =>
+		prisma.gig.findMany({
+			where,
+			skip,
+			take,
+			orderBy: RELEVANCE_ORDER,
+			select: searchGigSelect,
+		});
 }
 
 async function searchGigsByRelevance(
@@ -107,13 +107,15 @@ async function searchGigsByRelevance(
 		prisma.gig.count({ where: whereB }),
 	]);
 
-	const plan = planBucketPage((page - 1) * pageSize, pageSize, countA);
-	const [itemsA, itemsB] = await Promise.all([
-		fetchGigBucket(whereA, plan.skipA, plan.takeA),
-		fetchGigBucket(whereB, plan.skipB, plan.takeB),
-	]);
+	const items = await fetchBucketPage(
+		page,
+		pageSize,
+		countA,
+		gigBucket(whereA),
+		gigBucket(whereB),
+	);
 
-	return { items: [...itemsA, ...itemsB], ...buildMeta(page, pageSize, countA + countB) };
+	return { items, ...buildMeta(page, pageSize, countA + countB) };
 }
 
 export async function searchGigs(options: SearchGigsOptions) {
