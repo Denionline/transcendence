@@ -16,7 +16,9 @@ export function mapGigToListing(gig: GigDto): GigListing {
 	return {
 		id: gig.id,
 		hirerName: gig.hirer?.username ?? "Unnamed hirer",
+		category: gig.category,
 		location: gig.location ?? "Location TBD",
+		rate: gig.rate,
 		remoteOk: false,
 		postedLabel: label,
 		isNew,
