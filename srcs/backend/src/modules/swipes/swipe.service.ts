@@ -132,16 +132,6 @@ export async function handleSwipe(
 	return { matchId };
 }
 
-const publicArtistSelect = {
-	id: true,
-	userId: true,
-	category: true,
-	bio: true,
-	location: true,
-	availability: true,
-	user: { select: { username: true, avatarUrl: true } },
-} satisfies Prisma.ArtistProfileSelect;
-
 async function getNextGigForArtist(user: AuthenticatedUser, excludeIds: string[]) {
 	const artist = await prisma.artistProfile.findUnique({ where: { userId: user.id } });
 	if (!artist) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");

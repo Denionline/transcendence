@@ -18,10 +18,13 @@ export interface HirerProfileInput {
 }
 
 export const publicArtistSelect = {
+	id: true,
+	userId: true,
 	category: true,
 	bio: true,
 	location: true,
 	availability: true,
+	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.ArtistProfileSelect;
 
 const publicHirerSelect = {
