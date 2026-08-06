@@ -19,8 +19,18 @@ interface DesktopGigDeckProps {
 }
 
 export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
+	// Always start with exactly SLOT_COUNT cells, even if fewer gigs are
+	// available yet — a real (rather than decorative) filter can legitimately
+	// leave the pool smaller than a full deck, and mounting with fewer slots
+	// than SLOT_COUNT would silently drop the "no more gigs" placeholder for
+	// the missing ones instead of showing it, making a working filter look
+	// like it hadn't searched at all.
 	const [slots, setSlots] = useState<Slot[]>(() =>
-		gigs.slice(0, SLOT_COUNT).map((gig) => ({ current: gig, outgoing: null, exitDir: null })),
+		Array.from({ length: SLOT_COUNT }, (_, i) => ({
+			current: gigs[i] ?? null,
+			outgoing: null,
+			exitDir: null,
+		})),
 	);
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detail, setDetail] = useState<{ gig: GigListing; index: number } | null>(null);

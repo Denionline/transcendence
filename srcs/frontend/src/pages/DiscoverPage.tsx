@@ -33,11 +33,12 @@ export default function DiscoverPage() {
 	// candidates actually make it into the deck (see fetchMatchingCandidate
 	// below). Both start out marked from the active opportunity (see
 	// markFiltersFromGig) since that's what the backend already matches
-	// candidates on, but stay freely editable from there.
-	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
+	// candidates on, but stay freely editable from there. Discipline is
+	// single-select — the backend only ever matches one category per
+	// opportunity, so there's never more than one meaningful choice at a time.
+	const [discipline, setDiscipline] = useState<string | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
 	const debouncedLocation = useDebouncedValue(locationQuery, 300);
-	const disciplinesKey = Array.from(disciplines).sort().join("|");
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -81,7 +82,7 @@ export default function DiscoverPage() {
 	// selecting an opportunity marks both filters with its info instead of
 	// leaving the hirer to guess. Still fully editable afterwards.
 	function markFiltersFromGig(gig: GigDto) {
-		setDisciplines(new Set([gig.category]));
+		setDiscipline(gig.category);
 		setLocationQuery(gig.location ?? "");
 	}
 
@@ -132,14 +133,14 @@ export default function DiscoverPage() {
 	async function fetchMatchingCandidate(
 		gigId: string,
 		generation: number,
-		selectedDisciplines: Set<string>,
+		selectedDiscipline: string | null,
 		location: string,
 	): Promise<Artist | null> {
 		for (let attempt = 0; attempt < MAX_FETCH_ATTEMPTS; attempt++) {
 			const artist = await fetchCandidate(gigId, generation);
 			if (!artist) return null;
 			if (
-				matchesCategoryFilter(artist.discipline, selectedDisciplines) &&
+				matchesCategoryFilter(artist.discipline, selectedDiscipline) &&
 				matchesLocationFilter(artist.location, location)
 			) {
 				return artist;
@@ -158,7 +159,7 @@ export default function DiscoverPage() {
 		const generation = generationRef.current;
 		seenIds.current = new Set();
 		let cancelled = false;
-		const selectedDisciplines = disciplines;
+		const selectedDiscipline = discipline;
 		const activeLocation = debouncedLocation;
 		(async () => {
 			setStatus("loading");
@@ -167,7 +168,7 @@ export default function DiscoverPage() {
 				const artist = await fetchMatchingCandidate(
 					activeGigId,
 					generation,
-					selectedDisciplines,
+					selectedDiscipline,
 					activeLocation,
 				);
 				if (cancelled) return;
@@ -184,15 +185,13 @@ export default function DiscoverPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeGigId, disciplinesKey, debouncedLocation]);
+	}, [activeGigId, discipline, debouncedLocation]);
 
-	function toggleDiscipline(discipline: string) {
-		setDisciplines((prev) => {
-			const next = new Set(prev);
-			if (next.has(discipline)) next.delete(discipline);
-			else next.add(discipline);
-			return next;
-		});
+	// Clicking a chip replaces the previous selection (or clears it, if the
+	// same chip is clicked again) instead of accumulating — see the comment
+	// on matchesCategoryFilter for why multi-select never made sense here.
+	function selectDiscipline(category: string) {
+		setDiscipline((prev) => (prev === category ? null : category));
 	}
 
 	function handleGigChange(gigId: string) {
@@ -215,7 +214,7 @@ export default function DiscoverPage() {
 		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchMatchingCandidate(activeGigId, generationRef.current, disciplines, debouncedLocation)
+		fetchMatchingCandidate(activeGigId, generationRef.current, discipline, debouncedLocation)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -239,13 +238,13 @@ export default function DiscoverPage() {
 						</p>
 						<div className="flex flex-wrap gap-1.5">
 							{CATEGORIES.map((category) => {
-								const active = disciplines.has(category);
+								const active = discipline === category;
 								return (
 									<button
 										key={category}
 										type="button"
 										aria-pressed={active}
-										onClick={() => toggleDiscipline(category)}
+										onClick={() => selectDiscipline(category)}
 										className={`btn btn-xs rounded-full font-normal ${
 											active ? "btn-primary" : "btn-outline border-base-content/20"
 										}`}

@@ -35,13 +35,15 @@ export default function OpportunitiesPage() {
 	// fetched gigs actually make it into the deck (see fetchMatchingGig
 	// below). Discipline and location start out marked from the artist's own
 	// profile since the backend only ever matches gigs to the caller's own
-	// category anyway, but both stay freely editable from there.
-	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
+	// category anyway, but both stay freely editable from there. Discipline
+	// is single-select — the backend only ever matches one category (the
+	// artist's own), so there's never more than one meaningful choice at a
+	// time.
+	const [discipline, setDiscipline] = useState<string | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
 	const debouncedLocation = useDebouncedValue(locationQuery, 300);
 	const debouncedMinRateInput = useDebouncedValue(minRateInput, 300);
-	const disciplinesKey = Array.from(disciplines).sort().join("|");
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [gigs, setGigs] = useState<GigListing[]>([]);
@@ -79,7 +81,7 @@ export default function OpportunitiesPage() {
 		fetchMyProfile()
 			.then((profile) => {
 				if (cancelled) return;
-				setDisciplines(new Set([profile.category]));
+				setDiscipline(profile.category);
 				setLocationQuery(profile.location ?? "");
 			})
 			.catch((err: unknown) => {
@@ -102,7 +104,7 @@ export default function OpportunitiesPage() {
 	/** Keeps pulling gigs until one clears the active filters, or the pool runs out. */
 	async function fetchMatchingGig(
 		generation: number,
-		selectedDisciplines: Set<string>,
+		selectedDiscipline: string | null,
 		location: string,
 		minRateText: string,
 	): Promise<GigListing | null> {
@@ -111,7 +113,7 @@ export default function OpportunitiesPage() {
 			const gig = await fetchGig(generation);
 			if (!gig) return null;
 			if (
-				matchesCategoryFilter(gig.category, selectedDisciplines) &&
+				matchesCategoryFilter(gig.category, selectedDiscipline) &&
 				matchesLocationFilter(gig.location, location) &&
 				matchesMinRateFilter(gig.rate, minRate)
 			) {
@@ -126,7 +128,7 @@ export default function OpportunitiesPage() {
 		const generation = generationRef.current;
 		seenIds.current = new Set();
 		let cancelled = false;
-		const selectedDisciplines = disciplines;
+		const selectedDiscipline = discipline;
 		const activeLocation = debouncedLocation;
 		const activeMinRateInput = debouncedMinRateInput;
 		(async () => {
@@ -135,7 +137,7 @@ export default function OpportunitiesPage() {
 			for (let i = 0; i < slotCount; i++) {
 				const gig = await fetchMatchingGig(
 					generation,
-					selectedDisciplines,
+					selectedDiscipline,
 					activeLocation,
 					activeMinRateInput,
 				);
@@ -153,15 +155,13 @@ export default function OpportunitiesPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [disciplinesKey, debouncedLocation, debouncedMinRateInput]);
+	}, [discipline, debouncedLocation, debouncedMinRateInput]);
 
-	function toggleDiscipline(discipline: string) {
-		setDisciplines((prev) => {
-			const next = new Set(prev);
-			if (next.has(discipline)) next.delete(discipline);
-			else next.add(discipline);
-			return next;
-		});
+	// Clicking a chip replaces the previous selection (or clears it, if the
+	// same chip is clicked again) instead of accumulating — see the comment
+	// on matchesCategoryFilter for why multi-select never made sense here.
+	function selectDiscipline(category: string) {
+		setDiscipline((prev) => (prev === category ? null : category));
 	}
 
 	function handleSwipe(gig: GigListing, liked: boolean) {
@@ -169,7 +169,7 @@ export default function OpportunitiesPage() {
 		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchMatchingGig(generationRef.current, disciplines, debouncedLocation, debouncedMinRateInput)
+		fetchMatchingGig(generationRef.current, discipline, debouncedLocation, debouncedMinRateInput)
 			.then((next) => {
 				if (next) setGigs((prev) => [...prev, next]);
 			})
@@ -193,13 +193,13 @@ export default function OpportunitiesPage() {
 						</p>
 						<div className="flex flex-wrap gap-1.5">
 							{CATEGORIES.map((category) => {
-								const active = disciplines.has(category);
+								const active = discipline === category;
 								return (
 									<button
 										key={category}
 										type="button"
 										aria-pressed={active}
-										onClick={() => toggleDiscipline(category)}
+										onClick={() => selectDiscipline(category)}
 										className={`btn btn-xs rounded-full font-normal ${
 											active ? "btn-primary" : "btn-outline border-base-content/20"
 										}`}

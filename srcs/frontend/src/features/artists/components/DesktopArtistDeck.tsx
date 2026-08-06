@@ -19,10 +19,18 @@ interface DesktopArtistDeckProps {
 }
 
 export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDeckProps) {
+	// Always start with exactly SLOT_COUNT cells, even if fewer artists are
+	// available yet — a real (rather than decorative) filter can legitimately
+	// leave the pool smaller than a full deck, and mounting with fewer slots
+	// than SLOT_COUNT would silently drop the "no more matches" placeholder
+	// for the missing ones instead of showing it, making a working filter
+	// look like it hadn't searched at all.
 	const [slots, setSlots] = useState<Slot[]>(() =>
-		artists
-			.slice(0, SLOT_COUNT)
-			.map((artist) => ({ current: artist, outgoing: null, exitDir: null })),
+		Array.from({ length: SLOT_COUNT }, (_, i) => ({
+			current: artists[i] ?? null,
+			outgoing: null,
+			exitDir: null,
+		})),
 	);
 	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detail, setDetail] = useState<{ artist: Artist; index: number } | null>(null);
