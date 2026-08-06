@@ -2,11 +2,13 @@ import { Router, Request } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { parsePagination } from "../../lib/pagination.js";
 import {
+	GIG_SORTS,
 	parseCategories,
 	parseGigStatus,
 	parseLocation,
 	parseQ,
 	parseRateRange,
+	parseSort,
 } from "./search.params.js";
 import { searchGigs } from "./search.service.js";
 
@@ -25,6 +27,7 @@ router.get("/gigs", requireAuth, async (req: Request, res) => {
 		minRate,
 		maxRate,
 		status: parseGigStatus(req.query.status),
+		sort: parseSort(req.query.sort, GIG_SORTS),
 	});
 	res.status(200).json(result);
 });
