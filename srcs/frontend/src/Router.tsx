@@ -11,10 +11,9 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import type { UserRole } from "./features/auth/types";
 import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
-import ProfilePage from "./pages/ProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
-import ShortlistPage from "./pages/ShortlistPage";
+import MatchesPage from "./pages/MatchesPage";
 import MessagesPage from "./pages/MessagesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
 import SavedPage from "./pages/SavedPage";
@@ -57,8 +56,9 @@ export const router = createBrowserRouter([
 		),
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
-			{ path: "/profile", element: <ProfilePage /> },
-			{ path: "/shortlist", element: <ShortlistPage /> },
+			{ path: "/profile", element: <Navigate to="/settings" replace /> },
+			{ path: "/matches", element: <MatchesPage /> },
+			{ path: "/shortlist", element: <Navigate to="/matches" replace /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
 			{ path: "/opportunities/mine", element: <MyOpportunitiesPage /> },
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
