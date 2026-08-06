@@ -5,8 +5,6 @@ export interface BucketPage {
 	takeB: number;
 }
 
-//	Relevance presents two ordered buckets as one list, so a page can straddle the
-//	seam between them — which a single skip/take cannot express.
 export function planBucketPage(skip: number, pageSize: number, countA: number): BucketPage {
 	const isFullyInsideA = skip + pageSize <= countA;
 	if (isFullyInsideA === true) {

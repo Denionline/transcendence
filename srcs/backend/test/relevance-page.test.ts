@@ -47,7 +47,6 @@ test("planBucketPage splits a page that straddles the seam", () => {
 });
 
 test("planBucketPage offsets into B once A is exhausted", () => {
-	//	skip === countA is the first page wholly inside B, so B is read from its start
 	assert.deepEqual(planBucketPage(3, 2, 3), { skipA: 0, takeA: 0, skipB: 0, takeB: 2 });
 	assert.deepEqual(planBucketPage(4, 2, 3), { skipA: 0, takeA: 0, skipB: 1, takeB: 2 });
 });
@@ -74,8 +73,6 @@ test("planBucketPage asks for a page's worth of rows in every branch", () => {
 	}
 });
 
-//	The one that catches a wrong algorithm: every row exactly once, in bucket order,
-//	no duplicate and no gap across the A -> B boundary.
 test("walking every page yields each row exactly once, A before B", () => {
 	let countA = 0;
 	while (countA <= 6) {

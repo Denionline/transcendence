@@ -2,6 +2,7 @@ import { GigStatus, Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { GigSort } from "./search.params.js";
+import { planBucketPage } from "./search.relevance.js";
 
 const searchGigSelect = {
 	id: true,
@@ -16,6 +17,11 @@ const searchGigSelect = {
 	hirer: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.GigSelect;
 
+const RELEVANCE_ORDER: Prisma.GigOrderByWithRelationInput[] = [
+	{ createdAt: "desc" },
+	{ id: "asc" },
+];
+
 export interface SearchGigsOptions {
 	page: number;
 	pageSize: number;
@@ -28,7 +34,7 @@ export interface SearchGigsOptions {
 	sort: GigSort;
 }
 
-function buildGigWhere(options: SearchGigsOptions): Prisma.GigWhereInput {
+function buildGigFilters(options: SearchGigsOptions): Prisma.GigWhereInput {
 	const where: Prisma.GigWhereInput = {};
 
 	if (options.status !== undefined) where.status = options.status;
@@ -44,14 +50,20 @@ function buildGigWhere(options: SearchGigsOptions): Prisma.GigWhereInput {
 		where.rate = { gte: options.minRate, lte: options.maxRate };
 	}
 
-	if (options.q !== undefined) {
-		where.OR = [
-			{ title: { contains: options.q, mode: "insensitive" } },
-			{ description: { contains: options.q, mode: "insensitive" } },
-		];
-	}
-
 	return where;
+}
+
+function titleMatches(q: string): Prisma.GigWhereInput {
+	return { title: { contains: q, mode: "insensitive" } };
+}
+
+function descriptionMatches(q: string): Prisma.GigWhereInput {
+	return { description: { contains: q, mode: "insensitive" } };
+}
+
+function withTextSearch(filters: Prisma.GigWhereInput, q?: string): Prisma.GigWhereInput {
+	if (q === undefined) return filters;
+	return { AND: [filters, { OR: [titleMatches(q), descriptionMatches(q)] }] };
 }
 
 function buildGigOrderBy(sort: GigSort): Prisma.GigOrderByWithRelationInput[] {
@@ -68,10 +80,51 @@ function buildGigOrderBy(sort: GigSort): Prisma.GigOrderByWithRelationInput[] {
 	return [{ createdAt: "desc" }, { id: "asc" }];
 }
 
+function fetchGigBucket(where: Prisma.GigWhereInput, skip: number, take: number) {
+	if (take === 0) return [];
+	return prisma.gig.findMany({
+		where,
+		skip,
+		take,
+		orderBy: RELEVANCE_ORDER,
+		select: searchGigSelect,
+	});
+}
+
+async function searchGigsByRelevance(
+	filters: Prisma.GigWhereInput,
+	q: string,
+	page: number,
+	pageSize: number,
+) {
+	const whereA: Prisma.GigWhereInput = { AND: [filters, titleMatches(q)] };
+	const whereB: Prisma.GigWhereInput = {
+		AND: [filters, { NOT: titleMatches(q) }, descriptionMatches(q)],
+	};
+
+	const [countA, countB] = await prisma.$transaction([
+		prisma.gig.count({ where: whereA }),
+		prisma.gig.count({ where: whereB }),
+	]);
+
+	const plan = planBucketPage((page - 1) * pageSize, pageSize, countA);
+	const [itemsA, itemsB] = await Promise.all([
+		fetchGigBucket(whereA, plan.skipA, plan.takeA),
+		fetchGigBucket(whereB, plan.skipB, plan.takeB),
+	]);
+
+	return { items: [...itemsA, ...itemsB], ...buildMeta(page, pageSize, countA + countB) };
+}
+
 export async function searchGigs(options: SearchGigsOptions) {
 	const { page, pageSize } = options;
-	const where = buildGigWhere(options);
+	const filters = buildGigFilters(options);
 
+	if (options.sort === "relevance" && options.q !== undefined) {
+		return searchGigsByRelevance(filters, options.q, page, pageSize);
+	}
+
+	const where = withTextSearch(filters, options.q);
 	const [items, total] = await prisma.$transaction([
 		prisma.gig.findMany({
 			where,
