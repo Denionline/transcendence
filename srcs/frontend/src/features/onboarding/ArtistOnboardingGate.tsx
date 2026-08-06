@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/hooks/useAuth";
 import { fetchMyProfile, saveMyProfile } from "../profile/api";
+import { notifyProfileUpdated } from "../profile/profileEvents";
 import { ApiError } from "../../lib/apiClient";
 import CategoryOnboardingModal from "./components/CategoryOnboardingModal";
 import ThemeOnboardingModal from "./components/ThemeOnboardingModal";
@@ -60,6 +61,11 @@ export default function ArtistOnboardingGate() {
 		setCategoryError(null);
 		try {
 			await saveMyProfile({ category });
+			// The Opportunities page underneath may already be mounted (and have
+			// already failed to load, having tried before this profile existed) —
+			// let it know a fresh category is now on record so it can retry
+			// instead of sitting on that stale failure until a manual reload.
+			notifyProfileUpdated();
 			setStep(nextStepAfterCategory(user.id));
 		} catch (err) {
 			setCategoryError(

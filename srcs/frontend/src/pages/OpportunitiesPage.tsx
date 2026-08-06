@@ -11,7 +11,7 @@ import {
 import { mapGigToListing } from "../features/opportunities/mapGig";
 import { CATEGORIES } from "../features/opportunities/constants";
 import { fetchMyProfile } from "../features/profile/api";
-import { ApiError } from "../lib/apiClient";
+import { onProfileUpdated } from "../features/profile/profileEvents";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { GigListing } from "../features/opportunities/gigTypes";
 
@@ -52,7 +52,10 @@ export default function OpportunitiesPage() {
 
 	const [gigs, setGigs] = useState<GigListing[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-	const [error, setError] = useState<string | null>(null);
+	// Bumped on every "Try again" click, and whenever the artist's profile
+	// changes elsewhere (see the effect below) — included in the gig-loading
+	// effect's deps purely to force a retry; its value is never read.
+	const [retryToken, setRetryToken] = useState(0);
 	// /next is stateless — it deterministically keeps handing back the same
 	// not-yet-swiped gig until that gig is actually swiped on. Track every id
 	// already pulled into the deck this fetch burst and pass it as excludeIds
@@ -77,9 +80,24 @@ export default function OpportunitiesPage() {
 	// still the current one.
 	const generationRef = useRef(0);
 
-	// Load the artist's own category/location once to mark the filters with
-	// it — the backend only ever hands back gigs in the caller's own
-	// category, so that's what's really driving results here.
+	// Bumped whenever the artist's profile changes elsewhere in the app (e.g.
+	// finishing the mandatory onboarding category picker while this page sits
+	// mounted underneath it, having already failed once with no profile to
+	// read yet) — forces both effects below to redo their fetch instead of
+	// sitting on a stale miss until a manual reload.
+	const [profileVersion, setProfileVersion] = useState(0);
+	useEffect(
+		() =>
+			onProfileUpdated(() => {
+				setProfileVersion((v) => v + 1);
+				setRetryToken((t) => t + 1);
+			}),
+		[],
+	);
+
+	// Load the artist's own category/location to mark the filters with it —
+	// the backend only ever hands back gigs in the caller's own category, so
+	// that's what's really driving results here.
 	useEffect(() => {
 		let cancelled = false;
 		fetchMyProfile()
@@ -94,7 +112,7 @@ export default function OpportunitiesPage() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [profileVersion]);
 
 	async function fetchGig(generation: number): Promise<GigListing | null> {
 		const excludeIds = new Set([...seenIds.current, ...swipedIds.current]);
@@ -152,19 +170,26 @@ export default function OpportunitiesPage() {
 			if (!cancelled) setStatus("ready");
 		})().catch((err: unknown) => {
 			if (cancelled) return;
-			setError(err instanceof ApiError ? err.message : "Couldn't load gigs. Please try again.");
+			// The backend message (e.g. "artist profile not found") is an
+			// internal detail, not something to surface as-is — show a neutral
+			// state instead and keep the real reason in the console.
+			console.error("Failed to load gigs:", err);
 			setStatus("error");
 		});
 		return () => {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [discipline, locationQuery, appliedMinRateInput]);
+	}, [discipline, locationQuery, appliedMinRateInput, retryToken]);
 
 	const hasPendingFilterChanges = minRateInput !== appliedMinRateInput;
 
 	function applyFilters() {
 		setAppliedMinRateInput(minRateInput);
+	}
+
+	function retry() {
+		setRetryToken((t) => t + 1);
 	}
 
 	function handleSwipe(gig: GigListing, liked: boolean) {
@@ -295,9 +320,12 @@ export default function OpportunitiesPage() {
 				</div>
 
 				{status === "error" && (
-					<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-						<p className="font-medium">Couldn&rsquo;t load gigs</p>
-						<p className="text-error/80">{error}</p>
+					<div className="flex h-[calc(100vh-19rem)] min-h-105 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
+						<p className="font-medium">No gigs to show right now</p>
+						<p className="text-sm">Give it another try in a moment.</p>
+						<button type="button" onClick={retry} className="btn btn-sm mt-2 rounded-full">
+							Try again
+						</button>
 					</div>
 				)}
 
