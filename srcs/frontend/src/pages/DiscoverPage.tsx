@@ -4,25 +4,40 @@ import { Link, useSearchParams } from "react-router-dom";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
+import { matchesCategoryFilter, matchesLocationFilter } from "../features/swipes/filters";
 import { mapArtistCandidateToArtist } from "../features/artists/mapCandidate";
 import { listMyGigs } from "../features/gigs/api";
+import { CATEGORIES } from "../features/opportunities/constants";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
+import { useDebouncedValue } from "../lib/useDebouncedValue";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
 
-const DISCIPLINES = ["Illustration", "Photography", "Motion & 3D", "Mural & street"];
-const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
+const SORT_OPTIONS = ["Newest", "Nearby"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
+// GET /swipes/next only ever returns the single next candidate; matching one
+// of the active filters means fetching (and permanently skipping past, via
+// excludeIds) candidates that don't match until one does. Cap the number of
+// skips per slot so a very restrictive filter combination fails fast instead
+// of hammering the backend once the pool is exhausted.
+const MAX_FETCH_ATTEMPTS = 50;
 
 export default function DiscoverPage() {
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
 	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
 	// mount so the initial fetch burst matches whichever layout is live.
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
-	const [disciplines, setDisciplines] = useState<Set<string>>(new Set(["Motion & 3D"]));
-	const [availability, setAvailability] = useState<"now" | "soon" | null>("now");
-	const [remoteOnly, setRemoteOnly] = useState(false);
+
+	// Discipline/location are the real filters — they drive which fetched
+	// candidates actually make it into the deck (see fetchMatchingCandidate
+	// below). Both start out marked from the active opportunity (see
+	// markFiltersFromGig) since that's what the backend already matches
+	// candidates on, but stay freely editable from there.
+	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
+	const [locationQuery, setLocationQuery] = useState("");
+	const debouncedLocation = useDebouncedValue(locationQuery, 300);
+	const disciplinesKey = Array.from(disciplines).sort().join("|");
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -35,10 +50,20 @@ export default function DiscoverPage() {
 	const [error, setError] = useState<string | null>(null);
 	// /next is stateless — it deterministically keeps handing back the same
 	// not-yet-reviewed candidate until that candidate is actually swiped on.
-	// Track every id already pulled into the deck this session and pass it as
-	// excludeIds so the backend skips straight to a genuinely different
-	// candidate for each slot.
+	// Track every id already pulled into the deck this fetch burst and pass it
+	// as excludeIds so the backend skips straight to a genuinely different
+	// candidate for each slot. Reset on every re-search (gig switch or filter
+	// change) — it only needs to dedupe within one burst.
 	const seenIds = useRef<Set<string>>(new Set());
+	// Unlike seenIds, this tracks every candidate swiped on for the active gig
+	// and is *not* reset when filters change, only when the gig itself does
+	// (swipes are recorded per gig). The backend already excludes swiped
+	// candidates permanently via the Swipe table, but that exclusion only
+	// takes effect once the POST /swipes call actually lands — recording it
+	// here too, synchronously, closes the race where changing a filter right
+	// after a swipe could re-fetch a card that's mid-flight to being recorded.
+	const swipedIds = useRef<Set<string>>(new Set());
+	const prevGigIdRef = useRef<string | null>(null);
 	// StrictMode runs the fetch effect below twice on mount (and it can also
 	// legitimately re-run when the hirer switches gigs). Every run shares the
 	// same `seenIds` ref, so without this guard a stale invocation's in-flight
@@ -50,6 +75,16 @@ export default function DiscoverPage() {
 	// generation is still current.
 	const generationRef = useRef(0);
 
+	// Discipline is locked to the gig's category on the backend anyway (a
+	// candidate never comes back for any other category), and location is
+	// the field the hirer is most likely to care about matching too — so
+	// selecting an opportunity marks both filters with its info instead of
+	// leaving the hirer to guess. Still fully editable afterwards.
+	function markFiltersFromGig(gig: GigDto) {
+		setDisciplines(new Set([gig.category]));
+		setLocationQuery(gig.location ?? "");
+	}
+
 	// Load the hirer's own open gigs — candidates are always reviewed in the
 	// context of one specific gig, so default to the first one unless the URL
 	// already named one (e.g. arriving via "Search related artists").
@@ -59,12 +94,17 @@ export default function DiscoverPage() {
 			.then((gigs) => {
 				if (cancelled) return;
 				setMyOpenGigs(gigs);
-				if (activeGigId) return;
+				if (activeGigId) {
+					const gig = gigs.find((g) => g.id === activeGigId);
+					if (gig) markFiltersFromGig(gig);
+					return;
+				}
 				if (gigs.length === 0) {
 					setStatus("no-gigs");
 					return;
 				}
 				setActiveGigId(gigs[0].id);
+				markFiltersFromGig(gigs[0]);
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
@@ -79,25 +119,57 @@ export default function DiscoverPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	async function fetchOne(gigId: string, generation: number): Promise<Artist | null> {
-		const dto = await getNextArtistCandidate(gigId, Array.from(seenIds.current));
+	async function fetchCandidate(gigId: string, generation: number): Promise<Artist | null> {
+		const excludeIds = new Set([...seenIds.current, ...swipedIds.current]);
+		const dto = await getNextArtistCandidate(gigId, Array.from(excludeIds));
 		if (generation !== generationRef.current) return null;
-		if (!dto || seenIds.current.has(dto.id)) return null;
+		if (!dto || excludeIds.has(dto.id)) return null;
 		seenIds.current.add(dto.id);
 		return mapArtistCandidateToArtist(dto);
 	}
 
+	/** Keeps pulling candidates until one clears the active filters, or the pool runs out. */
+	async function fetchMatchingCandidate(
+		gigId: string,
+		generation: number,
+		selectedDisciplines: Set<string>,
+		location: string,
+	): Promise<Artist | null> {
+		for (let attempt = 0; attempt < MAX_FETCH_ATTEMPTS; attempt++) {
+			const artist = await fetchCandidate(gigId, generation);
+			if (!artist) return null;
+			if (
+				matchesCategoryFilter(artist.discipline, selectedDisciplines) &&
+				matchesLocationFilter(artist.location, location)
+			) {
+				return artist;
+			}
+		}
+		return null;
+	}
+
 	useEffect(() => {
 		if (!activeGigId) return;
+		if (prevGigIdRef.current !== activeGigId) {
+			swipedIds.current = new Set();
+			prevGigIdRef.current = activeGigId;
+		}
 		generationRef.current += 1;
 		const generation = generationRef.current;
 		seenIds.current = new Set();
 		let cancelled = false;
+		const selectedDisciplines = disciplines;
+		const activeLocation = debouncedLocation;
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
 			for (let i = 0; i < slotCount; i++) {
-				const artist = await fetchOne(activeGigId, generation);
+				const artist = await fetchMatchingCandidate(
+					activeGigId,
+					generation,
+					selectedDisciplines,
+					activeLocation,
+				);
 				if (cancelled) return;
 				if (!artist) break;
 				setArtists((prev) => [...prev, artist]);
@@ -112,7 +184,7 @@ export default function DiscoverPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeGigId]);
+	}, [activeGigId, disciplinesKey, debouncedLocation]);
 
 	function toggleDiscipline(discipline: string) {
 		setDisciplines((prev) => {
@@ -125,6 +197,8 @@ export default function DiscoverPage() {
 
 	function handleGigChange(gigId: string) {
 		setActiveGigId(gigId);
+		const gig = myOpenGigs.find((g) => g.id === gigId);
+		if (gig) markFiltersFromGig(gig);
 		setSearchParams(
 			(prev) => {
 				const next = new URLSearchParams(prev);
@@ -137,10 +211,11 @@ export default function DiscoverPage() {
 
 	function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
+		swipedIds.current.add(artist.id);
 		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchOne(activeGigId, generationRef.current)
+		fetchMatchingCandidate(activeGigId, generationRef.current, disciplines, debouncedLocation)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -156,63 +231,46 @@ export default function DiscoverPage() {
 
 				<div className="flex flex-col gap-6 text-sm">
 					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Discipline
 						</h3>
-						<div className="flex flex-col gap-2">
-							{DISCIPLINES.map((discipline) => (
-								<label key={discipline} className="flex cursor-pointer items-center gap-2">
-									<input
-										type="checkbox"
-										className="checkbox checkbox-sm checkbox-primary"
-										checked={disciplines.has(discipline)}
-										onChange={() => toggleDiscipline(discipline)}
-									/>
-									<span>{discipline}</span>
-								</label>
-							))}
+						<p className="mb-2 text-xs text-base-content/40">
+							Pre-filled from your selected opportunity — adjust anytime.
+						</p>
+						<div className="flex flex-wrap gap-1.5">
+							{CATEGORIES.map((category) => {
+								const active = disciplines.has(category);
+								return (
+									<button
+										key={category}
+										type="button"
+										aria-pressed={active}
+										onClick={() => toggleDiscipline(category)}
+										className={`btn btn-xs rounded-full font-normal ${
+											active ? "btn-primary" : "btn-outline border-base-content/20"
+										}`}
+									>
+										{category}
+									</button>
+								);
+							})}
 						</div>
 					</div>
 
 					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Availability
-						</h3>
-						<div className="flex flex-wrap gap-2">
-							<button
-								type="button"
-								onClick={() => setAvailability((a) => (a === "now" ? null : "now"))}
-								className={`btn btn-sm rounded-full ${
-									availability === "now" ? "btn-primary" : "btn-outline border-base-content/20"
-								}`}
-							>
-								Now
-							</button>
-							<button
-								type="button"
-								onClick={() => setAvailability((a) => (a === "soon" ? null : "soon"))}
-								className={`btn btn-sm rounded-full ${
-									availability === "soon" ? "btn-primary" : "btn-outline border-base-content/20"
-								}`}
-							>
-								≤ 2 wks
-							</button>
-						</div>
-					</div>
-
-					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Location
 						</h3>
-						<label className="flex cursor-pointer items-center gap-2">
-							<input
-								type="checkbox"
-								className="checkbox checkbox-sm checkbox-primary"
-								checked={remoteOnly}
-								onChange={() => setRemoteOnly((v) => !v)}
-							/>
-							<span>Remote</span>
-						</label>
+						<p className="mb-2 text-xs text-base-content/40">
+							Pre-filled from your selected opportunity — adjust anytime.
+						</p>
+						<input
+							type="text"
+							value={locationQuery}
+							onChange={(e) => setLocationQuery(e.target.value)}
+							placeholder="e.g. Berlin, remote…"
+							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
+						/>
 					</div>
 				</div>
 			</aside>
@@ -223,7 +281,7 @@ export default function DiscoverPage() {
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
 						<p className="text-sm text-base-content/50">
 							{status === "ready"
-								? `${artists.length} matches · sorted by fit`
+								? `${artists.length} matches · sorted by ${sort.toLowerCase()}`
 								: status === "no-gigs"
 									? "No open opportunities yet"
 									: "Loading matches…"}
