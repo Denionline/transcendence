@@ -30,6 +30,7 @@ apiRouter.use("/users", usersRoutes);
 apiRouter.use("/gigs", gigsRoutes);
 apiRouter.use("/swipes", swipesRoutes);
 apiRouter.use("/profile", profileRoutes);
+apiRouter.use("/search", searchRoutes);
 
 app.use(errorHandler);
 
