@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { throwError } from "../../lib/http-error.js";
-import { handleSwipe, handleNext } from "./swipe.service.js";
+import { handleSwipe, handleNext, listInterestedArtists } from "./swipe.service.js";
 import { parseId } from "../gigs/gigs.routes.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 
@@ -37,6 +37,16 @@ router.get("/next", requireAuth, async (req, res) => {
 	const excludeIds = parseExcludeIds(req.query.excludeIds);
 
 	const result = await handleNext(user, gigId, excludeIds);
+	res.status(200).json(result);
+});
+
+// Artists who swiped "interested" on one of the caller's own gigs. gigId is
+// optional — omitted, it spans every gig the hirer owns.
+router.get("/interested", requireAuth, async (req, res) => {
+	const user = req.user!;
+	const gigId = typeof req.query.gigId === "string" ? req.query.gigId : undefined;
+
+	const result = await listInterestedArtists(user, gigId);
 	res.status(200).json(result);
 });
 

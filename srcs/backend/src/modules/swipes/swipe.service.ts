@@ -184,3 +184,45 @@ export async function handleNext(
 	if (!gigId) throwError(400, "VALIDATION_ERROR", "gigId is required");
 	return await getNextCandidateForHirer(user, gigId, excludeIds);
 }
+
+/**
+ * Artists who swiped "interested" (liked=true) on one of the caller's gigs.
+ * `gigId` narrows to a single opportunity; omitted, it spans every gig the
+ * hirer owns. `swiperId: { not: user.id }` is what actually isolates
+ * artist-authored swipes — a hirer's own swipe on a candidate (recorded
+ * against the same gig) always has the hirer as swiper, so excluding rows
+ * they authored themselves is enough without needing a role check per row.
+ */
+export async function listInterestedArtists(user: AuthenticatedUser, gigId?: string) {
+	if (user.role !== UserRole.hirer) {
+		throwError(403, "FORBIDDEN", "only hirers can view interested artists");
+	}
+	if (gigId) {
+		const gig = await getPublicGig(gigId);
+		if (gig.hirerId !== user.id) throwError(403, "FORBIDDEN", "this gig doesn't belong to you");
+	}
+
+	const swipes = await prisma.swipe.findMany({
+		where: {
+			liked: true,
+			swiperId: { not: user.id },
+			gig: { hirerId: user.id, ...(gigId ? { id: gigId } : {}) },
+		},
+		orderBy: { createdAt: "desc" },
+		select: {
+			id: true,
+			createdAt: true,
+			gig: { select: { id: true, title: true, status: true } },
+			swiper: { select: { artistProfile: { select: publicArtistSelect } } },
+		},
+	});
+
+	return swipes
+		.filter((swipe) => swipe.swiper.artistProfile !== null)
+		.map((swipe) => ({
+			swipeId: swipe.id,
+			createdAt: swipe.createdAt,
+			gig: swipe.gig,
+			artist: swipe.swiper.artistProfile!,
+		}));
+}
