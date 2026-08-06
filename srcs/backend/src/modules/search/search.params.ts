@@ -161,3 +161,11 @@ export function parseSort<T extends string>(
 	}
 	return value as T;
 }
+
+//	ARTIST_SORTS already excludes popular; this only explains why.
+export function parseArtistSort(value: unknown): ArtistSort {
+	if (value === "popular") {
+		throwError(400, "VALIDATION_ERROR", "sort=popular is available for gig search only");
+	}
+	return parseSort(value, ARTIST_SORTS);
+}
