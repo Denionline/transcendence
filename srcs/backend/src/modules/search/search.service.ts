@@ -54,6 +54,20 @@ function buildGigWhere(options: SearchGigsOptions): Prisma.GigWhereInput {
 	return where;
 }
 
+function buildGigOrderBy(sort: GigSort): Prisma.GigOrderByWithRelationInput[] {
+	if (sort === "oldest") return [{ createdAt: "asc" }, { id: "asc" }];
+	if (sort === "rate_desc") {
+		return [{ rate: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }, { id: "asc" }];
+	}
+	if (sort === "rate_asc") {
+		return [{ rate: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }, { id: "asc" }];
+	}
+	if (sort === "popular") {
+		return [{ swipes: { _count: "desc" } }, { createdAt: "desc" }, { id: "asc" }];
+	}
+	return [{ createdAt: "desc" }, { id: "asc" }];
+}
+
 export async function searchGigs(options: SearchGigsOptions) {
 	const { page, pageSize } = options;
 	const where = buildGigWhere(options);
