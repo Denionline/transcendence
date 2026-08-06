@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Briefcase, UserRound } from "lucide-react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Avatar from "../../../components/Avatar";
+import { CATEGORIES } from "../../opportunities/constants";
 import {
 	fetchMyProfile,
 	saveMyProfile,
@@ -182,13 +183,21 @@ export default function ProfileSection() {
 
 						<label className="fieldset-label flex-col items-start gap-1">
 							<span className="text-sm font-medium">Category</span>
-							<input
-								type="text"
-								className="input w-full max-w-sm"
+							<select
+								className="select w-full max-w-sm"
 								value={category}
 								onChange={(e) => setCategory(e.target.value)}
 								required
-							/>
+							>
+								<option value="" disabled>
+									Select category
+								</option>
+								{CATEGORIES.map((option) => (
+									<option key={option} value={option}>
+										{option}
+									</option>
+								))}
+							</select>
 						</label>
 
 						{user.role === "hirer" && (
