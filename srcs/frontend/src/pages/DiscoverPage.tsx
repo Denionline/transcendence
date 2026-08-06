@@ -10,7 +10,6 @@ import { listMyGigs } from "../features/gigs/api";
 import { CATEGORIES } from "../features/opportunities/constants";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
-import { useDebouncedValue } from "../lib/useDebouncedValue";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
 
@@ -31,14 +30,16 @@ export default function DiscoverPage() {
 
 	// Discipline/location are the real filters — they drive which fetched
 	// candidates actually make it into the deck (see fetchMatchingCandidate
-	// below). Both start out marked from the active opportunity (see
-	// markFiltersFromGig) since that's what the backend already matches
-	// candidates on, but stay freely editable from there. Discipline is
-	// single-select — the backend only ever matches one category per
-	// opportunity, so there's never more than one meaningful choice at a time.
+	// below). Both are locked to the active opportunity's info, not editable
+	// by the hirer: the backend never returns a candidate in any other
+	// category or location combination it wasn't already going to return, so
+	// letting either be picked freely just produced an honestly-empty deck
+	// for every other choice, which read as broken. Shown (disabled) anyway
+	// so it's clear *what's* driving the match, not just that it's locked.
+	// Both are set (and re-set) only by markFiltersFromGig, never directly by
+	// the hirer.
 	const [discipline, setDiscipline] = useState<string | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
-	const debouncedLocation = useDebouncedValue(locationQuery, 300);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -79,8 +80,7 @@ export default function DiscoverPage() {
 	// Discipline is locked to the gig's category on the backend anyway (a
 	// candidate never comes back for any other category), and location is
 	// the field the hirer is most likely to care about matching too — so
-	// selecting an opportunity marks both filters with its info instead of
-	// leaving the hirer to guess. Still fully editable afterwards.
+	// selecting an opportunity marks both filters with its info.
 	function markFiltersFromGig(gig: GigDto) {
 		setDiscipline(gig.category);
 		setLocationQuery(gig.location ?? "");
@@ -160,7 +160,7 @@ export default function DiscoverPage() {
 		seenIds.current = new Set();
 		let cancelled = false;
 		const selectedDiscipline = discipline;
-		const activeLocation = debouncedLocation;
+		const activeLocation = locationQuery;
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
@@ -185,14 +185,7 @@ export default function DiscoverPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeGigId, discipline, debouncedLocation]);
-
-	// Clicking a chip replaces the previous selection (or clears it, if the
-	// same chip is clicked again) instead of accumulating — see the comment
-	// on matchesCategoryFilter for why multi-select never made sense here.
-	function selectDiscipline(category: string) {
-		setDiscipline((prev) => (prev === category ? null : category));
-	}
+	}, [activeGigId, discipline, locationQuery]);
 
 	function handleGigChange(gigId: string) {
 		setActiveGigId(gigId);
@@ -214,7 +207,7 @@ export default function DiscoverPage() {
 		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchMatchingCandidate(activeGigId, generationRef.current, discipline, debouncedLocation)
+		fetchMatchingCandidate(activeGigId, generationRef.current, discipline, locationQuery)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -234,7 +227,7 @@ export default function DiscoverPage() {
 							Discipline
 						</h3>
 						<p className="mb-2 text-xs text-base-content/40">
-							Pre-filled from your selected opportunity — adjust anytime.
+							Locked to this opportunity — every candidate here matches it already.
 						</p>
 						<div className="flex flex-wrap gap-1.5">
 							{CATEGORIES.map((category) => {
@@ -243,10 +236,12 @@ export default function DiscoverPage() {
 									<button
 										key={category}
 										type="button"
+										disabled
 										aria-pressed={active}
-										onClick={() => selectDiscipline(category)}
-										className={`btn btn-xs rounded-full font-normal ${
-											active ? "btn-primary" : "btn-outline border-base-content/20"
+										className={`btn btn-xs rounded-full font-normal disabled:opacity-100 ${
+											active
+												? "btn-primary"
+												: "btn-outline border-base-content/15 text-base-content/30"
 										}`}
 									>
 										{category}
@@ -260,15 +255,13 @@ export default function DiscoverPage() {
 						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Location
 						</h3>
-						<p className="mb-2 text-xs text-base-content/40">
-							Pre-filled from your selected opportunity — adjust anytime.
-						</p>
+						<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
 						<input
 							type="text"
 							value={locationQuery}
-							onChange={(e) => setLocationQuery(e.target.value)}
-							placeholder="e.g. Berlin, remote…"
-							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
+							disabled
+							placeholder="Not specified"
+							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
 						/>
 					</div>
 				</div>

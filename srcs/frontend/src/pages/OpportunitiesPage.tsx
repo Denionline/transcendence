@@ -13,7 +13,6 @@ import { CATEGORIES } from "../features/opportunities/constants";
 import { fetchMyProfile } from "../features/profile/api";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
-import { useDebouncedValue } from "../lib/useDebouncedValue";
 import type { GigListing } from "../features/opportunities/gigTypes";
 
 const SORT_OPTIONS = ["Newest", "Closing soon"];
@@ -33,17 +32,22 @@ export default function OpportunitiesPage() {
 
 	// Discipline/location/rate are the real filters — they drive which
 	// fetched gigs actually make it into the deck (see fetchMatchingGig
-	// below). Discipline and location start out marked from the artist's own
-	// profile since the backend only ever matches gigs to the caller's own
-	// category anyway, but both stay freely editable from there. Discipline
-	// is single-select — the backend only ever matches one category (the
-	// artist's own), so there's never more than one meaningful choice at a
-	// time.
+	// below). Discipline and location are locked to the artist's own
+	// profile, not editable: the backend never returns a gig in any other
+	// category for this artist, so letting either be picked freely just
+	// produced an honestly-empty deck for every other choice, which read as
+	// broken. Shown (disabled) anyway so it's clear what's driving the
+	// match. Both are set (and re-set) only once the artist's profile loads,
+	// never directly by the artist.
+	//
+	// Rate is the one real, editable filter left. `minRateInput` is the
+	// *draft* value bound to its input — editing it doesn't search by
+	// itself. The search only reacts to `appliedMinRateInput`, which only
+	// changes when the artist hits "Apply filters".
 	const [discipline, setDiscipline] = useState<string | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
-	const debouncedLocation = useDebouncedValue(locationQuery, 300);
-	const debouncedMinRateInput = useDebouncedValue(minRateInput, 300);
+	const [appliedMinRateInput, setAppliedMinRateInput] = useState("");
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [gigs, setGigs] = useState<GigListing[]>([]);
@@ -129,8 +133,8 @@ export default function OpportunitiesPage() {
 		seenIds.current = new Set();
 		let cancelled = false;
 		const selectedDiscipline = discipline;
-		const activeLocation = debouncedLocation;
-		const activeMinRateInput = debouncedMinRateInput;
+		const activeLocation = locationQuery;
+		const activeMinRateInput = appliedMinRateInput;
 		(async () => {
 			setStatus("loading");
 			setGigs([]);
@@ -155,13 +159,12 @@ export default function OpportunitiesPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [discipline, debouncedLocation, debouncedMinRateInput]);
+	}, [discipline, locationQuery, appliedMinRateInput]);
 
-	// Clicking a chip replaces the previous selection (or clears it, if the
-	// same chip is clicked again) instead of accumulating — see the comment
-	// on matchesCategoryFilter for why multi-select never made sense here.
-	function selectDiscipline(category: string) {
-		setDiscipline((prev) => (prev === category ? null : category));
+	const hasPendingFilterChanges = minRateInput !== appliedMinRateInput;
+
+	function applyFilters() {
+		setAppliedMinRateInput(minRateInput);
 	}
 
 	function handleSwipe(gig: GigListing, liked: boolean) {
@@ -169,7 +172,7 @@ export default function OpportunitiesPage() {
 		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchMatchingGig(generationRef.current, discipline, debouncedLocation, debouncedMinRateInput)
+		fetchMatchingGig(generationRef.current, discipline, locationQuery, appliedMinRateInput)
 			.then((next) => {
 				if (next) setGigs((prev) => [...prev, next]);
 			})
@@ -181,7 +184,17 @@ export default function OpportunitiesPage() {
 	return (
 		<div className="flex flex-col gap-8 lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
 			<aside className="hidden w-56 shrink-0 lg:block">
-				<h2 className="mb-4 text-sm font-semibold">Filters</h2>
+				<div className="mb-4 flex items-center justify-between gap-2">
+					<h2 className="text-sm font-semibold">Filters</h2>
+					<button
+						type="button"
+						onClick={applyFilters}
+						disabled={!hasPendingFilterChanges}
+						className="btn btn-primary btn-xs rounded-full disabled:opacity-30"
+					>
+						Apply filters
+					</button>
+				</div>
 
 				<div className="flex flex-col gap-6 text-sm">
 					<div>
@@ -189,7 +202,7 @@ export default function OpportunitiesPage() {
 							Discipline
 						</h3>
 						<p className="mb-2 text-xs text-base-content/40">
-							Pre-filled from your artist category — adjust anytime.
+							Locked to your artist category — every gig here matches it already.
 						</p>
 						<div className="flex flex-wrap gap-1.5">
 							{CATEGORIES.map((category) => {
@@ -198,10 +211,12 @@ export default function OpportunitiesPage() {
 									<button
 										key={category}
 										type="button"
+										disabled
 										aria-pressed={active}
-										onClick={() => selectDiscipline(category)}
-										className={`btn btn-xs rounded-full font-normal ${
-											active ? "btn-primary" : "btn-outline border-base-content/20"
+										className={`btn btn-xs rounded-full font-normal disabled:opacity-100 ${
+											active
+												? "btn-primary"
+												: "btn-outline border-base-content/15 text-base-content/30"
 										}`}
 									>
 										{category}
@@ -215,15 +230,13 @@ export default function OpportunitiesPage() {
 						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Location
 						</h3>
-						<p className="mb-2 text-xs text-base-content/40">
-							Pre-filled from your profile — adjust anytime.
-						</p>
+						<p className="mb-2 text-xs text-base-content/40">Locked to your profile.</p>
 						<input
 							type="text"
 							value={locationQuery}
-							onChange={(e) => setLocationQuery(e.target.value)}
-							placeholder="e.g. Berlin, remote…"
-							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
+							disabled
+							placeholder="Not specified"
+							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
 						/>
 					</div>
 
@@ -236,6 +249,9 @@ export default function OpportunitiesPage() {
 							min={0}
 							value={minRateInput}
 							onChange={(e) => setMinRateInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") applyFilters();
+							}}
 							placeholder="e.g. 500"
 							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
 						/>
