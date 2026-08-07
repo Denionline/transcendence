@@ -506,6 +506,21 @@ test("?q= is escaped, so % is a literal and does not match everything", async ()
 	});
 });
 
+test("?q= is escaped, so _ is a literal and does not match any single character", async () => {
+	const { hirer } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirer);
+
+		//	Unescaped, %trm_% would match every trm<hex> title; escaped it needs a literal _.
+		const underscore = await searchGigs(baseUrl, token, `${GIG_SCOPE}&q=${TERM}_&pageSize=50`);
+		const plain = await searchGigs(baseUrl, token, `${GIG_SCOPE}&q=${TERM}&pageSize=50`);
+
+		assert.equal(underscore.env.total, 0);
+		assert.ok(plain.env.total > 0);
+	});
+});
+
 test("status defaults to open; ?status=all includes closed; ?status=bogus is a 400", async () => {
 	const { hirer } = await setup();
 
@@ -817,6 +832,21 @@ test("?availability=maybe is a 400 VALIDATION_ERROR", async () => {
 	});
 });
 
+test("artist ?q= matches the username or the bio, and a null bio is not a match", async () => {
+	const { caller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { env } = await searchArtists(
+			baseUrl,
+			tokenFor(caller),
+			`${ARTIST_SCOPE}&q=${TERM}&pageSize=50`,
+		);
+
+		//	a1 has a null bio and matches on username alone: `true OR NULL` must stay true.
+		assert.deepEqual(labelsOf(env.items).sort(), ["a1", "a2", "a3", "a4", "a5"]);
+	});
+});
+
 test("the caller never appears in artist results, even matching q in both fields", async () => {
 	const { caller } = await setup();
 
@@ -921,5 +951,45 @@ test("artist ?minRate= is ignored rather than rejected", async () => {
 		//	minRate > maxRate would be a 400 on gig search; here both are unread.
 		assert.equal(withRate.status, 200);
 		assert.deepEqual(labelsOf(withRate.env.items), labelsOf(without.env.items));
+	});
+});
+
+/* ------------------------------------------------------------------ */
+/* Validation limits                                                   */
+/* ------------------------------------------------------------------ */
+
+test("?category= accepts 25 entries and rejects 26", async () => {
+	const { hirer } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirer);
+		const spare = Array.from({ length: 25 }, (_entry, index) => `${MARKER}-c${index}`);
+
+		const atLimit = await searchGigs(baseUrl, token, `category=${spare.join(",")}`);
+		assert.equal(atLimit.status, 200);
+
+		const overLimit = await searchGigs(
+			baseUrl,
+			token,
+			`category=${[...spare, `${MARKER}-c25`].join(",")}`,
+		);
+		assert.equal(overLimit.status, 400);
+		assert.equal(overLimit.body?.error, "VALIDATION_ERROR");
+		assert.equal(String(overLimit.body?.message), "no more than 25 categories may be given");
+	});
+});
+
+test("?q= accepts 100 characters and rejects 101", async () => {
+	const { hirer } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirer);
+
+		const atLimit = await searchGigs(baseUrl, token, `${GIG_SCOPE}&q=${"a".repeat(100)}`);
+		assert.equal(atLimit.status, 200);
+
+		const overLimit = await searchGigs(baseUrl, token, `${GIG_SCOPE}&q=${"a".repeat(101)}`);
+		assert.equal(overLimit.status, 400);
+		assert.equal(String(overLimit.body?.message), "q cannot exceed 100 characters");
 	});
 });

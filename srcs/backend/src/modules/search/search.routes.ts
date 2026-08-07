@@ -1,5 +1,6 @@
 import { Router, Request } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
+import { rateLimit } from "../../middlewares/rate-limit.middleware.js";
 import { parsePagination } from "../../lib/pagination.js";
 import {
 	GIG_SORTS,
@@ -17,7 +18,16 @@ import { searchArtists } from "./search.artists.service.js";
 
 const router = Router();
 
-router.get("/gigs", requireAuth, async (req: Request, res) => {
+//	Text filters compile to ILIKE '%...%', which no index serves. Keyed by user,
+//	not IP, and mounted after requireAuth so req.user is always set.
+const searchLimiter = rateLimit({
+	windowMs: 60 * 1000,
+	max: 120,
+	message: "too many search requests, try again in a moment",
+	keyOf: (req) => req.user!.id,
+});
+
+router.get("/gigs", requireAuth, searchLimiter, async (req: Request, res) => {
 	const { page, pageSize } = parsePagination(req.query);
 	const { minRate, maxRate } = parseRateRange(req.query.minRate, req.query.maxRate);
 
@@ -35,7 +45,7 @@ router.get("/gigs", requireAuth, async (req: Request, res) => {
 	res.status(200).json(result);
 });
 
-router.get("/artists", requireAuth, async (req: Request, res) => {
+router.get("/artists", requireAuth, searchLimiter, async (req: Request, res) => {
 	const { page, pageSize } = parsePagination(req.query);
 	const caller = req.user!;
 
