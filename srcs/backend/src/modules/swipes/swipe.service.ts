@@ -69,6 +69,10 @@ async function validateMatch(
 		const created = await tx.match.create({
 			data: { gigId: data.gigId, artistId: data.artistId },
 		});
+		await tx.gig.update({
+			where: { id: data.gigId },
+			data: { status: "closed" },
+		});
 		return created.id;
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -173,4 +177,66 @@ export async function handleNext(user: AuthenticatedUser, gigId: string | undefi
 	if (user.role === UserRole.artist) return await getNextGigForArtist(user);
 	if (!gigId) throwError(400, "VALIDATION_ERROR", "gigId is required");
 	return await getNextCandidateForHirer(user, gigId);
+}
+
+async function getArtistSwipeHistory(userId: string, liked: boolean | undefined) {
+	const swipes = await prisma.swipe.findMany({
+		where: {
+			swiperId: userId,
+			...(liked !== undefined ? { liked } : {}),
+		},
+		select: {
+			liked: true,
+			createdAt: true,
+			swiped: {
+				select: {
+					avatarUrl: true,
+					hirerProfile: { select: { organizationName: true } },
+				},
+			},
+			gig: { select: publicGigSelect },
+		},
+		orderBy: { createdAt: "desc" },
+	});
+	return swipes;
+}
+
+async function getHirerSwipeHistory(
+	userId: string,
+	liked: boolean | undefined,
+	gigId: string | undefined,
+) {
+	const swipes = await prisma.swipe.findMany({
+		where: {
+			swiperId: userId,
+			...(liked !== undefined ? { liked } : {}),
+			...(gigId !== undefined ? { gigId } : {}),
+		},
+		select: {
+			liked: true,
+			createdAt: true,
+			gig: { select: { id: true, title: true, category: true, location: true } },
+			swiped: {
+				select: {
+					avatarUrl: true,
+					username: true,
+					artistProfile: { select: publicArtistSelect },
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+	});
+	return swipes;
+}
+
+export async function handleSwipeHistory(
+	user: AuthenticatedUser,
+	liked: boolean | undefined,
+	gigId: string | undefined,
+) {
+	if (user.role !== UserRole.artist && user.role !== UserRole.hirer) {
+		throwError(403, "FORBIDDEN", "only artists and hirers can view swipe history");
+	}
+	if (user.role === UserRole.artist) return await getArtistSwipeHistory(user.id, liked);
+	return await getHirerSwipeHistory(user.id, liked, gigId);
 }
