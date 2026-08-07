@@ -8,9 +8,9 @@ interface ThemeOnboardingModalProps {
 	onDone: () => void;
 }
 
-// Optional, unlike CategoryOnboardingModal: every path out (skip, X, backdrop,
+// Optional, unlike ProfileOnboardingModal: every path out (skip, X, backdrop,
 // Escape) routes through `onDone`, which is what actually records that this
-// artist has seen the prompt — dismissing it any way still means "don't ask
+// account has seen the prompt — dismissing it any way still means "don't ask
 // again", not just closing the dialog.
 export default function ThemeOnboardingModal({ onDone }: ThemeOnboardingModalProps) {
 	const { theme, setTheme } = useTheme();

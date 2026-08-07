@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar, { type NavbarItem } from "../components/Navbar";
 import { useAuth } from "../features/auth/hooks/useAuth";
-import ArtistOnboardingGate from "../features/onboarding/ArtistOnboardingGate";
+import ProfileOnboardingGate from "../features/onboarding/ProfileOnboardingGate";
 
 const HIRER_ITEMS: NavbarItem[] = [
 	{ to: "/discover", label: "Discover", end: true },
@@ -22,7 +22,7 @@ export default function AppLayout() {
 
 	return (
 		<div className="min-h-screen bg-base-100">
-			<ArtistOnboardingGate />
+			<ProfileOnboardingGate />
 			<Navbar
 				items={isHirer ? HIRER_ITEMS : ARTIST_ITEMS}
 				searchPlaceholder={
