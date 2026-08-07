@@ -293,11 +293,21 @@ role, no id — search results are not a user directory.
 
 ### Errors
 
-No search-specific error codes exist. Every rejection above is
-`400 VALIDATION_ERROR` with a message naming the offending parameter; missing or
-bad tokens produce the usual `401 MISSING_TOKEN` / `INVALID_TOKEN` /
-`TOKEN_EXPIRED`. There is no `404` — an unmatched filter is an empty `items`
-array, not an error.
+Every rejection above is `400 VALIDATION_ERROR` with a message naming the
+offending parameter; missing or bad tokens produce the usual
+`401 MISSING_TOKEN` / `INVALID_TOKEN` / `TOKEN_EXPIRED`. There is no `404` — an
+unmatched filter is an empty `items` array, not an error.
+
+### Rate limit
+
+Both search endpoints share **120 requests per minute per user**, keyed by the
+authenticated user id rather than by IP. Exceeding it returns
+`429 TOO_MANY_REQUESTS` with a `Retry-After` header giving the seconds until the
+window resets. The two endpoints draw on one shared budget.
+
+⚠️ The limiter is an in-process `Map`, so the budget is **per backend
+container**. That matches the current single-backend `docker-compose.yml`; a
+scaled-out deployment would need a shared store.
 
 ### Performance caveats
 
