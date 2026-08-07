@@ -74,7 +74,7 @@ export default function ProfileOnboardingModal({
 
 				<label className="fieldset-label flex-col items-start gap-1">
 					<span className="text-sm font-medium">
-						Category<span className="text-red-500">*</span>
+						Category<span className="text-error">*</span>
 					</span>
 					<select
 						className="select w-full"
@@ -96,7 +96,7 @@ export default function ProfileOnboardingModal({
 				{isHirer && (
 					<label className="fieldset-label flex-col items-start gap-1">
 						<span className="text-sm font-medium">
-							Organization name<span className="text-red-500">*</span>{" "}
+							Organization name<span className="text-error">*</span>
 						</span>
 						<input
 							type="text"

@@ -25,21 +25,36 @@ export default function Modal({
 }: ModalProps) {
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const dialogRef = useRef<HTMLDivElement>(null);
+	// Callers routinely pass an inline `onClose` (`onClose={() => setX(null)}`)
+	// that's a fresh function on every one of *their* renders — including
+	// renders triggered by typing into a field this modal contains. Mirroring
+	// it into a ref (kept current via its own effect, not written during
+	// render) lets the focus/scroll-lock effect below depend on `open` alone,
+	// instead of re-running — and re-stealing focus into the dialog — on
+	// every keystroke.
+	const onCloseRef = useRef(onClose);
+	useEffect(() => {
+		onCloseRef.current = onClose;
+	}, [onClose]);
+	const dismissibleRef = useRef(dismissible);
+	useEffect(() => {
+		dismissibleRef.current = dismissible;
+	}, [dismissible]);
 
 	useEffect(() => {
 		if (!open) return;
 		function handleKeyDown(e: KeyboardEvent) {
-			if (dismissible && e.key === "Escape") onClose();
+			if (dismissibleRef.current && e.key === "Escape") onCloseRef.current();
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = "hidden";
-		(dismissible ? closeButtonRef.current : dialogRef.current)?.focus();
+		(dismissibleRef.current ? closeButtonRef.current : dialogRef.current)?.focus();
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			document.body.style.overflow = previousOverflow;
 		};
-	}, [open, onClose, dismissible]);
+	}, [open]);
 
 	if (!open) return null;
 
