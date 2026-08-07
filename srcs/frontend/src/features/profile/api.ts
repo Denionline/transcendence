@@ -25,6 +25,6 @@ export async function saveMyProfile(updates: Partial<ProfileFields>): Promise<Pr
 	});
 }
 
-export async function fetchMyProfile(): Promise<ProfileFields> {
-	return request("/profile/me");
+export async function fetchMyProfile(userId: string): Promise<ProfileFields> {
+	return request(`/profile/${userId}`);
 }

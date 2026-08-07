@@ -146,15 +146,19 @@ location, rate, status, createdAt`. `status` is the `GigStatus` enum, **`open` o
 | PUT | `/:id` | owner or admin | Update `title`, `description`, `category`, `location`, `rate`, and/or `status` — **archive** by sending `{ "status": "closed" }`. `hirerId` is immutable (ignored if sent). A non-owner non-admin → `403 FORBIDDEN`. Empty/invalid body → `400 VALIDATION_ERROR`. Unknown id → `404 GIG_NOT_FOUND` |
 | DELETE | `/:id` | owner or admin | **Hard delete** — removes the gig and cascades its `Swipe`/`Match` rows via `onDelete: Cascade`. A non-owner non-admin → `403 FORBIDDEN`. Unknown id → `404 GIG_NOT_FOUND`. Returns `204 No Content` |
 
-## Profiles `/api/profiles`
+## Profile `/api/profile`
+
+No separate "create" step and no public discovery feed — profiles are managed
+entirely through the caller's own `/me` alias, plus a lookup-by-id for viewing
+someone else's. `kind` (artist vs hirer) is never a body field on any of these
+routes — it's always read from the caller's (or target's) fixed `User.role`,
+so it can never be changed through this module.
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| POST | `/` | logged-in, no profile yet | One per user → `409 PROFILE_EXISTS` |
-| GET | `/` | any logged-in | Discovery feed; filter `?kind=artist\|hirer`, paginated |
-| GET | `/:id` | any logged-in | |
-| PUT | `/:id` | owner | `kind` (artist/hirer) is immutable after creation |
-| DELETE | `/:id` | owner or admin | |
+| PATCH | `/me` | logged-in artist/hirer | Upsert — creates the profile on the first call, updates it on every call after. Non-artist/hirer (e.g. `admin`) → `403 FORBIDDEN` |
+| GET | `/:id` | any logged-in | Any user's artist/hirer profile, by their `User.id`. Unknown id → `404 USER_NOT_FOUND`. Target is an `admin` (no profile) → `404 PROFILE_NOT_FOUND` |
+| DELETE | `/:id` | owner or admin | Deletes just the artist/hirer profile row — the account itself is untouched (use `DELETE /api/users/:id` to remove the whole account). Non-owner non-admin → `403 FORBIDDEN`. No profile row to delete → `404 PROFILE_NOT_FOUND` |
 
 ## Swipes `/api/swipes`
 

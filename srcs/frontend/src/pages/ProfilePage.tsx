@@ -30,7 +30,8 @@ export default function ProfilePage() {
 	const [isSavingDetails, setIsSavingDetails] = useState(false);
 
 	useEffect(() => {
-		fetchMyProfile()
+		if (!user) return;
+		fetchMyProfile(user.id)
 			.then((profile) => {
 				setCategory(profile.category);
 				setBio(profile.bio ?? "");
@@ -40,7 +41,7 @@ export default function ProfilePage() {
 			})
 			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
 			.catch(() => {});
-	}, []);
+	}, [user]);
 
 	if (!user) return null;
 

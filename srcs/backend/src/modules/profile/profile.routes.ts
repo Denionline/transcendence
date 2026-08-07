@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { upsertArtistProfile, upsertHirerProfile, getCallerProfile } from "./profile.service.js";
+import {
+	upsertArtistProfile,
+	upsertHirerProfile,
+	getCallerProfile,
+	deleteProfile,
+} from "./profile.service.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { throwError } from "../../lib/http-error.js";
+import { parseId } from "../gigs/gigs.routes.js";
 
 const router = Router();
 
@@ -31,13 +37,21 @@ router.patch("/me", requireAuth, async (req, res) => {
 	res.status(200).json(profile);
 });
 
-router.get("/me", requireAuth, async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
+	const targetId = parseId(req.params.id);
+
+	const result = await getCallerProfile(targetId);
+	res.status(200).json(result);
+});
+
+router.delete("/:id", requireAuth, async (req, res) => {
+	const targetId = parseId(req.params.id);
 	const caller = req.user!;
 
-	if (caller.role !== UserRole.artist && caller.role !== UserRole.hirer)
-		throwError(403, "FORBIDDEN", "this role does not have an artist/hirer profile");
-	const result = await getCallerProfile(caller.id, caller.role);
-	res.status(200).json(result);
+	if (caller.id === targetId || caller.role === UserRole.admin) {
+		await deleteProfile(targetId);
+		res.status(204).send();
+	} else throwError(403, "FORBIDDEN", "you cannot delete this profile");
 });
 
 export default router;
