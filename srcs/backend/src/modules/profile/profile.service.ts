@@ -27,12 +27,13 @@ export const publicArtistSelect = {
 	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.ArtistProfileSelect;
 
-const publicHirerSelect = {
+export const publicHirerSelect = {
 	category: true,
 	organizationName: true,
 	bio: true,
 	location: true,
 	availability: true,
+	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.HirerProfileSelect;
 
 async function addArtistProfileData(userId: string, data: Prisma.ArtistProfileUpdateInput) {
@@ -140,4 +141,26 @@ export async function getCallerProfile(userId: string, role: string) {
 			: await prisma.hirerProfile.findUnique({ where: { userId }, select: publicHirerSelect });
 	if (!result) throwError(404, "PROFILE_NOT_FOUND", `${role} profile not found`);
 	return result;
+}
+
+/**
+ * Any authenticated user's public artist/hirer profile, looked up by their
+ * user id — no ownership check, unlike `getCallerProfile` (mirrors gigs:
+ * reading someone else's profile needs no more than being logged in). Tries
+ * artist first, then hirer, since a user only ever has one or the other.
+ */
+export async function getPublicProfileByUserId(userId: string) {
+	const artist = await prisma.artistProfile.findUnique({
+		where: { userId },
+		select: publicArtistSelect,
+	});
+	if (artist) return { role: UserRole.artist, ...artist };
+
+	const hirer = await prisma.hirerProfile.findUnique({
+		where: { userId },
+		select: publicHirerSelect,
+	});
+	if (hirer) return { role: UserRole.hirer, ...hirer };
+
+	throwError(404, "PROFILE_NOT_FOUND", "profile not found");
 }

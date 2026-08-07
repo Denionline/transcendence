@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { upsertArtistProfile, upsertHirerProfile, getCallerProfile } from "./profile.service.js";
+import {
+	upsertArtistProfile,
+	upsertHirerProfile,
+	getCallerProfile,
+	getPublicProfileByUserId,
+} from "./profile.service.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { throwError } from "../../lib/http-error.js";
+import { parseId } from "../gigs/gigs.routes.js";
 
 const router = Router();
 
@@ -37,6 +43,15 @@ router.get("/me", requireAuth, async (req, res) => {
 	if (caller.role !== UserRole.artist && caller.role !== UserRole.hirer)
 		throwError(403, "FORBIDDEN", "this role does not have an artist/hirer profile");
 	const result = await getCallerProfile(caller.id, caller.role);
+	res.status(200).json(result);
+});
+
+// Registered after the literal "/me" routes above so a request for "/me"
+// still matches those, not this param route. Reading someone else's public
+// profile needs no ownership check — just proof of who's asking.
+router.get("/:userId", requireAuth, async (req, res) => {
+	const userId = parseId(req.params.userId);
+	const result = await getPublicProfileByUserId(userId);
 	res.status(200).json(result);
 });
 
