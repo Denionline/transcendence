@@ -1,4 +1,4 @@
-import { Ban, CircleCheck, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { ManagedUser } from "../types";
 import { formatDate } from "../../../lib/format";
 import { ROLE_BADGE } from "../constants";
@@ -9,7 +9,6 @@ export default function UserRow({
 	isSelf,
 	selected,
 	onToggleSelect,
-	onToggleActive,
 	onEdit,
 	onDelete,
 }: {
@@ -17,7 +16,6 @@ export default function UserRow({
 	isSelf: boolean;
 	selected: boolean;
 	onToggleSelect: () => void;
-	onToggleActive: () => void;
 	onEdit: () => void;
 	onDelete: () => void;
 }) {
@@ -48,11 +46,6 @@ export default function UserRow({
 			<td>
 				<span className={`badge badge-sm ${ROLE_BADGE[user.role]}`}>{user.role}</span>
 			</td>
-			<td>
-				<span className={`badge badge-sm ${user.isActive ? "badge-success" : "badge-error"}`}>
-					{user.isActive ? "active" : "disabled"}
-				</span>
-			</td>
 			<td>{formatDate(user.createdAt)}</td>
 			<td>
 				<div className="flex justify-end gap-1">
@@ -64,28 +57,6 @@ export default function UserRow({
 						onClick={onEdit}
 					>
 						<Pencil className="size-4" />
-					</button>
-					<button
-						type="button"
-						className={`btn btn-ghost btn-xs tooltip ${isSelf ? "tooltip-left" : ""}`}
-						data-tip={
-							isSelf
-								? "You can't modify your own account"
-								: user.isActive
-									? "Disable user"
-									: "Enable user"
-						}
-						aria-label={
-							isSelf
-								? "You can't modify your own account"
-								: user.isActive
-									? "Disable user"
-									: "Enable user"
-						}
-						disabled={isSelf}
-						onClick={onToggleActive}
-					>
-						{user.isActive ? <Ban className="size-4" /> : <CircleCheck className="size-4" />}
 					</button>
 					<button
 						type="button"
