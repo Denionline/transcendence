@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
@@ -13,7 +12,6 @@ import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
 
-const SORT_OPTIONS = ["Newest", "Nearby"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
 // GET /swipes/next only ever returns the single next candidate; matching one
 // of the active filters means fetching (and permanently skipping past, via
@@ -40,7 +38,6 @@ export default function DiscoverPage() {
 	// the hirer.
 	const [discipline, setDiscipline] = useState<string | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
-	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	// GET /swipes/next requires a gigId for hirers — candidates are always
@@ -273,52 +270,27 @@ export default function DiscoverPage() {
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
 						<p className="text-sm text-base-content/50">
 							{status === "ready"
-								? `${artists.length} matches · sorted by ${sort.toLowerCase()}`
+								? `${artists.length} matches`
 								: status === "no-gigs"
 									? "No open opportunities yet"
 									: "Loading matches…"}
 						</p>
 					</div>
 
-					<div className="flex items-center gap-2">
-						{myOpenGigs.length > 0 && (
-							<select
-								value={activeGigId ?? ""}
-								onChange={(e) => handleGigChange(e.target.value)}
-								aria-label="Reviewing for opportunity"
-								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-							>
-								{myOpenGigs.map((gig) => (
-									<option key={gig.id} value={gig.id}>
-										{gig.title}
-									</option>
-								))}
-							</select>
-						)}
-
-						<div className="dropdown dropdown-end hidden lg:block">
-							<div
-								tabIndex={0}
-								role="button"
-								className="btn btn-sm rounded-full border-base-content/15 bg-transparent font-normal"
-							>
-								{sort}
-								<ChevronDownIcon className="size-4" aria-hidden="true" />
-							</div>
-							<ul
-								tabIndex={0}
-								className="menu dropdown-content menu-sm z-1 mt-2 w-40 rounded-box bg-base-100 p-2 shadow"
-							>
-								{SORT_OPTIONS.map((option) => (
-									<li key={option}>
-										<button type="button" onClick={() => setSort(option)}>
-											{option}
-										</button>
-									</li>
-								))}
-							</ul>
-						</div>
-					</div>
+					{myOpenGigs.length > 0 && (
+						<select
+							value={activeGigId ?? ""}
+							onChange={(e) => handleGigChange(e.target.value)}
+							aria-label="Reviewing for opportunity"
+							className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
+						>
+							{myOpenGigs.map((gig) => (
+								<option key={gig.id} value={gig.id}>
+									{gig.title}
+								</option>
+							))}
+						</select>
+					)}
 				</div>
 
 				{status === "no-gigs" && (

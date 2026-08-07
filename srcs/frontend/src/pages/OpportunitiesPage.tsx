@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
 import DesktopGigDeck from "../features/opportunities/components/DesktopGigDeck";
 import MobileGigStack from "../features/opportunities/components/MobileGigStack";
 import { getNextGig, postSwipe } from "../features/swipes/api";
@@ -15,7 +14,6 @@ import { onProfileUpdated } from "../features/profile/profileEvents";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { GigListing } from "../features/opportunities/gigTypes";
 
-const SORT_OPTIONS = ["Newest", "Closing soon"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
 // GET /swipes/next only ever returns the single next candidate; matching one
 // of the active filters means fetching (and permanently skipping past, via
@@ -48,7 +46,6 @@ export default function OpportunitiesPage() {
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
 	const [appliedMinRateInput, setAppliedMinRateInput] = useState("");
-	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [gigs, setGigs] = useState<GigListing[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -289,33 +286,8 @@ export default function OpportunitiesPage() {
 					<div>
 						<h1 className="text-2xl font-semibold">Opportunities</h1>
 						<p className="text-sm text-base-content/50">
-							{status === "ready"
-								? `${gigs.length} gigs · sorted by ${sort.toLowerCase()}`
-								: "Loading gigs…"}
+							{status === "ready" ? `${gigs.length} gigs` : "Loading gigs…"}
 						</p>
-					</div>
-
-					<div className="dropdown dropdown-end hidden lg:block">
-						<div
-							tabIndex={0}
-							role="button"
-							className="btn btn-sm rounded-full border-base-content/15 bg-transparent font-normal"
-						>
-							{sort}
-							<ChevronDownIcon className="size-4" aria-hidden="true" />
-						</div>
-						<ul
-							tabIndex={0}
-							className="menu dropdown-content menu-sm z-1 mt-2 w-40 rounded-box bg-base-100 p-2 shadow"
-						>
-							{SORT_OPTIONS.map((option) => (
-								<li key={option}>
-									<button type="button" onClick={() => setSort(option)}>
-										{option}
-									</button>
-								</li>
-							))}
-						</ul>
 					</div>
 				</div>
 
