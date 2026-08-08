@@ -402,8 +402,7 @@ Chat is only reachable through a match — no match, no messages.
 | Code | Status | Meaning |
 |---|---|---|
 | `VALIDATION_ERROR` | 400 | Zod rejected body/query/params (also used by auth for missing/invalid fields) |
-| `SELF_INTEREST` | 400 | Tried to show interest in yourself |
-| `WEAK_PASSWORD` | 400 | Password does not meet the policy on register |
+| `SELF_SWIPE` | 400 | Tried to swipe on yourself |
 | `INVALID_CREDENTIALS` | 401 | Wrong email or password on login |
 | `MISSING_TOKEN` | 401 | Authorization header missing/malformed, or refresh cookie missing |
 | `INVALID_TOKEN` | 401 | Access token signature invalid or malformed |

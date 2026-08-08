@@ -1,46 +1,37 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, Check, CheckCircle2, CircleCheck, Plus } from "lucide-react";
+import { ArrowLeft, Check, CheckCircle2 } from "lucide-react";
 import { flattenError } from "zod";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { opportunitySchema } from "../features/opportunities/schemas";
-import { createOpportunity } from "../features/opportunities/api";
-import { CATEGORIES, DURATION_PRESETS, MAX_TAGS, TAGS } from "../features/opportunities/constants";
+import { createGig } from "../features/gigs/api";
+import { CATEGORIES } from "../features/opportunities/constants";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
-
-const DRAFT_KEY = "artmate_opportunity_draft";
+import { ApiError } from "../lib/apiClient";
 
 interface FormValues {
 	title: string;
 	category: string;
-	duration: string;
 	description: string;
-	applicationsClose: string;
 	location: string;
-	remoteOk: boolean;
-	tags: string[];
+	rate: string;
 }
 
 const INITIAL_VALUES: FormValues = {
 	title: "",
 	category: "",
-	duration: "",
 	description: "",
-	applicationsClose: "",
 	location: "",
-	remoteOk: false,
-	tags: [],
+	rate: "",
 };
 
 interface FieldErrors {
 	title?: string;
 	category?: string;
-	duration?: string;
 	description?: string;
-	applicationsClose?: string;
 	location?: string;
-	tags?: string;
+	rate?: string;
 }
 
 export default function NewOpportunityPage() {
@@ -51,50 +42,12 @@ export default function NewOpportunityPage() {
 	const [formError, setFormError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [published, setPublished] = useState(false);
-	const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(null);
-	const [draftSaved, setDraftSaved] = useState(false);
-
-	useEffect(() => {
-		return () => {
-			if (coverPhotoUrl) URL.revokeObjectURL(coverPhotoUrl);
-		};
-	}, [coverPhotoUrl]);
 
 	function handleChange(
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
 	) {
 		const { name, value } = e.target;
 		setValues((prev) => ({ ...prev, [name]: value }));
-	}
-
-	function toggleTag(tag: string) {
-		setValues((prev) => {
-			const active = prev.tags.includes(tag);
-			if (!active && prev.tags.length >= MAX_TAGS) return prev;
-			return {
-				...prev,
-				tags: active ? prev.tags.filter((t) => t !== tag) : [...prev.tags, tag],
-			};
-		});
-	}
-
-	function toggleRemoteOk() {
-		setValues((prev) => ({ ...prev, remoteOk: !prev.remoteOk }));
-	}
-
-	function handleCoverPhotoChange(e: ChangeEvent<HTMLInputElement>) {
-		const file = e.target.files?.[0];
-		if (!file) return;
-		setCoverPhotoUrl((prev) => {
-			if (prev) URL.revokeObjectURL(prev);
-			return URL.createObjectURL(file);
-		});
-	}
-
-	function handleSaveDraft() {
-		localStorage.setItem(DRAFT_KEY, JSON.stringify(values));
-		setDraftSaved(true);
-		setTimeout(() => setDraftSaved(false), 2000);
 	}
 
 	async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -107,11 +60,9 @@ export default function NewOpportunityPage() {
 			setErrors({
 				title: fieldErrors.title?.[0],
 				category: fieldErrors.category?.[0],
-				duration: fieldErrors.duration?.[0],
 				description: fieldErrors.description?.[0],
-				applicationsClose: fieldErrors.applicationsClose?.[0],
 				location: fieldErrors.location?.[0],
-				tags: fieldErrors.tags?.[0],
+				rate: fieldErrors.rate?.[0],
 			});
 			return;
 		}
@@ -120,10 +71,16 @@ export default function NewOpportunityPage() {
 		setFormError(null);
 		setIsSubmitting(true);
 		try {
-			await createOpportunity(user.id, result.data);
+			await createGig({
+				title: result.data.title,
+				category: result.data.category,
+				description: result.data.description.trim() || undefined,
+				location: result.data.location.trim() || undefined,
+				rate: result.data.rate === "" ? undefined : Number(result.data.rate),
+			});
 			setPublished(true);
 		} catch (error) {
-			setFormError(error instanceof Error ? error.message : "Failed to publish opportunity");
+			setFormError(error instanceof ApiError ? error.message : "Failed to publish opportunity");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -142,9 +99,9 @@ export default function NewOpportunityPage() {
 				<button
 					type="button"
 					className="btn btn-primary mt-2"
-					onClick={() => navigate("/discover")}
+					onClick={() => navigate("/opportunities/mine")}
 				>
-					Back to Discover
+					View my opportunities
 				</button>
 			</div>
 		);
@@ -170,10 +127,6 @@ export default function NewOpportunityPage() {
 					</h1>
 				</div>
 				<div className="flex shrink-0 items-center gap-2">
-					{draftSaved && <span className="text-xs text-success">Draft saved</span>}
-					<button type="button" className="btn btn-sm rounded-full" onClick={handleSaveDraft}>
-						Save draft
-					</button>
 					<button
 						type="submit"
 						form="new-opportunity-form"
@@ -247,29 +200,22 @@ export default function NewOpportunityPage() {
 							</fieldset>
 
 							<fieldset className="fieldset flex-1">
-								<label className="label" htmlFor="opportunity-duration">
-									Duration
+								<label className="label" htmlFor="opportunity-rate">
+									Rate <span className="font-normal text-base-content/50">· optional, €</span>
 								</label>
-								<select
-									id="opportunity-duration"
-									name="duration"
-									className="select validator w-full"
-									value={values.duration}
+								<input
+									id="opportunity-rate"
+									type="number"
+									min={0}
+									step={1}
+									name="rate"
+									className="input validator w-full"
+									placeholder="e.g. 1200"
+									value={values.rate}
 									onChange={handleChange}
-									aria-invalid={errors.duration ? "true" : "false"}
-								>
-									<option value="" disabled>
-										Select duration
-									</option>
-									{DURATION_PRESETS.map((duration) => (
-										<option key={duration} value={duration}>
-											{duration}
-										</option>
-									))}
-								</select>
-								<p className={`validator-hint ${errors.duration ? "" : "hidden"}`}>
-									{errors.duration}
-								</p>
+									aria-invalid={errors.rate ? "true" : "false"}
+								/>
+								<p className={`validator-hint ${errors.rate ? "" : "hidden"}`}>{errors.rate}</p>
 							</fieldset>
 						</div>
 					</section>
@@ -281,7 +227,7 @@ export default function NewOpportunityPage() {
 
 						<fieldset className="fieldset">
 							<label className="label" htmlFor="opportunity-description">
-								Description
+								Description <span className="font-normal text-base-content/50">· optional</span>
 							</label>
 							<textarea
 								id="opportunity-description"
@@ -297,109 +243,30 @@ export default function NewOpportunityPage() {
 								{errors.description}
 							</p>
 						</fieldset>
-
-						<label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/20 py-10 text-center transition-colors hover:border-base-content/40">
-							<input
-								type="file"
-								accept="image/*"
-								className="hidden"
-								onChange={handleCoverPhotoChange}
-							/>
-							<Plus className="size-5 text-base-content/40" />
-							<span className="text-xs tracking-wide text-base-content/40 uppercase">
-								{coverPhotoUrl ? "Change cover photo" : "Add cover photo — venue or brand shot"}
-							</span>
-						</label>
 					</section>
 
 					<section className="flex flex-col gap-4">
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Timeline
+							Location
 						</h2>
 
-						<fieldset className="fieldset sm:w-56">
-							<label className="label" htmlFor="opportunity-applications-close">
-								Applications close
+						<fieldset className="fieldset sm:w-72">
+							<label className="label" htmlFor="opportunity-location">
+								Location <span className="font-normal text-base-content/50">· optional</span>
 							</label>
 							<input
-								id="opportunity-applications-close"
-								type="date"
-								name="applicationsClose"
+								id="opportunity-location"
+								type="text"
+								name="location"
 								className="input validator w-full"
-								value={values.applicationsClose}
+								placeholder="e.g. Lisbon"
+								value={values.location}
 								onChange={handleChange}
-								aria-invalid={errors.applicationsClose ? "true" : "false"}
+								aria-invalid={errors.location ? "true" : "false"}
 							/>
-							<p className={`validator-hint ${errors.applicationsClose ? "" : "hidden"}`}>
-								{errors.applicationsClose}
+							<p className={`validator-hint ${errors.location ? "" : "hidden"}`}>
+								{errors.location}
 							</p>
-						</fieldset>
-					</section>
-
-					<section className="flex flex-col gap-4">
-						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Location &amp; tags
-						</h2>
-
-						<div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-							<fieldset className="fieldset flex-1">
-								<label className="label" htmlFor="opportunity-location">
-									Location
-								</label>
-								<input
-									id="opportunity-location"
-									type="text"
-									name="location"
-									className="input validator w-full"
-									placeholder="e.g. Lisbon"
-									value={values.location}
-									onChange={handleChange}
-									aria-invalid={errors.location ? "true" : "false"}
-								/>
-								<p className={`validator-hint ${errors.location ? "" : "hidden"}`}>
-									{errors.location}
-								</p>
-							</fieldset>
-
-							<button
-								type="button"
-								onClick={toggleRemoteOk}
-								aria-pressed={values.remoteOk}
-								className={`btn btn-sm gap-2 rounded-full border-none ${
-									values.remoteOk ? "btn-primary" : "bg-base-200 text-base-content/60"
-								}`}
-							>
-								<CircleCheck className="size-4" />
-								Remote OK
-							</button>
-						</div>
-
-						<fieldset className="fieldset">
-							<label className="label">
-								Tags{" "}
-								<span className="font-normal text-base-content/50">· pick up to {MAX_TAGS}</span>
-							</label>
-							<div className="flex flex-wrap gap-2">
-								{TAGS.map((tag) => {
-									const active = values.tags.includes(tag);
-									const disabled = !active && values.tags.length >= MAX_TAGS;
-									return (
-										<button
-											key={tag}
-											type="button"
-											disabled={disabled}
-											onClick={() => toggleTag(tag)}
-											aria-pressed={active}
-											className={`btn btn-sm rounded-full border-none disabled:opacity-40 ${
-												active ? "btn-primary" : "bg-base-200 text-base-content/60"
-											}`}
-										>
-											{tag}
-										</button>
-									);
-								})}
-							</div>
-							{errors.tags && <p className="mt-2 text-xs text-error">{errors.tags}</p>}
 						</fieldset>
 					</section>
 
@@ -415,11 +282,11 @@ export default function NewOpportunityPage() {
 						title={values.title}
 						description={values.description}
 						location={values.location}
-						remoteOk={values.remoteOk}
-						duration={values.duration}
-						tags={values.tags}
+						remoteOk={false}
+						duration={values.rate ? `€${values.rate}` : ""}
+						tags={[]}
 						isNew
-						coverPhotoUrl={coverPhotoUrl}
+						coverPhotoUrl={null}
 					/>
 					<p className="mt-3 text-xs text-base-content/40">
 						This is exactly how artists will see it in their feed — fill in the form and watch it

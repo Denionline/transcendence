@@ -55,7 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const user = await loginRequest(credentials);
 			setUser(user);
-			console.log("Logged in as:", user);
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -79,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			await logoutRequest();
 			setUser(null);
-			console.log("Logged out successfully");
 		} finally {
 			setIsLoading(false);
 		}

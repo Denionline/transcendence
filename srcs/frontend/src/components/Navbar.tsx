@@ -48,7 +48,7 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 				<div className="flex flex-none items-center gap-1">
 					<button
 						type="button"
-						className="btn btn-ghost btn-circle md:hidden"
+						className="btn btn-ghost btn-circle lg:hidden"
 						aria-label={isMenuOpen ? "Close menu" : "Open menu"}
 						aria-expanded={isMenuOpen}
 						aria-controls="navbar-mobile-menu"
@@ -66,15 +66,15 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 					</Link>
 				</div>
 
-				<div className="hidden flex-1 justify-center md:flex">
+				<div className="hidden flex-1 justify-center lg:flex">
 					<label className="input w-full max-w-md rounded-full">
 						<SearchIcon className="size-4 opacity-50" aria-hidden="true" />
 						<input type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder} />
 					</label>
 				</div>
 
-				<div className="flex flex-1 items-center justify-end gap-3 sm:gap-6 md:flex-none">
-					<ul className="hidden items-center gap-6 text-sm font-medium md:flex">
+				<div className="flex flex-1 items-center justify-end gap-3 sm:gap-6 lg:flex-none">
+					<ul className="hidden items-center gap-6 text-sm font-medium lg:flex">
 						{items.map(({ to, label, end }) => (
 							<li key={to}>
 								<NavLink
@@ -132,7 +132,7 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 			{isMenuOpen && (
 				<div
 					id="navbar-mobile-menu"
-					className="border-t border-base-content/10 px-4 py-4 md:hidden"
+					className="border-t border-base-content/10 px-4 py-4 lg:hidden"
 				>
 					<label className="input mb-4 w-full rounded-full">
 						<SearchIcon className="size-4 opacity-50" aria-hidden="true" />

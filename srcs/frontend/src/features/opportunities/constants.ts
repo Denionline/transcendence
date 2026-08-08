@@ -1,9 +1,33 @@
+// Swipe matching is an exact string comparison against ArtistProfile.category
+// (see backend swipe.service.ts), so this list has to mirror the real
+// category values artist profiles are actually seeded/created with — not an
+// independent, free-form picklist. Keep it in sync with that vocabulary.
 export const CATEGORIES = [
-	"Mural",
-	"Illustration",
-	"Photography",
-	"Set design",
-	"Motion & 3D",
+	"3D animator",
+	"Calligrapher",
+	"Ceramicist",
+	"Collage artist",
+	"Comic artist",
+	"Concept artist",
+	"Fashion illustrator",
+	"Graphic designer",
+	"Illustrator",
+	"Installation artist",
+	"Jewelry designer",
+	"Motion designer",
+	"Muralist",
+	"Painter",
+	"Photographer",
+	"Portrait painter",
+	"Printmaker",
+	"Puppet maker",
+	"Sculptor",
+	"Set designer",
+	"Sound artist",
+	"Street artist",
+	"Tattoo artist",
+	"Textile artist",
+	"Videographer",
 ] as const;
 
 export const DURATION_PRESETS = [

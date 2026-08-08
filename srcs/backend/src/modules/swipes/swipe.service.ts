@@ -136,7 +136,7 @@ export async function handleSwipe(
 	return { matchId };
 }
 
-async function getNextGigForArtist(user: AuthenticatedUser) {
+async function getNextGigForArtist(user: AuthenticatedUser, excludeIds: string[]) {
 	const artist = await prisma.artistProfile.findUnique({ where: { userId: user.id } });
 	if (!artist) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
 	const gig = await prisma.gig.findFirst({
@@ -144,6 +144,7 @@ async function getNextGigForArtist(user: AuthenticatedUser) {
 			status: "open",
 			category: artist.category,
 			swipes: { none: { swiperId: user.id } },
+			...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
 		},
 		orderBy: { createdAt: "asc" },
 		select: publicGigSelect,
@@ -152,7 +153,11 @@ async function getNextGigForArtist(user: AuthenticatedUser) {
 	return gig;
 }
 
-async function getNextCandidateForHirer(user: AuthenticatedUser, gigId: string) {
+async function getNextCandidateForHirer(
+	user: AuthenticatedUser,
+	gigId: string,
+	excludeIds: string[],
+) {
 	const gig = await getOpenGig(gigId);
 	if (gig.hirerId !== user.id) throwError(403, "FORBIDDEN", "this gig doesn't belong to you");
 	const artist = await prisma.artistProfile.findFirst({
@@ -162,6 +167,7 @@ async function getNextCandidateForHirer(user: AuthenticatedUser, gigId: string) 
 			user: {
 				swipesReceived: { none: { swiperId: user.id, gigId } },
 			},
+			...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
 		},
 		orderBy: { createdAt: "asc" },
 		select: publicArtistSelect,
@@ -170,13 +176,17 @@ async function getNextCandidateForHirer(user: AuthenticatedUser, gigId: string) 
 	return artist;
 }
 
-export async function handleNext(user: AuthenticatedUser, gigId: string | undefined) {
+export async function handleNext(
+	user: AuthenticatedUser,
+	gigId: string | undefined,
+	excludeIds: string[] = [],
+) {
 	if (user.role !== UserRole.artist && user.role !== UserRole.hirer) {
 		throwError(403, "FORBIDDEN", "only artists and hirers can browse swipe candidates");
 	}
-	if (user.role === UserRole.artist) return await getNextGigForArtist(user);
+	if (user.role === UserRole.artist) return await getNextGigForArtist(user, excludeIds);
 	if (!gigId) throwError(400, "VALIDATION_ERROR", "gigId is required");
-	return await getNextCandidateForHirer(user, gigId);
+	return await getNextCandidateForHirer(user, gigId, excludeIds);
 }
 
 async function getArtistSwipeHistory(userId: string, liked: boolean | undefined) {

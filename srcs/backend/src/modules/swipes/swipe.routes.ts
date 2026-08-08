@@ -7,6 +7,17 @@ import { UserRole } from "../../../generated/prisma/enums.js";
 
 const router = Router();
 
+// Comma-separated ids the caller already has in hand (e.g. cards already
+// pulled into an on-screen deck) so /next can skip straight past them instead
+// of handing back the same not-yet-swiped candidate every call.
+function parseExcludeIds(value: unknown): string[] {
+	if (typeof value !== "string" || value.trim() === "") return [];
+	return value
+		.split(",")
+		.map((id) => id.trim())
+		.filter((id) => id.length > 0);
+}
+
 router.post("/", requireAuth, async (req, res) => {
 	const swiper = req.user!;
 	const { gigId, liked, targetUserId } = req.body;
@@ -23,8 +34,9 @@ router.post("/", requireAuth, async (req, res) => {
 router.get("/next", requireAuth, async (req, res) => {
 	const user = req.user!;
 	const gigId = user.role === UserRole.hirer ? parseId(req.query.gigId) : undefined;
+	const excludeIds = parseExcludeIds(req.query.excludeIds);
 
-	const result = await handleNext(user, gigId);
+	const result = await handleNext(user, gigId, excludeIds);
 	res.status(200).json(result);
 });
 
