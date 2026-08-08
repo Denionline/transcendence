@@ -145,6 +145,7 @@ export async function getCallerProfile(targetId: string) {
 					where: { userId: targetId },
 					select: publicHirerSelect,
 				});
+	if (!result) throwError(404, "PROFILE_NOT_FOUND", `${profile.role} profile not found`);
 	return result;
 }
 
