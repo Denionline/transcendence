@@ -369,12 +369,33 @@ The controlled vocabulary shared by profiles and gigs. A gig references
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | GET | `/` | **public** — no token | Returns `{ items: [{ id, slug, label }] }`, sorted by `label`. Unauthenticated on purpose: sign-up and profile forms need it before a session exists, and it contains nothing user-specific |
+| POST | `/` | **admin only** | Body: `label` required non-empty string, max 60 chars; `slug` optional — defaults to the normalized `label`. Non-admin → `403 FORBIDDEN`. Slug already taken → `409 CATEGORY_EXISTS`. Invalid body → `400 VALIDATION_ERROR`. Returns `201` with the created category |
+| PATCH | `/:id` | **admin only** | Body: `label` and/or `slug`, at least one → otherwise `400 VALIDATION_ERROR`. Sending `label` alone **does not** re-derive the slug (see below). Non-admin → `403 FORBIDDEN`. Unknown id → `404 CATEGORY_NOT_FOUND`. Target slug taken → `409 CATEGORY_EXISTS` |
 
 `slug` is the stable matching key (`"street-artist"`); `label` is what the UI
-shows (`"Street artist"`). Writes elsewhere accept either form. There is no
-create/update/delete endpoint yet — the vocabulary is seeded by migration
-`20260810120000_categories`, and adding a category is currently a migration or a
-direct insert.
+shows (`"Street artist"`). Writes elsewhere accept either form.
+
+Writes are admin-only because the vocabulary is shared by every profile and
+gig — a category any user could add would reintroduce exactly the drift the
+lookup table exists to prevent. Category **deletion is deliberately not
+exposed**: `onDelete: Restrict` means the database refuses to drop a category
+a profile or gig still references, so a delete endpoint needs a reassign-or-
+refuse policy that has not been decided.
+
+Renaming is a two-part act, and the split is intentional:
+
+- **`{ "label": "Mural artist" }`** changes only what the UI shows. Every
+  profile and gig keeps its foreign key, so no match is affected, and callers
+  that resolve categories by slug keep working.
+- **`{ "slug": "mural-artist" }`** changes the lookup key as well. Matches
+  still survive (they hold the category **id**), but anything that persisted
+  the old slug — a bookmarked `?category=` filter, say — stops resolving.
+
+Send both to rename in full. The one wart: after a label-only rename the new
+label is no longer an alias for that category, since label lookups go through
+the same normalization as slugs — resolve by slug, or update both.
+
+The 25 starting categories are seeded by migration `20260810120000_categories`.
 
 ## Swipes `/api/swipes`
 
@@ -455,7 +476,8 @@ Chat is only reachable through a match — no match, no messages.
 | `GIG_CLOSED` | 409 | Tried to swipe on a gig that is no longer `open` |
 | `PROFILE_NOT_FOUND` | 404 | Hirer's swipe target has no artist profile |
 | `CATEGORY_MISMATCH` | 400 | The swiping (or targeted) artist holds none of the gig's category |
-| `CATEGORY_NOT_FOUND` | 400 | A write named a category that is not in the `Category` table |
+| `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
+| `CATEGORY_EXISTS` | 409 | Creating or re-slugging a category onto a slug another category already owns |
 | `ARTIST_UNAVAILABLE` | 409 | Hirer tried to swipe an artist whose profile is marked unavailable |
 | `FRIENDSHIP_EXISTS` | 409 | Relation already exists in either direction |
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |

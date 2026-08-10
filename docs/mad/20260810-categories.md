@@ -87,12 +87,23 @@ Four details carry the decision:
   `UPDATE` that breaks no existing match. The slug is `lower(trim(label))` with runs of
   whitespace collapsed to hyphens — `"3D animator"` → `"3d-animator"` — so it is
   URL-safe, and every write normalizes its input the same way before looking a category
-  up. That is why a caller may send either the slug or the label.
+  up. That is why a caller may send either the slug or the label. `PATCH` treats the
+  two independently: changing `label` alone is a display rename that leaves every
+  resolver working, while changing `slug` is the deliberate act of moving the key.
 
 `GET /api/categories` ships with this decision rather than after it. Without a
 server-owned vocabulary the frontend simply hardcodes a different list and the drift
 returns; the endpoint is what allows `CATEGORIES`, `TAGS` and `DISCIPLINES` — three
 unsynchronized lists that existed in the frontend — to collapse into one.
+
+The vocabulary is also **editable at runtime**: `POST /api/categories` and
+`PATCH /api/categories/:id` are admin-only writes, added after team discussion so that
+adding a category is not a schema migration. That was the strongest objection to the
+Prisma-enum option, and leaving the table read-only would have reproduced it in a
+different form. Deletion is deliberately **not** exposed — `onDelete: Restrict` means
+the database refuses to drop a category still in use, so a delete endpoint needs a
+reassign-or-refuse policy the team has not decided. Reads stay public; writes are
+admin-gated because a category any user could add is drift by another name.
 
 ### Consequences
 
@@ -104,6 +115,9 @@ unsynchronized lists that existed in the frontend — to collapse into one.
   endpoint, replacing a frontend constant whose own comment asked readers to "keep it
   in sync".
 * Good, because a category can be renamed without touching any row that references it.
+* Bad, because a label-only rename stops that label from working as a lookup alias —
+  label lookups normalize to a slug, and the slug is by design unchanged. Callers
+  should resolve by slug, or update both fields together.
 * Bad, because every category-filtered query gains a join, and the four existing B-tree
   indexes on the old `category` columns had to be dropped and recreated against
   `categoryId`.
