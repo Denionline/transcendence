@@ -189,7 +189,7 @@ AI assistance (Claude) was used during this project for:
 | Feature | Description | Implemented by |
 |---|---|---|
 | User signup/login | Email + password auth with hashed/salted passwords | \<name\> |
-| Artist/Hirer profiles | Create and edit profile (category, bio, availability) | \<name\> |
+| Artist/Hirer profiles | Create and edit profile (categories, bio, availability) | \<name\> |
 | Swipe & match system | Swipe on other users, auto-create match on mutual swipe | \<name\> |
 | Private chat | Send/receive messages within a match | \<name\> |
 | File uploads | Attach audio/video/image files to a profile | \<name\> |

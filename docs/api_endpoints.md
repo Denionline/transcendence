@@ -168,7 +168,7 @@ token (`requireAuth`) — there is no anonymous search. Nothing here mutates.
 | GET | `/artists` | any logged-in | Artist profiles matching the filters, **never including the caller's own** |
 
 > Artist **discovery** lives here, at `GET /api/search/artists` — not under
-> `/api/profiles` (see the caveat on that section below).
+> `/api/profile` (see the caveat on that section below).
 
 ### Query parameters
 
@@ -338,14 +338,16 @@ compile to `ILIKE '%…%'`, which no B-tree can serve, so they always scan —
 on `username` is worse still: it resolves through a **join** to `User`, so no
 index on `ArtistProfile` touches that path at all.
 
-## Profiles `/api/profiles`
+## Profiles `/api/profile`
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | PATCH | `/me` | logged-in artist/hirer | Upsert — creates the profile on the first call, updates it on every call after. Non-artist/hirer (e.g. `admin`) → `403 FORBIDDEN` |
+| GET | `/:id` | any logged-in | Any user's artist/hirer profile, by their `User.id`. Unknown id → `404 USER_NOT_FOUND`. Target is an `admin` (no profile) → `404 PROFILE_NOT_FOUND` |
+| DELETE | `/:id` | owner or admin | Deletes just the artist/hirer profile row — the account itself is untouched (use `DELETE /api/users/:id` to remove the whole account). Non-owner non-admin → `403 FORBIDDEN`. No profile row to delete → `404 PROFILE_NOT_FOUND` |
 
-Body fields: `categories` (array of category **slugs or labels**), `bio`,
-`location`, `availability`, and — hirers only — `organizationName`.
+`PATCH /me` body fields: `categories` (array of category **slugs or labels**),
+`bio`, `location`, `availability`, and — hirers only — `organizationName`.
 
 - `categories` **replaces** the whole set; it is not appended to. Entries are
   normalized and deduplicated, so `["Muralist", "muralist"]` stores one row.
@@ -357,8 +359,6 @@ Body fields: `categories` (array of category **slugs or labels**), `bio`,
   CATEGORY_NOT_FOUND`.
 
 Responses carry `categories` as a flat array of `{ id, slug, label }`.
-| GET | `/:id` | any logged-in | Any user's artist/hirer profile, by their `User.id`. Unknown id → `404 USER_NOT_FOUND`. Target is an `admin` (no profile) → `404 PROFILE_NOT_FOUND` |
-| DELETE | `/:id` | owner or admin | Deletes just the artist/hirer profile row — the account itself is untouched (use `DELETE /api/users/:id` to remove the whole account). Non-owner non-admin → `403 FORBIDDEN`. No profile row to delete → `404 PROFILE_NOT_FOUND` |
 
 ## Categories `/api/categories`
 
