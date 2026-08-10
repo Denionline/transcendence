@@ -1,112 +1,131 @@
 import { prisma } from "../../lib/prisma.js";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
+import { publicCategorySelect, resolveCategoryIds } from "../categories/categories.service.js";
 
 export interface ArtistProfileInput {
-	category?: unknown;
+	categories?: unknown;
 	bio?: unknown;
 	location?: unknown;
 	availability?: unknown;
 }
 
 export interface HirerProfileInput {
-	category?: unknown;
+	categories?: unknown;
 	bio?: unknown;
 	organizationName?: unknown;
 	location?: unknown;
 	availability?: unknown;
 }
 
+const categoriesSelect = {
+	select: { category: { select: publicCategorySelect } },
+};
+
 export const publicArtistSelect = {
 	id: true,
 	userId: true,
-	category: true,
 	bio: true,
 	location: true,
 	availability: true,
+	categories: categoriesSelect,
 	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.ArtistProfileSelect;
 
 const publicHirerSelect = {
-	category: true,
 	organizationName: true,
 	bio: true,
 	location: true,
 	availability: true,
+	categories: categoriesSelect,
 } satisfies Prisma.HirerProfileSelect;
 
-async function addArtistProfileData(userId: string, data: Prisma.ArtistProfileUpdateInput) {
-	const user = await prisma.artistProfile.findUnique({ where: { userId } });
-	if (!user && data.category === undefined)
-		throwError(
-			400,
-			"VALIDATION_ERROR",
-			"category is required when creating a profile for the first time",
-		);
-	const profile = await prisma.artistProfile.upsert({
-		where: { userId },
-		update: data,
-		create: { userId, ...data } as Prisma.ArtistProfileUncheckedCreateInput,
-		select: publicArtistSelect,
-	});
-	return profile;
+//	Prisma nests the join row, but nobody outside wants to see it: a profile
+//	carries a flat list of categories.
+interface WithCategoryRows {
+	categories: { category: { id: string; slug: string; label: string } }[];
 }
 
-async function addHirerProfileData(userId: string, data: Prisma.HirerProfileUpdateInput) {
-	const user = await prisma.hirerProfile.findUnique({ where: { userId } });
-	if (!user && (data.category === undefined || data.organizationName === undefined))
-		throwError(
-			400,
-			"VALIDATION_ERROR",
-			"category and organizationName are required when creating a profile for the first time",
-		);
-	const profile = await prisma.hirerProfile.upsert({
-		where: { userId },
-		update: data,
-		create: { userId, ...data } as Prisma.HirerProfileUncheckedCreateInput,
-		select: publicHirerSelect,
-	});
-	return profile;
+export function flattenCategories<T extends WithCategoryRows>(profile: T) {
+	return { ...profile, categories: profile.categories.map((row) => row.category) };
 }
 
-export async function upsertArtistProfile(userId: string, input: ArtistProfileInput) {
-	const data: Prisma.ArtistProfileUpdateInput = {};
+interface ProfileFields {
+	bio?: string | null;
+	location?: string | null;
+	availability?: boolean;
+	organizationName?: string;
+}
 
-	if (input.category !== undefined) {
-		if (typeof input.category !== "string")
-			throwError(400, "VALIDATION_ERROR", "category must be a string");
-		const category = input.category.trim();
-		if (category.length === 0) throwError(400, "VALIDATION_ERROR", "category cannot be empty");
-		data.category = category;
-	}
+//	Shared by both profile types: the fields whose validation never differed.
+function applyCommonFields(
+	data: ProfileFields,
+	input: { bio?: unknown; location?: unknown; availability?: unknown },
+) {
 	if (input.bio !== undefined) {
 		if (input.bio !== null && typeof input.bio !== "string")
 			throwError(400, "VALIDATION_ERROR", "bio must be a string or null");
-		data.bio = input.bio;
+		data.bio = input.bio as string | null;
 	}
 	if (input.location !== undefined) {
 		if (input.location !== null && typeof input.location !== "string")
 			throwError(400, "VALIDATION_ERROR", "location must be a string or null");
-		data.location = input.location;
+		data.location = input.location as string | null;
 	}
 	if (input.availability !== undefined) {
 		if (typeof input.availability !== "boolean")
 			throwError(400, "VALIDATION_ERROR", "availability must be a boolean");
 		data.availability = input.availability;
 	}
-	return await addArtistProfileData(userId, data);
+}
+
+function requireCategoriesOnCreate(exists: boolean, categoryIds: string[] | undefined) {
+	if (exists === true) return;
+	if (categoryIds !== undefined) return;
+	throwError(
+		400,
+		"VALIDATION_ERROR",
+		"categories is required when creating a profile for the first time",
+	);
+}
+
+export async function upsertArtistProfile(userId: string, input: ArtistProfileInput) {
+	const data: ProfileFields = {};
+	let categoryIds: string[] | undefined;
+
+	if (input.categories !== undefined) categoryIds = await resolveCategoryIds(input.categories);
+	applyCommonFields(data, input);
+
+	const existing = await prisma.artistProfile.findUnique({
+		where: { userId },
+		select: { id: true },
+	});
+	requireCategoriesOnCreate(existing !== null, categoryIds);
+
+	//	The profile row and its category links must move together, or a failed
+	//	link write would leave a profile advertising categories it no longer has.
+	await prisma.$transaction(async (tx) => {
+		//	Deliberately not an upsert: Prisma validates the `create` branch even
+		//	when the row exists, so a partial edit (bio only) used to fail.
+		const profile = existing
+			? await tx.artistProfile.update({ where: { userId }, data, select: { id: true } })
+			: await tx.artistProfile.create({ data: { userId, ...data }, select: { id: true } });
+
+		if (categoryIds === undefined) return;
+		await tx.artistCategory.deleteMany({ where: { artistProfileId: profile.id } });
+		await tx.artistCategory.createMany({
+			data: categoryIds.map((categoryId) => ({ artistProfileId: profile.id, categoryId })),
+		});
+	});
+
+	return await getArtistProfile(userId);
 }
 
 export async function upsertHirerProfile(userId: string, input: HirerProfileInput) {
-	const data: Prisma.HirerProfileUpdateInput = {};
+	const data: ProfileFields = {};
+	let categoryIds: string[] | undefined;
 
-	if (input.category !== undefined) {
-		if (typeof input.category !== "string")
-			throwError(400, "VALIDATION_ERROR", "category must be a string");
-		const category = input.category.trim();
-		if (category.length === 0) throwError(400, "VALIDATION_ERROR", "category cannot be empty");
-		data.category = category;
-	}
+	if (input.categories !== undefined) categoryIds = await resolveCategoryIds(input.categories);
 	if (input.organizationName !== undefined) {
 		if (typeof input.organizationName !== "string")
 			throwError(400, "VALIDATION_ERROR", "organizationName must be a string");
@@ -115,22 +134,54 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 			throwError(400, "VALIDATION_ERROR", "organizationName cannot be empty");
 		data.organizationName = organizationName;
 	}
-	if (input.bio !== undefined) {
-		if (input.bio !== null && typeof input.bio !== "string")
-			throwError(400, "VALIDATION_ERROR", "bio must be a string or null");
-		data.bio = input.bio;
-	}
-	if (input.location !== undefined) {
-		if (input.location !== null && typeof input.location !== "string")
-			throwError(400, "VALIDATION_ERROR", "location must be a string or null");
-		data.location = input.location;
-	}
-	if (input.availability !== undefined) {
-		if (typeof input.availability !== "boolean")
-			throwError(400, "VALIDATION_ERROR", "availability must be a boolean");
-		data.availability = input.availability;
-	}
-	return await addHirerProfileData(userId, data);
+	applyCommonFields(data, input);
+
+	const existing = await prisma.hirerProfile.findUnique({
+		where: { userId },
+		select: { id: true },
+	});
+	if (existing === null && data.organizationName === undefined)
+		throwError(
+			400,
+			"VALIDATION_ERROR",
+			"organizationName is required when creating a profile for the first time",
+		);
+	requireCategoriesOnCreate(existing !== null, categoryIds);
+
+	await prisma.$transaction(async (tx) => {
+		const profile = existing
+			? await tx.hirerProfile.update({ where: { userId }, data, select: { id: true } })
+			: await tx.hirerProfile.create({
+					data: { userId, ...data, organizationName: data.organizationName! },
+					select: { id: true },
+				});
+
+		if (categoryIds === undefined) return;
+		await tx.hirerCategory.deleteMany({ where: { hirerProfileId: profile.id } });
+		await tx.hirerCategory.createMany({
+			data: categoryIds.map((categoryId) => ({ hirerProfileId: profile.id, categoryId })),
+		});
+	});
+
+	return await getHirerProfile(userId);
+}
+
+async function getArtistProfile(userId: string) {
+	const profile = await prisma.artistProfile.findUnique({
+		where: { userId },
+		select: publicArtistSelect,
+	});
+	if (!profile) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
+	return flattenCategories(profile);
+}
+
+async function getHirerProfile(userId: string) {
+	const profile = await prisma.hirerProfile.findUnique({
+		where: { userId },
+		select: publicHirerSelect,
+	});
+	if (!profile) throwError(404, "PROFILE_NOT_FOUND", "hirer profile not found");
+	return flattenCategories(profile);
 }
 
 export async function getCallerProfile(targetId: string) {
@@ -138,18 +189,8 @@ export async function getCallerProfile(targetId: string) {
 	if (!profile) throwError(404, "USER_NOT_FOUND", "no user with that id");
 	if (profile.role === UserRole.admin)
 		throwError(404, "PROFILE_NOT_FOUND", "admin accounts don't have an artist/hirer profile");
-	const result =
-		profile.role === UserRole.artist
-			? await prisma.artistProfile.findUnique({
-					where: { userId: targetId },
-					select: publicArtistSelect,
-				})
-			: await prisma.hirerProfile.findUnique({
-					where: { userId: targetId },
-					select: publicHirerSelect,
-				});
-	if (!result) throwError(404, "PROFILE_NOT_FOUND", `${profile.role} profile not found`);
-	return result;
+	if (profile.role === UserRole.artist) return await getArtistProfile(targetId);
+	return await getHirerProfile(targetId);
 }
 
 export async function deleteProfile(targetId: string) {

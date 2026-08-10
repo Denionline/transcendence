@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import app from "../src/app.js";
 import { SECRET } from "../src/lib/env.js";
 import { prisma } from "../src/lib/prisma.js";
+import { categoryIdFor, cleanupCategories } from "./helpers/categories.js";
 import { GigStatus, UserRole } from "../generated/prisma/client.js";
 
 async function withServer<T>(run: (baseUrl: string) => Promise<T>): Promise<T> {
@@ -248,7 +249,7 @@ async function seedGigs(hirer: { id: string }) {
 				hirerId: hirer.id,
 				title: spec.title,
 				description: spec.description,
-				category: spec.category,
+				categoryId: await categoryIdFor(spec.category),
 				location: spec.location,
 				rate: spec.rate,
 				status: spec.status,
@@ -275,7 +276,7 @@ async function seedArtists(): Promise<{ id: string; role: UserRole }> {
 				avatarUrl: `https://cdn.test/${spec.key}.png`,
 				artistProfile: {
 					create: {
-						category: spec.category,
+						categories: { create: { categoryId: await categoryIdFor(spec.category) } },
 						bio: spec.bio,
 						location: spec.location,
 						availability: spec.availability,
@@ -353,6 +354,7 @@ async function walkPages(
 after(async () => {
 	await prisma.gig.deleteMany({ where: { id: { in: createdGigIds } } });
 	await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
+	await cleanupCategories();
 	await prisma.$disconnect();
 });
 
@@ -405,6 +407,7 @@ test("a gig item carries hirer{username, avatarUrl} and never an email", async (
 
 		assert.deepEqual(Object.keys(item).sort(), [
 			"category",
+			"categoryId",
 			"createdAt",
 			"description",
 			"hirer",
@@ -640,11 +643,12 @@ test("?sort=popular counts every swipe, likes and skips alike", async () => {
 	const swiperOne = await makeUser(UserRole.artist, `${MARKER}-swiper-1`);
 	const swiperTwo = await makeUser(UserRole.artist, `${MARKER}-swiper-2`);
 
+	const categoryId = await categoryIdFor(category);
 	const quiet = await prisma.gig.create({
-		data: { hirerId: hirer.id, title: "quiet", category },
+		data: { hirerId: hirer.id, title: "quiet", categoryId },
 	});
 	const busy = await prisma.gig.create({
-		data: { hirerId: hirer.id, title: "busy", category },
+		data: { hirerId: hirer.id, title: "busy", categoryId },
 	});
 	createdGigIds.push(quiet.id, busy.id);
 	label.set(quiet.id, "quiet");
@@ -785,7 +789,7 @@ test("an artist item carries user{username, avatarUrl} and never an email", asyn
 		assert.deepEqual(Object.keys(item).sort(), [
 			"availability",
 			"bio",
-			"category",
+			"categories",
 			"createdAt",
 			"id",
 			"location",

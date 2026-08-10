@@ -1,13 +1,19 @@
 import { throwError } from "../../lib/http-error.js";
 import { GigStatus, Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
+import {
+	publicCategorySelect,
+	resolveCategoryId,
+	toSlug,
+} from "../categories/categories.service.js";
 
 export const publicGigSelect = {
 	id: true,
 	hirerId: true,
 	title: true,
 	description: true,
-	category: true,
+	categoryId: true,
+	category: { select: publicCategorySelect },
 	location: true,
 	rate: true,
 	status: true,
@@ -35,8 +41,12 @@ export interface ListGigsOptions {
 export async function listGigs({ page, pageSize, status, category, hirerId }: ListGigsOptions) {
 	const where: Prisma.GigWhereInput = {};
 	if (status) where.status = status;
-	if (category) where.category = category;
 	if (hirerId) where.hirerId = hirerId;
+
+	//	A filter naming a category that does not exist should return nothing,
+	//	not fail the request — unlike a write, where an unknown category is an
+	//	error the caller has to fix.
+	if (category) where.category = { slug: toSlug(category) };
 
 	const [items, total] = await prisma.$transaction([
 		prisma.gig.findMany({
@@ -67,12 +77,11 @@ export async function createGig(hirerId: string, input: CreateGigInput) {
 	const title = input.title.trim();
 	if (title.length === 0) throwError(400, "VALIDATION_ERROR", "title cannot be empty");
 
-	if (typeof input.category !== "string")
+	if (input.category === undefined)
 		throwError(400, "VALIDATION_ERROR", "category is required and must be a string");
-	const category = input.category.trim();
-	if (category.length === 0) throwError(400, "VALIDATION_ERROR", "category cannot be empty");
+	const categoryId = await resolveCategoryId(input.category);
 
-	const data: Prisma.GigUncheckedCreateInput = { hirerId, title, category };
+	const data: Prisma.GigUncheckedCreateInput = { hirerId, title, categoryId };
 
 	if (input.description !== undefined) {
 		if (typeof input.description !== "string")
@@ -122,11 +131,7 @@ export async function updateGig(id: string, input: UpdateGigInput) {
 	}
 
 	if (input.category !== undefined) {
-		if (typeof input.category !== "string")
-			throwError(400, "VALIDATION_ERROR", "category must be a string");
-		const category = input.category.trim();
-		if (category.length === 0) throwError(400, "VALIDATION_ERROR", "category cannot be empty");
-		data.category = category;
+		data.category = { connect: { id: await resolveCategoryId(input.category) } };
 	}
 
 	if (input.description !== undefined) {
