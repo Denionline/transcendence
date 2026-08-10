@@ -165,8 +165,11 @@ AI assistance (Claude) was used during this project for:
 | Table | Purpose |
 | :--- | :--- |
 | **User** | Account identity: email, username, password hash, role (`artist` / `hirer` / `admin`), avatar |
-| **ArtistProfile** | Artist-specific fields (category, bio, location, rate, availability); 1:1 with User |
-| **HirerProfile** | Hirer-specific fields (category, organization name, bio, location, availability); 1:1 with User |
+| **Category** | The controlled vocabulary (`slug` + `label`); referenced by profiles and gigs |
+| **ArtistProfile** | Artist-specific fields (bio, location, rate, availability); 1:1 with User; many Categories |
+| **HirerProfile** | Hirer-specific fields (organization name, bio, location, availability); 1:1 with User; many Categories |
+| **ArtistCategory** / **HirerCategory** | Join tables giving a profile several categories; composite PK prevents duplicates |
+| **Gig** | An opportunity posted by a hirer; belongs to exactly one Category |
 | **File** | Portfolio uploads (image/audio/video/document); belongs to a User |
 | **Swipe** | One row per swipe (like or pass), between two Users |
 | **Match** | Artist ↔ Hirer match; also serves as the friend/connection relationship |
@@ -175,7 +178,8 @@ AI assistance (Claude) was used during this project for:
 **Notes:**
 - A mutual `Swipe` (both sides `liked: true`) creates a `Match`.
 - `Match` doubles as the friends/connections relationship — no separate `Friend` table.
-- Artists and hirers are classified only by `category` (e.g. musician, painter, venue) — no separate tags/genres table.
+- Categories live in their own table. A **gig has exactly one**; an **artist or hirer has many**, through a join table. Swipe eligibility is a set intersection on category ids, not a string comparison — see `docs/mad/20260810-categories.md`.
+- The vocabulary is served by `GET /api/categories`; the frontend holds no hardcoded list.
 - Online/offline status is intentionally not persisted — it's runtime Socket.io connection state, not a database column.
 
 ---
