@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { opportunitySchema } from "../features/opportunities/schemas";
 import { createGig } from "../features/gigs/api";
-import { CATEGORIES } from "../features/opportunities/constants";
+import { useCategories } from "../features/categories/hooks/useCategories";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
 import { ApiError } from "../lib/apiClient";
 
@@ -37,6 +37,7 @@ interface FieldErrors {
 export default function NewOpportunityPage() {
 	const { user } = useAuth();
 	const navigate = useNavigate();
+	const { categories, isLoading: isLoadingCategories } = useCategories();
 	const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
 	const [errors, setErrors] = useState<FieldErrors>({});
 	const [formError, setFormError] = useState<string | null>(null);
@@ -183,14 +184,15 @@ export default function NewOpportunityPage() {
 									className="select validator w-full"
 									value={values.category}
 									onChange={handleChange}
+									disabled={isLoadingCategories}
 									aria-invalid={errors.category ? "true" : "false"}
 								>
 									<option value="" disabled>
-										Select category
+										{isLoadingCategories ? "Loading categories…" : "Select category"}
 									</option>
-									{CATEGORIES.map((category) => (
-										<option key={category} value={category}>
-											{category}
+									{categories.map((category) => (
+										<option key={category.slug} value={category.slug}>
+											{category.label}
 										</option>
 									))}
 								</select>

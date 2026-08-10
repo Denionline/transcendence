@@ -2,14 +2,13 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Briefcase, UserRound } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import Avatar from "../components/Avatar";
-import {
-	fetchMyProfile,
-	saveMyProfile,
-	type ArtistProfileFields,
-	type HirerProfileFields,
-} from "../features/profile/api";
+import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../features/profile/api";
+import { useCategories } from "../features/categories/hooks/useCategories";
 
 type Status = { type: "success" | "error"; text: string } | null;
+
+// Mirrors MAX_PROFILE_CATEGORIES in the backend's categories service.
+const MAX_CATEGORIES = 10;
 
 export default function ProfilePage() {
 	const { user, updateProfile } = useAuth();
@@ -20,7 +19,8 @@ export default function ProfilePage() {
 	const [accountStatus, setAccountStatus] = useState<Status>(null);
 	const [isSavingAccount, setIsSavingAccount] = useState(false);
 
-	const [category, setCategory] = useState("");
+	const { categories: vocabulary, isLoading: isLoadingCategories } = useCategories();
+	const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
 	const [organizationName, setOrganizationName] = useState("");
 	const [bio, setBio] = useState("");
 	const [location, setLocation] = useState("");
@@ -33,7 +33,7 @@ export default function ProfilePage() {
 		if (!user) return;
 		fetchMyProfile(user.id)
 			.then((profile) => {
-				setCategory(profile.category);
+				setSelectedSlugs(profile.categories.map((category) => category.slug));
 				setBio(profile.bio ?? "");
 				setLocation(profile.location ?? "");
 				setAvailability(profile.availability);
@@ -44,6 +44,16 @@ export default function ProfilePage() {
 	}, [user]);
 
 	if (!user) return null;
+
+	// The server caps a profile at MAX_PROFILE_CATEGORIES; mirroring it here
+	// turns a 400 into a disabled button.
+	function toggleCategory(slug: string) {
+		setSelectedSlugs((previous) => {
+			if (previous.includes(slug)) return previous.filter((entry) => entry !== slug);
+			if (previous.length >= MAX_CATEGORIES) return previous;
+			return [...previous, slug];
+		});
+	}
 
 	async function handleAccountSubmit(e: FormEvent) {
 		e.preventDefault();
@@ -72,12 +82,12 @@ export default function ProfilePage() {
 		setDetailsStatus(null);
 		setIsSavingDetails(true);
 		try {
-			const base = {
-				category: category.trim(),
+			const base: ProfileUpdate = {
+				categories: selectedSlugs,
 				bio: bio.trim() || null,
 				location: location.trim() || null,
 			};
-			const payload: Partial<ArtistProfileFields & HirerProfileFields> =
+			const payload: ProfileUpdate =
 				user.role === "hirer"
 					? { ...base, organizationName: organizationName.trim() }
 					: { ...base, rate: rate.trim() === "" ? null : Number(rate), availability };
@@ -186,16 +196,34 @@ export default function ProfilePage() {
 							</div>
 						)}
 
-						<label className="fieldset-label flex-col items-start gap-1">
-							<span className="text-sm font-medium">Category</span>
-							<input
-								type="text"
-								className="input w-full max-w-sm"
-								value={category}
-								onChange={(e) => setCategory(e.target.value)}
-								required
-							/>
-						</label>
+						<fieldset className="fieldset-label flex-col items-start gap-1">
+							<legend className="text-sm font-medium">
+								Categories
+								<span className="ml-1 font-normal text-base-content/60">
+									(pick at least one, up to {MAX_CATEGORIES})
+								</span>
+							</legend>
+							{isLoadingCategories ? (
+								<span className="loading loading-spinner loading-sm" />
+							) : (
+								<div className="flex max-w-sm flex-wrap gap-2">
+									{vocabulary.map((option) => {
+										const isSelected = selectedSlugs.includes(option.slug);
+										return (
+											<button
+												key={option.slug}
+												type="button"
+												className={`btn btn-xs ${isSelected ? "btn-primary" : "btn-outline"}`}
+												aria-pressed={isSelected}
+												onClick={() => toggleCategory(option.slug)}
+											>
+												{option.label}
+											</button>
+										);
+									})}
+								</div>
+							)}
+						</fieldset>
 
 						{user.role === "hirer" && (
 							<label className="fieldset-label flex-col items-start gap-1">

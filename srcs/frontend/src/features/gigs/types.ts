@@ -1,9 +1,12 @@
+import type { CategoryDto } from "../categories/types";
+
 export interface GigDto {
 	id: string;
 	hirerId: string;
 	title: string;
 	description: string | null;
-	category: string;
+	categoryId: string;
+	category: CategoryDto;
 	location: string | null;
 	rate: number | null;
 	status: "open" | "closed";
@@ -23,6 +26,7 @@ export interface GigListResponse {
 
 export interface CreateGigInput {
 	title: string;
+	/** A category slug or label; the server resolves it to a Category row. */
 	category: string;
 	description?: string;
 	location?: string;

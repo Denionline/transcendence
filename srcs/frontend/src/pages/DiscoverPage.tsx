@@ -10,8 +10,11 @@ import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
+import { useCategories } from "../features/categories/hooks/useCategories";
 
-const DISCIPLINES = ["Illustration", "Photography", "Motion & 3D", "Mural & street"];
+// The discipline facet used to be a fourth hardcoded vocabulary that matched
+// no real data. It now lists real categories; the filter itself is still
+// client-side only and does not narrow the deck yet.
 const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
@@ -20,7 +23,8 @@ export default function DiscoverPage() {
 	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
 	// mount so the initial fetch burst matches whichever layout is live.
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
-	const [disciplines, setDisciplines] = useState<Set<string>>(new Set(["Motion & 3D"]));
+	const { categories } = useCategories();
+	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [availability, setAvailability] = useState<"now" | "soon" | null>("now");
 	const [remoteOnly, setRemoteOnly] = useState(false);
 	const [sort, setSort] = useState(SORT_OPTIONS[0]);
@@ -160,15 +164,15 @@ export default function DiscoverPage() {
 							Discipline
 						</h3>
 						<div className="flex flex-col gap-2">
-							{DISCIPLINES.map((discipline) => (
-								<label key={discipline} className="flex cursor-pointer items-center gap-2">
+							{categories.map((category) => (
+								<label key={category.slug} className="flex cursor-pointer items-center gap-2">
 									<input
 										type="checkbox"
 										className="checkbox checkbox-sm checkbox-primary"
-										checked={disciplines.has(discipline)}
-										onChange={() => toggleDiscipline(discipline)}
+										checked={disciplines.has(category.slug)}
+										onChange={() => toggleDiscipline(category.slug)}
 									/>
-									<span>{discipline}</span>
+									<span>{category.label}</span>
 								</label>
 							))}
 						</div>
