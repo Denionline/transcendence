@@ -334,11 +334,9 @@ index on `ArtistProfile` touches that path at all.
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| POST | `/` | logged-in, no profile yet | One per user → `409 PROFILE_EXISTS` |
-| GET | `/` | any logged-in | Discovery feed; filter `?kind=artist\|hirer`, paginated |
-| GET | `/:id` | any logged-in | |
-| PUT | `/:id` | owner | `kind` (artist/hirer) is immutable after creation |
-| DELETE | `/:id` | owner or admin | |
+| PATCH | `/me` | logged-in artist/hirer | Upsert — creates the profile on the first call, updates it on every call after. Non-artist/hirer (e.g. `admin`) → `403 FORBIDDEN` |
+| GET | `/:id` | any logged-in | Any user's artist/hirer profile, by their `User.id`. Unknown id → `404 USER_NOT_FOUND`. Target is an `admin` (no profile) → `404 PROFILE_NOT_FOUND` |
+| DELETE | `/:id` | owner or admin | Deletes just the artist/hirer profile row — the account itself is untouched (use `DELETE /api/users/:id` to remove the whole account). Non-owner non-admin → `403 FORBIDDEN`. No profile row to delete → `404 PROFILE_NOT_FOUND` |
 
 ## Swipes `/api/swipes`
 

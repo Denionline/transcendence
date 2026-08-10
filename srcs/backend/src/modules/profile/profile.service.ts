@@ -133,11 +133,37 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 	return await addHirerProfileData(userId, data);
 }
 
-export async function getCallerProfile(userId: string, role: string) {
+export async function getCallerProfile(targetId: string) {
+	const profile = await prisma.user.findUnique({ where: { id: targetId } });
+	if (!profile) throwError(404, "USER_NOT_FOUND", "no user with that id");
+	if (profile.role === UserRole.admin)
+		throwError(404, "PROFILE_NOT_FOUND", "admin accounts don't have an artist/hirer profile");
 	const result =
-		role === UserRole.artist
-			? await prisma.artistProfile.findUnique({ where: { userId }, select: publicArtistSelect })
-			: await prisma.hirerProfile.findUnique({ where: { userId }, select: publicHirerSelect });
-	if (!result) throwError(404, "PROFILE_NOT_FOUND", `${role} profile not found`);
+		profile.role === UserRole.artist
+			? await prisma.artistProfile.findUnique({
+					where: { userId: targetId },
+					select: publicArtistSelect,
+				})
+			: await prisma.hirerProfile.findUnique({
+					where: { userId: targetId },
+					select: publicHirerSelect,
+				});
+	if (!result) throwError(404, "PROFILE_NOT_FOUND", `${profile.role} profile not found`);
 	return result;
+}
+
+export async function deleteProfile(targetId: string) {
+	const profile = await prisma.user.findUnique({ where: { id: targetId } });
+	if (!profile) throwError(404, "USER_NOT_FOUND", "no user with that id");
+	try {
+		if (profile.role === UserRole.artist) {
+			await prisma.artistProfile.delete({ where: { userId: targetId } });
+		} else {
+			await prisma.hirerProfile.delete({ where: { userId: targetId } });
+		}
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
+			throwError(404, "PROFILE_NOT_FOUND", "profile not found");
+		throw error;
+	}
 }
