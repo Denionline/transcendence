@@ -7,6 +7,7 @@ import gigsRoutes from "./modules/gigs/gigs.routes.js";
 import swipesRoutes from "./modules/swipes/swipe.routes.js";
 import profileRoutes from "./modules/profile/profile.routes.js";
 import searchRoutes from "./modules/search/search.routes.js";
+import categoriesRoutes from "./modules/categories/categories.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
@@ -31,6 +32,7 @@ apiRouter.use("/gigs", gigsRoutes);
 apiRouter.use("/swipes", swipesRoutes);
 apiRouter.use("/profile", profileRoutes);
 apiRouter.use("/search", searchRoutes);
+apiRouter.use("/categories", categoriesRoutes);
 
 app.use(errorHandler);
 

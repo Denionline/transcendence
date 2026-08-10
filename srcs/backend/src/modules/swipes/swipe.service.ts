@@ -4,7 +4,8 @@ import { AuthenticatedUser } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
 import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.service.js";
-import { publicArtistSelect } from "../profile/profile.service.js";
+import { flattenCategories, publicArtistSelect } from "../profile/profile.service.js";
+import { publicCategorySelect } from "../categories/categories.service.js";
 import { buildMeta } from "../../lib/pagination.js";
 
 interface SwipeData {
@@ -93,12 +94,21 @@ async function validateMatch(
 	}
 }
 
-async function verifyCategoryMatch(userId: string, gigCategory: string) {
+//	Eligibility is now a set intersection on ids, not a string comparison: an
+//	artist may hold several categories, and the gig's single one has to be
+//	among them.
+async function verifyCategoryMatch(userId: string, gigCategoryId: string) {
 	const profile = await prisma.artistProfile.findUnique({
 		where: { userId },
+		include: { categories: { select: { categoryId: true } } },
 	});
 	if (!profile) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
-	if (profile.category !== gigCategory)
+
+	let sharesCategory = false;
+	for (const row of profile.categories) {
+		if (row.categoryId === gigCategoryId) sharesCategory = true;
+	}
+	if (sharesCategory === false)
 		throwError(400, "CATEGORY_MISMATCH", "category doesn't match the gig");
 	return profile;
 }
@@ -125,7 +135,7 @@ export async function handleSwipe(
 	if (swiper.role === UserRole.artist) {
 		data.swipedId = gig.hirerId;
 		data.artistId = swiper.id;
-		await verifyCategoryMatch(data.swiperId, gig.category);
+		await verifyCategoryMatch(data.swiperId, gig.categoryId);
 	} else {
 		if (!targetUserId) throwError(400, "VALIDATION_ERROR", "targetUserId is required");
 		if (gig.hirerId !== swiper.id) {
@@ -133,7 +143,7 @@ export async function handleSwipe(
 		}
 		data.swipedId = targetUserId;
 		data.artistId = targetUserId;
-		await verifyArtistAvailability(await verifyCategoryMatch(targetUserId, gig.category));
+		await verifyArtistAvailability(await verifyCategoryMatch(targetUserId, gig.categoryId));
 	}
 	await verifyDuplicate(data as SwipeData);
 	const matchId = await prisma.$transaction(async (tx) => {
@@ -145,12 +155,18 @@ export async function handleSwipe(
 }
 
 async function getNextGigForArtist(user: AuthenticatedUser, excludeIds: string[]) {
-	const artist = await prisma.artistProfile.findUnique({ where: { userId: user.id } });
+	const artist = await prisma.artistProfile.findUnique({
+		where: { userId: user.id },
+		include: { categories: { select: { categoryId: true } } },
+	});
 	if (!artist) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
+
+	//	The feed widens with every category the artist holds.
+	const categoryIds = artist.categories.map((row) => row.categoryId);
 	const gig = await prisma.gig.findFirst({
 		where: {
 			status: "open",
-			category: artist.category,
+			categoryId: { in: categoryIds },
 			swipes: { none: { swiperId: user.id } },
 			...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {}),
 		},
@@ -170,7 +186,7 @@ async function getNextCandidateForHirer(
 	if (gig.hirerId !== user.id) throwError(403, "FORBIDDEN", "this gig doesn't belong to you");
 	const artist = await prisma.artistProfile.findFirst({
 		where: {
-			category: gig.category,
+			categories: { some: { categoryId: gig.categoryId } },
 			availability: true,
 			user: {
 				swipesReceived: { none: { swiperId: user.id, gigId } },
@@ -181,7 +197,7 @@ async function getNextCandidateForHirer(
 		select: publicArtistSelect,
 	});
 	if (!artist) throwError(404, "NO_MORE_CANDIDATES", "no more candidates to show");
-	return artist;
+	return flattenCategories(artist);
 }
 
 export async function handleNext(
@@ -241,7 +257,14 @@ async function getHirerSwipeHistory(userId: string, data: SwipeHistoryOptions) {
 			select: {
 				liked: true,
 				createdAt: true,
-				gig: { select: { id: true, title: true, category: true, location: true } },
+				gig: {
+					select: {
+						id: true,
+						title: true,
+						category: { select: publicCategorySelect },
+						location: true,
+					},
+				},
 				swiped: {
 					select: {
 						avatarUrl: true,
@@ -255,7 +278,15 @@ async function getHirerSwipeHistory(userId: string, data: SwipeHistoryOptions) {
 		prisma.swipe.count({ where }),
 	]);
 
-	return { items, ...buildMeta(data.page, data.pageSize, total) };
+	//	The join rows are an implementation detail of storage; the history feed
+	//	hands back the same flat category list every other endpoint does.
+	const flattened = items.map((item) => {
+		if (!item.swiped.artistProfile) return item;
+		const artistProfile = flattenCategories(item.swiped.artistProfile);
+		return { ...item, swiped: { ...item.swiped, artistProfile } };
+	});
+
+	return { items: flattened, ...buildMeta(data.page, data.pageSize, total) };
 }
 
 export async function handleSwipeHistory(user: AuthenticatedUser, data: SwipeHistoryOptions) {

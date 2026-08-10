@@ -94,7 +94,7 @@ export default function OpportunityDetailPage() {
 								</span>
 							</div>
 							<p className="text-sm text-base-content/50">
-								{gig.category} · {gig.location ?? "Location TBD"} · Posted{" "}
+								{gig.category.label} · {gig.location ?? "Location TBD"} · Posted{" "}
 								{formatDate(gig.createdAt)}
 							</p>
 						</div>

@@ -3,13 +3,15 @@ import { prisma } from "../../lib/prisma.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { GigSort } from "./search.params.js";
 import { fetchBucketPage } from "./search.relevance.js";
+import { publicCategorySelect, toSlug } from "../categories/categories.service.js";
 
 const searchGigSelect = {
 	id: true,
 	hirerId: true,
 	title: true,
 	description: true,
-	category: true,
+	categoryId: true,
+	category: { select: publicCategorySelect },
 	location: true,
 	rate: true,
 	status: true,
@@ -38,7 +40,9 @@ function buildGigFilters(options: SearchGigsOptions): Prisma.GigWhereInput {
 	const where: Prisma.GigWhereInput = {};
 
 	if (options.status !== undefined) where.status = options.status;
-	if (options.categories !== undefined) where.category = { in: options.categories };
+	if (options.categories !== undefined) {
+		where.category = { slug: { in: options.categories.map(toSlug) } };
+	}
 	if (options.location !== undefined) {
 		where.location = { contains: options.location, mode: "insensitive" };
 	}

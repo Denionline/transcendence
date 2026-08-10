@@ -9,6 +9,7 @@ import app from "../src/app.js";
 import { SECRET } from "../src/lib/env.js";
 import { prisma } from "../src/lib/prisma.js";
 import { GigStatus, UserRole } from "../generated/prisma/client.js";
+import { categoryIdFor, cleanupCategories } from "./helpers/categories.js";
 
 async function withServer<T>(run: (baseUrl: string) => Promise<T>): Promise<T> {
 	const server = app.listen(0);
@@ -72,12 +73,13 @@ type GigOverrides = Partial<{
 }>;
 
 async function makeGig(hirer: { id: string }, overrides: GigOverrides = {}) {
+	const { category, ...rest } = overrides;
 	const gig = await prisma.gig.create({
 		data: {
 			hirerId: hirer.id,
 			title: overrides.title ?? "gigs-test gig",
-			category: overrides.category ?? "music",
-			...overrides,
+			categoryId: await categoryIdFor(category ?? "music"),
+			...rest,
 		},
 	});
 	createdGigIds.push(gig.id);
@@ -87,6 +89,7 @@ async function makeGig(hirer: { id: string }, overrides: GigOverrides = {}) {
 after(async () => {
 	await prisma.gig.deleteMany({ where: { id: { in: createdGigIds } } });
 	await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
+	await cleanupCategories();
 	await prisma.$disconnect();
 });
 
@@ -104,7 +107,7 @@ test("GET /api/gigs/:id returns the gig to any logged-in user (not owner-gated)"
 		assert.equal(body?.id, gig.id);
 		assert.equal(body?.hirerId, hirer.id);
 		assert.equal(body?.title, "Jazz night");
-		assert.equal(body?.category, "music");
+		assert.equal((body?.category as { label: string }).label, "music");
 		assert.equal(body?.status, "open"); // GigStatus defaults to `open`
 	});
 });
@@ -154,7 +157,7 @@ test("POST /api/gigs lets a hirer create a gig (201, owned by the caller, defaul
 		assert.equal(status, 201);
 		assert.equal(body?.hirerId, hirer.id);
 		assert.equal(body?.title, "Wedding band");
-		assert.equal(body?.category, "music");
+		assert.equal((body?.category as { label: string }).label, "music");
 		assert.equal(body?.rate, 500);
 		assert.equal(body?.status, "open");
 		if (typeof body?.id === "string") createdGigIds.push(body.id);
@@ -242,6 +245,7 @@ test("POST /api/gigs ignores a hirerId in the body — the owner is always the c
 test("GET /api/gigs returns the paginated envelope { items, page, pageSize, total }", async () => {
 	const hirer = await makeUser(UserRole.hirer);
 	const category = `cat-${crypto.randomUUID()}`;
+	await categoryIdFor(category);
 	await makeGig(hirer, { category });
 	await makeGig(hirer, { category });
 
@@ -264,6 +268,7 @@ test("GET /api/gigs returns the paginated envelope { items, page, pageSize, tota
 test("GET /api/gigs paginates and clamps pageSize to 100", async () => {
 	const hirer = await makeUser(UserRole.hirer);
 	const category = `cat-${crypto.randomUUID()}`;
+	await categoryIdFor(category);
 	await makeGig(hirer, { category });
 	await makeGig(hirer, { category });
 	await makeGig(hirer, { category });
@@ -286,6 +291,7 @@ test("GET /api/gigs paginates and clamps pageSize to 100", async () => {
 test("GET /api/gigs?status= filters by status", async () => {
 	const hirer = await makeUser(UserRole.hirer);
 	const category = `cat-${crypto.randomUUID()}`;
+	await categoryIdFor(category);
 	await makeGig(hirer, { category, status: GigStatus.open });
 	await makeGig(hirer, { category, status: GigStatus.closed });
 
@@ -308,6 +314,7 @@ test("GET /api/gigs?mine returns only the caller's gigs", async () => {
 	const hirer = await makeUser(UserRole.hirer);
 	const otherHirer = await makeUser(UserRole.hirer);
 	const category = `cat-${crypto.randomUUID()}`;
+	await categoryIdFor(category);
 	await makeGig(hirer, { category });
 	await makeGig(hirer, { category });
 	await makeGig(otherHirer, { category });

@@ -22,13 +22,13 @@ router.patch("/me", requireAuth, async (req, res) => {
 	const profile =
 		caller.role === UserRole.artist
 			? await upsertArtistProfile(caller.id, {
-					category: body.category,
+					categories: body.categories,
 					bio: body.bio,
 					location: body.location,
 					availability: body.availability,
 				})
 			: await upsertHirerProfile(caller.id, {
-					category: body.category,
+					categories: body.categories,
 					bio: body.bio,
 					organizationName: body.organizationName,
 					location: body.location,

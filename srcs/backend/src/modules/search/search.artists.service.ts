@@ -3,15 +3,17 @@ import { prisma } from "../../lib/prisma.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { ArtistSort } from "./search.params.js";
 import { fetchBucketPage } from "./search.relevance.js";
+import { publicCategorySelect, toSlug } from "../categories/categories.service.js";
+import { flattenCategories } from "../profile/profile.service.js";
 
 const searchArtistSelect = {
 	id: true,
 	userId: true,
-	category: true,
 	bio: true,
 	location: true,
 	availability: true,
 	createdAt: true,
+	categories: { select: { category: { select: publicCategorySelect } } },
 	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.ArtistProfileSelect;
 
@@ -35,7 +37,9 @@ function buildArtistFilters(options: SearchArtistsOptions): Prisma.ArtistProfile
 	//	Searching artists must never surface the caller themselves.
 	const where: Prisma.ArtistProfileWhereInput = { NOT: { userId: options.callerId } };
 
-	if (options.categories !== undefined) where.category = { in: options.categories };
+	if (options.categories !== undefined) {
+		where.categories = { some: { category: { slug: { in: options.categories.map(toSlug) } } } };
+	}
 	if (options.location !== undefined) {
 		where.location = { contains: options.location, mode: "insensitive" };
 	}
@@ -101,7 +105,7 @@ async function searchArtistsByRelevance(
 		artistBucket(whereB),
 	);
 
-	return { items, ...buildMeta(page, pageSize, countA + countB) };
+	return { items: items.map(flattenCategories), ...buildMeta(page, pageSize, countA + countB) };
 }
 
 export async function searchArtists(options: SearchArtistsOptions) {
@@ -124,5 +128,5 @@ export async function searchArtists(options: SearchArtistsOptions) {
 		prisma.artistProfile.count({ where }),
 	]);
 
-	return { items, ...buildMeta(page, pageSize, total) };
+	return { items: items.map(flattenCategories), ...buildMeta(page, pageSize, total) };
 }

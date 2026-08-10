@@ -1,8 +1,10 @@
+import type { CategoryDto } from "../categories/types";
+
 export interface ProfileDto {
 	id: string;
 	userId: string;
 	kind: "artist" | "hirer";
-	category: string;
+	categories: CategoryDto[];
 	bio: string | null;
 	location: string | null;
 	rate?: number | null;
