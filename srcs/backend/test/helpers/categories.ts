@@ -24,6 +24,13 @@ export async function categoryIdFor(name: string): Promise<string> {
 	return category.id;
 }
 
+//	Categories created through the API rather than through this helper still
+//	have to be cleaned up, so let a suite hand their ids back to the seam.
+export function trackCategory(id: string): string {
+	if (createdCategoryIds.includes(id) === false) createdCategoryIds.push(id);
+	return id;
+}
+
 export async function categoryIdsFor(names: string[]): Promise<string[]> {
 	const ids: string[] = [];
 	for (const name of names) {
@@ -47,7 +54,12 @@ export async function gigCategory(name: string) {
 //	seeded by the migration) are left alone.
 export async function cleanupCategories() {
 	await prisma.category.deleteMany({
-		where: { id: { in: createdCategoryIds }, gigs: { none: {} }, artists: { none: {} } },
+		where: {
+			id: { in: createdCategoryIds },
+			gigs: { none: {} },
+			artists: { none: {} },
+			hirers: { none: {} },
+		},
 	});
 }
 

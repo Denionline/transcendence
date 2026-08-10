@@ -6,6 +6,9 @@ import { Prisma } from "../../../generated/prisma/client.js";
 //	artist listing everything would surface in every feed.
 export const MAX_PROFILE_CATEGORIES = 10;
 
+//	Labels are display strings in a <select>, not prose.
+export const MAX_CATEGORY_LABEL = 60;
+
 export const publicCategorySelect = {
 	id: true,
 	slug: true,
@@ -78,6 +81,66 @@ export async function resolveCategoryIds(value: unknown, field = "categories"): 
 		throwError(400, "CATEGORY_NOT_FOUND", `unknown categories: ${unknown.join(", ")}`);
 	}
 	return found.map((category) => category.id);
+}
+
+export interface CategoryInput {
+	label?: unknown;
+	slug?: unknown;
+}
+
+function parseLabel(value: unknown): string {
+	if (typeof value !== "string") {
+		throwError(400, "VALIDATION_ERROR", "label must be a string");
+	}
+	const label = value.trim();
+	if (label.length === 0) throwError(400, "VALIDATION_ERROR", "label cannot be empty");
+	if (label.length > MAX_CATEGORY_LABEL) {
+		throwError(400, "VALIDATION_ERROR", `label cannot exceed ${MAX_CATEGORY_LABEL} characters`);
+	}
+	return label;
+}
+
+export async function createCategory(input: CategoryInput) {
+	const label = parseLabel(input.label);
+	//	The slug defaults to the normalized label, which is what keeps the two
+	//	in step for the common case. An explicit slug is allowed so a long
+	//	display name can still key off a short one.
+	const slug = input.slug === undefined ? toSlug(label) : parseSlug(input.slug, "slug");
+
+	try {
+		return await prisma.category.create({ data: { slug, label }, select: publicCategorySelect });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+			throwError(409, "CATEGORY_EXISTS", `a category with slug "${slug}" already exists`);
+		}
+		throw error;
+	}
+}
+
+export async function updateCategory(id: string, input: CategoryInput) {
+	const data: Prisma.CategoryUpdateInput = {};
+
+	//	Changing the label deliberately leaves the slug alone. The slug is the
+	//	stable key that every profile and gig write resolves against, so a
+	//	display-only rename must not invalidate callers; re-slugging is a
+	//	separate, explicit act. Existing matches survive either way — they hold
+	//	the category id, not its text.
+	if (input.label !== undefined) data.label = parseLabel(input.label);
+	if (input.slug !== undefined) data.slug = parseSlug(input.slug, "slug");
+
+	let hasChanges = false;
+	if (Object.keys(data).length > 0) hasChanges = true;
+	if (hasChanges === false) throwError(400, "VALIDATION_ERROR", "nothing to update");
+
+	try {
+		return await prisma.category.update({ where: { id }, data, select: publicCategorySelect });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === "P2002") throwError(409, "CATEGORY_EXISTS", "slug already in use");
+			if (error.code === "P2025") throwError(404, "CATEGORY_NOT_FOUND", "category not found");
+		}
+		throw error;
+	}
 }
 
 //	Search accepts a filter over categories that may legitimately name rows
