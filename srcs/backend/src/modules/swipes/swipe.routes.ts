@@ -4,6 +4,8 @@ import { throwError } from "../../lib/http-error.js";
 import { handleSwipe, handleNext, handleSwipeHistory } from "./swipe.service.js";
 import { parseId } from "../gigs/gigs.routes.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
+import { parsePagination } from "../../lib/pagination.js";
+import { SwipeHistoryOptions } from "./swipe.service.js";
 
 const router = Router();
 
@@ -48,10 +50,16 @@ function parseLiked(value: unknown): boolean | undefined {
 
 router.get("/", requireAuth, async (req, res) => {
 	const user = req.user!;
+	const { page, pageSize } = parsePagination(req.query);
 
-	const liked = parseLiked(req.query.liked);
-	const gigId = typeof req.query.gigId === "string" ? req.query.gigId : undefined;
-	const result = await handleSwipeHistory(user, liked, gigId);
+	const data: SwipeHistoryOptions = {
+		page,
+		pageSize,
+		liked: parseLiked(req.query.liked),
+		gigId: typeof req.query.gigId === "string" ? req.query.gigId : undefined,
+	};
+
+	const result = await handleSwipeHistory(user, data);
 	res.status(200).json(result);
 });
 
