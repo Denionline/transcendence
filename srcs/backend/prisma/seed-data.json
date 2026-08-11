@@ -1,0 +1,99 @@
+{
+	"password": "Portfolio#2026",
+	"categories": [
+		{ "slug": "musician", "label": "Musician" },
+		{ "slug": "dj", "label": "DJ" },
+		{ "slug": "photographer", "label": "Photographer" },
+		{ "slug": "videographer", "label": "Videographer" },
+		{ "slug": "painter", "label": "Painter" },
+		{ "slug": "illustrator", "label": "Illustrator" }
+	],
+	"admin": { "email": "admin@artmate.dev", "username": "Admin" },
+	"artists": [
+		{
+			"email": "aria@artmate.dev",
+			"username": "Aria Souza",
+			"location": "Porto",
+			"categories": ["musician", "dj"]
+		},
+		{
+			"email": "leo@artmate.dev",
+			"username": "Leo Tanaka",
+			"location": "Lisbon",
+			"categories": ["photographer", "videographer"]
+		},
+		{
+			"email": "maya@artmate.dev",
+			"username": "Maya Studio",
+			"location": "Braga",
+			"categories": ["painter", "illustrator"]
+		},
+		{
+			"email": "noah@artmate.dev",
+			"username": "Noah Reyes",
+			"location": "Porto",
+			"categories": ["musician", "videographer"]
+		}
+	],
+	"hirers": [
+		{
+			"email": "bar@artmate.dev",
+			"username": "Porto Live Bar",
+			"organizationName": "Porto Live Bar",
+			"location": "Porto",
+			"categories": ["musician", "dj"],
+			"gigs": [
+				{ "title": "Friday night live set", "category": "musician", "rate": 250 },
+				{ "title": "Resident DJ for summer season", "category": "dj", "rate": 400 }
+			]
+		},
+		{
+			"email": "studio@artmate.dev",
+			"username": "Lumen Studios",
+			"organizationName": "Lumen Studios",
+			"location": "Lisbon",
+			"categories": ["photographer", "videographer"],
+			"gigs": [
+				{ "title": "Product photography for new catalogue", "category": "photographer", "rate": 300 },
+				{ "title": "Behind-the-scenes wedding video", "category": "videographer", "rate": 500 }
+			]
+		},
+		{
+			"email": "gallery@artmate.dev",
+			"username": "Gallery Norte",
+			"organizationName": "Gallery Norte",
+			"location": "Braga",
+			"categories": ["painter", "illustrator"],
+			"gigs": [
+				{ "title": "Mural for gallery entrance", "category": "painter", "rate": 600 },
+				{ "title": "Illustrated exhibition posters", "category": "illustrator", "rate": 350 }
+			]
+		}
+	],
+	"swipes": [
+		{ "by": "aria@artmate.dev", "gig": "Friday night live set", "onArtist": null, "liked": true },
+		{ "by": "bar@artmate.dev", "gig": "Friday night live set", "onArtist": "aria@artmate.dev", "liked": true },
+
+		{ "by": "maya@artmate.dev", "gig": "Mural for gallery entrance", "onArtist": null, "liked": true },
+		{ "by": "gallery@artmate.dev", "gig": "Mural for gallery entrance", "onArtist": "maya@artmate.dev", "liked": true },
+
+		{ "by": "noah@artmate.dev", "gig": "Behind-the-scenes wedding video", "onArtist": null, "liked": true },
+		{ "by": "leo@artmate.dev", "gig": "Product photography for new catalogue", "onArtist": null, "liked": false }
+	],
+	"chats": [
+		{
+			"gig": "Friday night live set",
+			"messages": [
+				{ "from": "bar@artmate.dev", "content": "Loved your set on the reel — are you free this Friday?" },
+				{ "from": "aria@artmate.dev", "content": "I am! What time do you need me there?" }
+			]
+		},
+		{
+			"gig": "Mural for gallery entrance",
+			"messages": [
+				{ "from": "gallery@artmate.dev", "content": "Your portfolio is exactly the style we want for the entrance wall." },
+				{ "from": "maya@artmate.dev", "content": "Happy to hear it! I can drop by next week to look at the wall." }
+			]
+		}
+	]
+}
