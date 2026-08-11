@@ -1,4 +1,4 @@
-import { request } from "../auth/api";
+import { apiRequest } from "../../lib/apiClient";
 import type { CategoryDto } from "../categories/types";
 
 // Reads return whole Category rows; writes send slugs. The two differ on
@@ -32,12 +32,12 @@ export interface ProfileUpdate {
 export type ProfileFields = ArtistProfileFields | HirerProfileFields;
 
 export async function saveMyProfile(updates: ProfileUpdate): Promise<ProfileFields> {
-	return await request("/profile/me", {
+	return await apiRequest("/profile/me", {
 		method: "PATCH",
 		body: JSON.stringify(updates),
 	});
 }
 
 export async function fetchMyProfile(userId: string): Promise<ProfileFields> {
-	return request(`/profile/${userId}`);
+	return apiRequest(`/profile/${userId}`);
 }
