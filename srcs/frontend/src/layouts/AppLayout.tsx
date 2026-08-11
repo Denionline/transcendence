@@ -6,7 +6,6 @@ import ProfileOnboardingGate from "../features/onboarding/ProfileOnboardingGate"
 const HIRER_ITEMS: NavbarItem[] = [
 	{ to: "/discover", label: "Discover", end: true },
 	{ to: "/opportunities/mine", label: "My opportunities" },
-	{ to: "/matches", label: "Matches" },
 	{ to: "/messages", label: "Messages" },
 ];
 

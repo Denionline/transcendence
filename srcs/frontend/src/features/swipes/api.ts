@@ -1,7 +1,7 @@
 import { ApiError, apiRequest } from "../../lib/apiClient";
 import type { GigDto } from "../gigs/types";
 import type { ArtistCandidateDto } from "../artists/types";
-import type { InterestedArtistDto, SwipeInput, SwipeResult } from "./types";
+import type { SwipeInput, SwipeResult } from "./types";
 
 function buildNextQuery(params: { gigId?: string; excludeIds?: string[] }): string {
 	const search = new URLSearchParams();
@@ -51,16 +51,4 @@ export async function postSwipe(input: SwipeInput): Promise<SwipeResult> {
 		if (err instanceof ApiError && err.code === "SWIPE_EXISTS") return {};
 		throw err;
 	}
-}
-
-/**
- * Hirer mode: artists who swiped "interested" on one of the caller's gigs.
- * Pass `gigId` to narrow to a single opportunity; omit it to see interest
- * across every gig the hirer owns.
- */
-export function listInterestedArtists(gigId?: string): Promise<InterestedArtistDto[]> {
-	const search = new URLSearchParams();
-	if (gigId) search.set("gigId", gigId);
-	const qs = search.toString();
-	return apiRequest<InterestedArtistDto[]>(`/swipes/interested${qs ? `?${qs}` : ""}`);
 }

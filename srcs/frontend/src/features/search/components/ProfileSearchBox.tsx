@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { SearchIcon } from "lucide-react";
 import { searchProfiles } from "../api";
 import ProfileResultModal from "./ProfileResultModal";
+import { useAuth } from "../../auth/hooks/useAuth";
 import type { SearchProfileResult } from "../types";
 
 interface ProfileSearchBoxProps {
@@ -20,6 +21,7 @@ export default function ProfileSearchBox({
 	className,
 	onSelect,
 }: ProfileSearchBoxProps) {
+	const { user } = useAuth();
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<SearchProfileResult[]>([]);
 	const [isOpen, setIsOpen] = useState(false);
@@ -37,12 +39,16 @@ export default function ProfileSearchBox({
 		}
 	}
 
+	// Only artists and hirers see this box (it lives in AppLayout's navbar),
+	// but guard anyway since searchProfiles needs a role to pick an endpoint.
+	const callerRole = user?.role === "artist" || user?.role === "hirer" ? user.role : null;
+
 	useEffect(() => {
 		const trimmed = query.trim();
-		if (trimmed === "") return;
+		if (trimmed === "" || callerRole === null) return;
 		let cancelled = false;
 		const timer = window.setTimeout(() => {
-			searchProfiles(trimmed)
+			searchProfiles(trimmed, callerRole)
 				.then((matches) => {
 					if (cancelled) return;
 					setResults(matches.slice(0, MAX_RESULTS));
@@ -56,7 +62,7 @@ export default function ProfileSearchBox({
 			cancelled = true;
 			window.clearTimeout(timer);
 		};
-	}, [query]);
+	}, [query, callerRole]);
 
 	useEffect(() => {
 		if (!isOpen) return;

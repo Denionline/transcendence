@@ -13,7 +13,6 @@ import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
-import MatchesPage from "./pages/MatchesPage";
 import MessagesPage from "./pages/MessagesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
 import NewOpportunityPage from "./pages/NewOpportunityPage";
@@ -56,8 +55,6 @@ export const router = createBrowserRouter([
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
 			{ path: "/profile", element: <Navigate to="/settings" replace /> },
-			{ path: "/matches", element: <MatchesPage /> },
-			{ path: "/shortlist", element: <Navigate to="/matches" replace /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
 			{ path: "/opportunities/mine", element: <MyOpportunitiesPage /> },
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },

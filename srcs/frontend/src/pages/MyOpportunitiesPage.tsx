@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRightIcon, PlusIcon, UsersIcon } from "lucide-react";
+import { ChevronRightIcon, PlusIcon } from "lucide-react";
 import { listMyGigs } from "../features/gigs/api";
 import { formatDate } from "../lib/format";
 import { ApiError } from "../lib/apiClient";
@@ -101,14 +101,6 @@ export default function MyOpportunitiesPage() {
 									className="size-4 shrink-0 text-base-content/30 transition-transform group-hover:translate-x-0.5"
 									aria-hidden="true"
 								/>
-							</Link>
-
-							<Link
-								to={`/matches?gigId=${gig.id}`}
-								className="btn btn-ghost btn-sm shrink-0 gap-1.5 rounded-full"
-							>
-								<UsersIcon className="size-4" aria-hidden="true" />
-								<span className="hidden sm:inline">Matches</span>
 							</Link>
 						</li>
 					))}
