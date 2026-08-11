@@ -1,9 +1,9 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { Briefcase, UserRound } from "lucide-react";
-import { useAuth } from "../features/auth/hooks/useAuth";
-import Avatar from "../components/Avatar";
-import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../features/profile/api";
-import { useCategories } from "../features/categories/hooks/useCategories";
+import { useAuth } from "../../auth/hooks/useAuth";
+import Avatar from "../../../components/Avatar";
+import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
+import { useCategories } from "../../categories/hooks/useCategories";
 
 type Status = { type: "success" | "error"; text: string } | null;
 
