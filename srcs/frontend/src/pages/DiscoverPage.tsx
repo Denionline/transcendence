@@ -245,17 +245,21 @@ export default function DiscoverPage() {
 						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Discipline
 						</h3>
-						<div className="flex flex-col gap-2">
+						<div className="flex flex-wrap gap-1.5">
 							{categories.map((category) => (
-								<label key={category.slug} className="flex cursor-pointer items-center gap-2">
-									<input
-										type="checkbox"
-										className="checkbox checkbox-sm checkbox-primary"
-										checked={disciplines.has(category.slug)}
-										onChange={() => toggleDiscipline(category.slug)}
-									/>
-									<span>{category.label}</span>
-								</label>
+								<button
+									key={category.slug}
+									type="button"
+									onClick={() => toggleDiscipline(category.slug)}
+									aria-pressed={disciplines.has(category.slug)}
+									className={`btn btn-xs rounded-full font-normal ${
+										disciplines.has(category.slug)
+											? "btn-primary"
+											: "btn-outline border-base-content/15 text-base-content/30"
+									}`}
+								>
+									{category.label}
+								</button>
 							))}
 						</div>
 					</div>
