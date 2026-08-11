@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/hooks/useAuth";
-import {
-	fetchMyProfile,
-	saveMyProfile,
-	type ArtistProfileFields,
-	type HirerProfileFields,
-} from "../profile/api";
+import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../profile/api";
 import { notifyProfileUpdated } from "../profile/profileEvents";
 import { ApiError } from "../../lib/apiClient";
 import ProfileOnboardingModal, {
@@ -40,10 +35,10 @@ export default function ProfileOnboardingGate() {
 		// a no-op for them regardless of `step`, so there's no state to set here.
 		if (!user || (user.role !== "artist" && user.role !== "hirer")) return;
 		let cancelled = false;
-		fetchMyProfile()
+		fetchMyProfile(user.id)
 			.then((profile) => {
 				if (cancelled) return;
-				setStep(profile.category ? nextStepAfterProfile(user.id) : "profile");
+				setStep(profile.categories.length > 0 ? nextStepAfterProfile(user.id) : "profile");
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
@@ -70,11 +65,11 @@ export default function ProfileOnboardingGate() {
 		setSaveError(null);
 		try {
 			const base = {
-				category: values.category,
+				categories: [values.category],
 				bio: values.bio.trim() || null,
 				location: values.location.trim() || null,
 			};
-			const payload: Partial<ArtistProfileFields & HirerProfileFields> =
+			const payload: ProfileUpdate =
 				user.role === "hirer"
 					? { ...base, organizationName: values.organizationName.trim() }
 					: {

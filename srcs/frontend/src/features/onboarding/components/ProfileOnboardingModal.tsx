@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import { PaletteIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
-import { CATEGORIES } from "../../opportunities/constants";
+import { useCategories } from "../../categories/hooks/useCategories";
 import type { UserRole } from "../../auth/types";
 
 export interface ProfileOnboardingValues {
@@ -32,6 +32,7 @@ export default function ProfileOnboardingModal({
 	error,
 	onSubmit,
 }: ProfileOnboardingModalProps) {
+	const { categories } = useCategories();
 	const [category, setCategory] = useState("");
 	const [organizationName, setOrganizationName] = useState("");
 	const [bio, setBio] = useState("");
@@ -85,9 +86,9 @@ export default function ProfileOnboardingModal({
 						<option value="" disabled>
 							Select category
 						</option>
-						{CATEGORIES.map((option) => (
-							<option key={option} value={option}>
-								{option}
+						{categories.map((option) => (
+							<option key={option.slug} value={option.slug}>
+								{option.label}
 							</option>
 						))}
 					</select>
