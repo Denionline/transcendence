@@ -17,6 +17,10 @@ const apiRouter = Router();
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
+app.use((req, res, next) => {
+	console.log(`[Http request] ${req.method} ${req.path}`);
+	next();
+});
 
 // Infrastructure routes
 app.get("/health", (_req, res) => {
