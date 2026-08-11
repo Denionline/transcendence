@@ -16,7 +16,6 @@ import AdminSettingsPage from "./pages/AdminSettingsPage";
 import MatchesPage from "./pages/MatchesPage";
 import MessagesPage from "./pages/MessagesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
-import SavedPage from "./pages/SavedPage";
 import NewOpportunityPage from "./pages/NewOpportunityPage";
 import MyOpportunitiesPage from "./pages/MyOpportunitiesPage";
 import OpportunityDetailPage from "./pages/OpportunityDetailPage";
@@ -62,7 +61,6 @@ export const router = createBrowserRouter([
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
 			{ path: "/opportunities/mine", element: <MyOpportunitiesPage /> },
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
-			{ path: "/saved", element: <SavedPage /> },
 			{ path: "/messages", element: <MessagesPage /> },
 		],
 	},
