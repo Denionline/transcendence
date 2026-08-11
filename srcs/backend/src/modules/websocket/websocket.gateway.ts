@@ -26,17 +26,19 @@ export function initWebsocket(httpServer: HttpServer) {
 			socket.userId = payload.userId;
 			socket.role = payload.role;
 			next();
-		} catch (error) {
+		} catch {
 			next(new Error("unauthorized"));
 		}
 	});
 	io.on("connection", async (socket) => {
+		// eslint-disable-next-line no-console
 		console.log(styleText("green", `[WebSocket] Client on: ${socket.userId}`));
 		socket.join("user:" + socket.userId);
 
 		const matchesPromised = getMatchesForUser(socket.userId, socket.role);
 
 		socket.on("disconnect", async (reason) => {
+			// eslint-disable-next-line no-console
 			console.log(styleText("red", `[WebSocket] Client off: ${socket.userId}, reason: ${reason}`));
 			const matches = await matchesPromised;
 			matches.forEach((match) => {
@@ -45,6 +47,7 @@ export function initWebsocket(httpServer: HttpServer) {
 		});
 
 		socket.on("error", (err) => {
+			// eslint-disable-next-line no-console
 			console.error(`[WebSocket] Socket error for ${socket.userId}:`, err);
 		});
 
@@ -56,14 +59,14 @@ export function initWebsocket(httpServer: HttpServer) {
 				const message = await prisma.chatMessage.create({
 					data: { matchId: data.matchId, senderId: socket.userId, content: data.content },
 				});
-				socket
-					.to(`chat:${data.matchId}`)
-					.emit("new_message", {
-						matchId: message.matchId,
-						senderId: message.senderId,
-						content: message.content,
-					});
+				socket.to(`chat:${data.matchId}`).emit("new_message", {
+					matchId: message.matchId,
+					senderId: message.senderId,
+					content: message.content,
+				});
 			} catch (error) {
+				// eslint-disable-next-line no-console
+				console.error(`[WebSocket] Failed to save message for ${socket.userId}:`, error);
 				socket.emit("message_error", { reason: "failed_to_send" });
 			}
 		});

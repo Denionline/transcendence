@@ -17,7 +17,8 @@ const apiRouter = Router();
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
+	// eslint-disable-next-line no-console
 	console.log(`[Http request] ${req.method} ${req.path}`);
 	next();
 });
