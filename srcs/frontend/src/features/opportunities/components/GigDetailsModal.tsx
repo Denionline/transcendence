@@ -1,22 +1,21 @@
-import { BadgeCheckIcon, StarIcon, XIcon } from "lucide-react";
+import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import { initials } from "../../../lib/format";
 import type { GigListing } from "../gigTypes";
 
 interface GigDetailsModalProps {
 	gig: GigListing | null;
-	saved: boolean;
+	/** Discipline slugs currently checked in the sidebar filter — the category badge highlights when it's one of them. */
+	selectedDisciplines?: Set<string>;
 	onClose: () => void;
-	onToggleSave: () => void;
 	onPass: () => void;
 	onInterested: () => void;
 }
 
 export default function GigDetailsModal({
 	gig,
-	saved,
+	selectedDisciplines,
 	onClose,
-	onToggleSave,
 	onPass,
 	onInterested,
 }: GigDetailsModalProps) {
@@ -68,7 +67,15 @@ export default function GigDetailsModal({
 						</h2>
 
 						<div className="flex flex-wrap gap-2">
-							{/* <span className="badge badge-sm badge-primary">{gig.budget}</span> */}
+							<span
+								className={`badge badge-sm ${
+									selectedDisciplines?.has(gig.category)
+										? "badge-primary"
+										: "badge-outline border-base-content/15"
+								}`}
+							>
+								{gig.categoryLabel}
+							</span>
 							<span className="badge badge-sm badge-outline border-base-content/15">
 								{gig.duration}
 							</span>
@@ -98,18 +105,6 @@ export default function GigDetailsModal({
 								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-5" aria-hidden="true" />
-							</button>
-							<button
-								type="button"
-								onClick={onToggleSave}
-								aria-label={saved ? "Remove from saved" : "Save gig"}
-								aria-pressed={saved}
-								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-							>
-								<StarIcon
-									className={`size-5 ${saved ? "fill-primary text-primary" : ""}`}
-									aria-hidden="true"
-								/>
 							</button>
 							<button
 								type="button"
