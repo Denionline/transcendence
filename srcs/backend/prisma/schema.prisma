@@ -37,27 +37,67 @@ model User {
   loginAttempts LoginAttempt[]
 }
 
+// The controlled vocabulary. `slug` is the stable matching/lookup key,
+// `label` is what the UI shows — renaming a category is a one-row UPDATE
+// that breaks no existing match. See docs/mad/20260810-categories.md.
+model Category {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  label     String
+  createdAt DateTime @default(now())
+
+  artists ArtistCategory[]
+  hirers  HirerCategory[]
+  gigs    Gig[]
+}
+
+// The composite primary key is the deduplication: an artist cannot hold the
+// same category twice, so no application-level check is needed.
+model ArtistCategory {
+  artistProfileId String
+  artistProfile   ArtistProfile @relation(fields: [artistProfileId], references: [id], onDelete: Cascade)
+  categoryId      String
+  category        Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([artistProfileId, categoryId])
+  @@index([categoryId])
+}
+
+model HirerCategory {
+  hirerProfileId String
+  hirerProfile   HirerProfile @relation(fields: [hirerProfileId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([hirerProfileId, categoryId])
+  @@index([categoryId])
+}
+
 model ArtistProfile {
   id           String   @id @default(uuid())
   userId       String   @unique
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category     String
   bio          String?
   location     String?
   availability Boolean  @default(true)
   createdAt    DateTime @default(now())
+
+  categories ArtistCategory[]
+
+  @@index([availability])
 }
 
 model HirerProfile {
   id               String   @id @default(uuid())
   userId           String   @unique
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category         String
   organizationName String
   bio              String?
   location         String?
   availability     Boolean  @default(true)
   createdAt        DateTime @default(now())
+
+  categories HirerCategory[]
 }
 
 enum FileType {
@@ -87,7 +127,8 @@ model Gig {
   hirer       User      @relation("GigsPosted", fields: [hirerId], references: [id], onDelete: Cascade)
   title       String
   description String?
-  category    String
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   location    String?
   rate        Int?
   status      GigStatus @default(open)
@@ -95,6 +136,10 @@ model Gig {
 
   swipes  Swipe[]
   matches Match[]
+
+  @@index([status, createdAt])
+  @@index([status, categoryId])
+  @@index([categoryId])
 }
 
 model Swipe {

@@ -4,7 +4,7 @@ import {
 	upsertArtistProfile,
 	upsertHirerProfile,
 	getCallerProfile,
-	getPublicProfileByUserId,
+	deleteProfile,
 } from "./profile.service.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { throwError } from "../../lib/http-error.js";
@@ -22,13 +22,13 @@ router.patch("/me", requireAuth, async (req, res) => {
 	const profile =
 		caller.role === UserRole.artist
 			? await upsertArtistProfile(caller.id, {
-					category: body.category,
+					categories: body.categories,
 					bio: body.bio,
 					location: body.location,
 					availability: body.availability,
 				})
 			: await upsertHirerProfile(caller.id, {
-					category: body.category,
+					categories: body.categories,
 					bio: body.bio,
 					organizationName: body.organizationName,
 					location: body.location,
@@ -37,22 +37,21 @@ router.patch("/me", requireAuth, async (req, res) => {
 	res.status(200).json(profile);
 });
 
-router.get("/me", requireAuth, async (req, res) => {
-	const caller = req.user!;
+router.get("/:id", requireAuth, async (req, res) => {
+	const targetId = parseId(req.params.id);
 
-	if (caller.role !== UserRole.artist && caller.role !== UserRole.hirer)
-		throwError(403, "FORBIDDEN", "this role does not have an artist/hirer profile");
-	const result = await getCallerProfile(caller.id, caller.role);
+	const result = await getCallerProfile(targetId);
 	res.status(200).json(result);
 });
 
-// Registered after the literal "/me" routes above so a request for "/me"
-// still matches those, not this param route. Reading someone else's public
-// profile needs no ownership check — just proof of who's asking.
-router.get("/:userId", requireAuth, async (req, res) => {
-	const userId = parseId(req.params.userId);
-	const result = await getPublicProfileByUserId(userId);
-	res.status(200).json(result);
+router.delete("/:id", requireAuth, async (req, res) => {
+	const targetId = parseId(req.params.id);
+	const caller = req.user!;
+
+	if (caller.id === targetId || caller.role === UserRole.admin) {
+		await deleteProfile(targetId);
+		res.status(204).send();
+	} else throwError(403, "FORBIDDEN", "you cannot delete this profile");
 });
 
 export default router;

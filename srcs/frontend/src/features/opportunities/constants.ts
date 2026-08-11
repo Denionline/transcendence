@@ -1,34 +1,6 @@
-// Swipe matching is an exact string comparison against ArtistProfile.category
-// (see backend swipe.service.ts), so this list has to mirror the real
-// category values artist profiles are actually seeded/created with — not an
-// independent, free-form picklist. Keep it in sync with that vocabulary.
-export const CATEGORIES = [
-	"3D animator",
-	"Calligrapher",
-	"Ceramicist",
-	"Collage artist",
-	"Comic artist",
-	"Concept artist",
-	"Fashion illustrator",
-	"Graphic designer",
-	"Illustrator",
-	"Installation artist",
-	"Jewelry designer",
-	"Motion designer",
-	"Muralist",
-	"Painter",
-	"Photographer",
-	"Portrait painter",
-	"Printmaker",
-	"Puppet maker",
-	"Sculptor",
-	"Set designer",
-	"Sound artist",
-	"Street artist",
-	"Tattoo artist",
-	"Textile artist",
-	"Videographer",
-] as const;
+// Categories are no longer listed here. They live in the database and are
+// served by GET /api/categories — see useCategories(). Keeping a copy in the
+// frontend is what made the old list drift out of sync with the real values.
 
 export const DURATION_PRESETS = [
 	"~1 week",
@@ -38,16 +10,3 @@ export const DURATION_PRESETS = [
 	"~2-3 months",
 	"3+ months",
 ] as const;
-
-export const TAGS = [
-	"Mural",
-	"Illustration",
-	"Botanical",
-	"Editorial",
-	"3D/Motion",
-	"Set design",
-	"Lettering",
-	"Large-scale",
-] as const;
-
-export const MAX_TAGS = 4;

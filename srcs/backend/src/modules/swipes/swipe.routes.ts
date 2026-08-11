@@ -1,9 +1,11 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { throwError } from "../../lib/http-error.js";
-import { handleSwipe, handleNext, listInterestedArtists } from "./swipe.service.js";
+import { handleSwipe, handleNext, handleSwipeHistory } from "./swipe.service.js";
 import { parseId } from "../gigs/gigs.routes.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
+import { parsePagination } from "../../lib/pagination.js";
+import { SwipeHistoryOptions } from "./swipe.service.js";
 
 const router = Router();
 
@@ -40,13 +42,24 @@ router.get("/next", requireAuth, async (req, res) => {
 	res.status(200).json(result);
 });
 
-// Artists who swiped "interested" on one of the caller's own gigs. gigId is
-// optional — omitted, it spans every gig the hirer owns.
-router.get("/interested", requireAuth, async (req, res) => {
-	const user = req.user!;
-	const gigId = typeof req.query.gigId === "string" ? req.query.gigId : undefined;
+function parseLiked(value: unknown): boolean | undefined {
+	if (value === "true") return true;
+	if (value === "false") return false;
+	return undefined;
+}
 
-	const result = await listInterestedArtists(user, gigId);
+router.get("/", requireAuth, async (req, res) => {
+	const user = req.user!;
+	const { page, pageSize } = parsePagination(req.query);
+
+	const data: SwipeHistoryOptions = {
+		page,
+		pageSize,
+		liked: parseLiked(req.query.liked),
+		gigId: typeof req.query.gigId === "string" ? req.query.gigId : undefined,
+	};
+
+	const result = await handleSwipeHistory(user, data);
 	res.status(200).json(result);
 });
 

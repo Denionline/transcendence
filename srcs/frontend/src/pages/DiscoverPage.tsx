@@ -11,7 +11,12 @@ import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
+import { useCategories } from "../features/categories/hooks/useCategories";
 
+// The discipline facet used to be a fourth hardcoded vocabulary that matched
+// no real data. It now lists real categories; the filter itself is still
+// client-side only and does not narrow the deck yet.
+const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
 const DESKTOP_QUERY = "(min-width: 1024px)";
 // GET /swipes/next only ever returns the single next candidate; matching one
 // of the active filters means fetching (and permanently skipping past, via
@@ -25,19 +30,11 @@ export default function DiscoverPage() {
 	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
 	// mount so the initial fetch burst matches whichever layout is live.
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
-
-	// Discipline/location are the real filters — they drive which fetched
-	// candidates actually make it into the deck (see fetchMatchingCandidate
-	// below). Both are locked to the active opportunity's info, not editable
-	// by the hirer: the backend never returns a candidate in any other
-	// category or location combination it wasn't already going to return, so
-	// letting either be picked freely just produced an honestly-empty deck
-	// for every other choice, which read as broken. Shown (disabled) anyway
-	// so it's clear *what's* driving the match, not just that it's locked.
-	// Both are set (and re-set) only by markFiltersFromGig, never directly by
-	// the hirer.
-	const [discipline, setDiscipline] = useState<string | null>(null);
-	const [locationQuery, setLocationQuery] = useState("");
+	const { categories } = useCategories();
+	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
+	const [availability, setAvailability] = useState<"now" | "soon" | null>("now");
+	const [remoteOnly, setRemoteOnly] = useState(false);
+	const [sort, setSort] = useState(SORT_OPTIONS[0]);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	// GET /swipes/next requires a gigId for hirers — candidates are always
@@ -223,28 +220,18 @@ export default function DiscoverPage() {
 						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Discipline
 						</h3>
-						<p className="mb-2 text-xs text-base-content/40">
-							Locked to this opportunity — every candidate here matches it already.
-						</p>
-						<div className="flex flex-wrap gap-1.5">
-							{CATEGORIES.map((category) => {
-								const active = discipline === category;
-								return (
-									<button
-										key={category}
-										type="button"
-										disabled
-										aria-pressed={active}
-										className={`btn btn-xs rounded-full font-normal disabled:opacity-100 ${
-											active
-												? "btn-primary"
-												: "btn-outline border-base-content/15 text-base-content/30"
-										}`}
-									>
-										{category}
-									</button>
-								);
-							})}
+						<div className="flex flex-col gap-2">
+							{categories.map((category) => (
+								<label key={category.slug} className="flex cursor-pointer items-center gap-2">
+									<input
+										type="checkbox"
+										className="checkbox checkbox-sm checkbox-primary"
+										checked={disciplines.has(category.slug)}
+										onChange={() => toggleDiscipline(category.slug)}
+									/>
+									<span>{category.label}</span>
+								</label>
+							))}
 						</div>
 					</div>
 
