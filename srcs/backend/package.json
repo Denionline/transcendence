@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "tsx --watch src/server.ts",
 		"start": "tsx src/server.ts",
+		"seed": "tsx prisma/seed.ts",
 		"pretest": "prisma generate",
 		"test": "tsx --test test/*.test.ts",
 		"lint": "eslint .",
