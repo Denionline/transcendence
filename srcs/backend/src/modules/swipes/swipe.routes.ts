@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { throwError } from "../../lib/http-error.js";
-import { handleSwipe, handleNext, handleSwipeHistory } from "./swipe.service.js";
+import {
+	handleSwipe,
+	handleNext,
+	handleSwipeHistory,
+	handleInterestedArtists,
+} from "./swipe.service.js";
 import { parseId } from "../gigs/gigs.routes.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { parsePagination } from "../../lib/pagination.js";
@@ -39,6 +44,17 @@ router.get("/next", requireAuth, async (req, res) => {
 	const excludeIds = parseExcludeIds(req.query.excludeIds);
 
 	const result = await handleNext(user, gigId, excludeIds);
+	res.status(200).json(result);
+});
+
+// Hirer-only: every artist who liked one of the caller's gigs — what the
+// Matches page shows. Not to be confused with GET / below, which is the
+// caller's own swipe history in either direction.
+router.get("/interested", requireAuth, async (req, res) => {
+	const user = req.user!;
+	const gigId = typeof req.query.gigId === "string" ? req.query.gigId : undefined;
+
+	const result = await handleInterestedArtists(user, gigId);
 	res.status(200).json(result);
 });
 

@@ -1,6 +1,7 @@
 import { Router, Request } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { rateLimit } from "../../middlewares/rate-limit.middleware.js";
+import { throwError } from "../../lib/http-error.js";
 import { parsePagination } from "../../lib/pagination.js";
 import {
 	GIG_SORTS,
@@ -15,6 +16,7 @@ import {
 } from "./search.params.js";
 import { searchGigs } from "./search.gigs.service.js";
 import { searchArtists } from "./search.artists.service.js";
+import { searchProfiles } from "./search.profiles.service.js";
 
 const router = Router();
 
@@ -59,6 +61,18 @@ router.get("/artists", requireAuth, searchLimiter, async (req: Request, res) => 
 		availability: parseAvailability(req.query.availability),
 		sort: parseArtistSort(req.query.sort),
 	});
+	res.status(200).json(result);
+});
+
+//	Backs the navbar's name-only search box, which searches both artist and
+//	hirer accounts at once rather than one profile kind at a time like
+//	/gigs and /artists above.
+router.get("/profiles", requireAuth, searchLimiter, async (req: Request, res) => {
+	const q = parseQ(req.query.q);
+	if (q === undefined) throwError(400, "VALIDATION_ERROR", "q is required");
+	const caller = req.user!;
+
+	const result = await searchProfiles({ callerId: caller.id, q });
 	res.status(200).json(result);
 });
 
