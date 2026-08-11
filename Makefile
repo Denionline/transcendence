@@ -23,7 +23,7 @@ RM						= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess
+.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess seed
 
 all: up
 
@@ -117,6 +117,11 @@ oblivion:
 	$(RM) srcs/backend/node_modules srcs/frontend/node_modules
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
+
+# Demo data. Runs on the host against the db container's published port, like
+# `make ci` does. Needs the database up; safe to re-run.
+seed: srcs/backend/node_modules/.package-lock.json
+	npm run seed --prefix $(BACKEND_PATH)
 
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
