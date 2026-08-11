@@ -26,7 +26,8 @@ export default function InterestedArtistDetailsModal({
 								{username}
 							</div>
 							<div className="text-sm text-base-content/60">
-								{artist.category} · {artist.location ?? "Location TBD"}
+								{artist.categories[0]?.label ?? "Discipline TBD"} ·{" "}
+								{artist.location ?? "Location TBD"}
 							</div>
 						</div>
 					</div>

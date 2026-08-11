@@ -39,7 +39,7 @@ export default function InterestedArtistRow({
 						</span>
 					</div>
 					<p className="truncate text-sm text-base-content/50">
-						{artist.category} · {artist.location ?? "Location TBD"}
+						{artist.categories[0]?.label ?? "Discipline TBD"} · {artist.location ?? "Location TBD"}
 					</p>
 					{showGig && (
 						<p className="mt-1 truncate text-xs text-base-content/40">
