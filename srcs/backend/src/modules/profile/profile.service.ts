@@ -208,25 +208,3 @@ export async function deleteProfile(targetId: string) {
 		throw error;
 	}
 }
-
-/**
- * Any authenticated user's public artist/hirer profile, looked up by their
- * user id — no ownership check, unlike `getCallerProfile` (mirrors gigs:
- * reading someone else's profile needs no more than being logged in). Tries
- * artist first, then hirer, since a user only ever has one or the other.
- */
-export async function getPublicProfileByUserId(userId: string) {
-	const artist = await prisma.artistProfile.findUnique({
-		where: { userId },
-		select: publicArtistSelect,
-	});
-	if (artist) return { role: UserRole.artist, ...artist };
-
-	const hirer = await prisma.hirerProfile.findUnique({
-		where: { userId },
-		select: publicHirerSelect,
-	});
-	if (hirer) return { role: UserRole.hirer, ...hirer };
-
-	throwError(404, "PROFILE_NOT_FOUND", "profile not found");
-}
