@@ -3,6 +3,7 @@ import type { Server as HttpServer } from "node:http";
 import { verifyAccessToken } from "../../lib/jwt.js";
 import { getMatchesForUser } from "../matches/matches.service.js";
 import { styleText } from "node:util";
+import { prisma } from "../../lib/prisma.js";
 
 declare module "socket.io" {
 	interface Socket {
@@ -45,6 +46,26 @@ export function initWebsocket(httpServer: HttpServer) {
 
 		socket.on("error", (err) => {
 			console.error(`[WebSocket] Socket error for ${socket.userId}:`, err);
+		});
+
+		socket.on("send_message", async (data) => {
+			const room = `chat:${data.matchId}`;
+			await matchesPromised;
+			if (!socket.rooms.has(room)) return;
+			try {
+				const message = await prisma.chatMessage.create({
+					data: { matchId: data.matchId, senderId: socket.userId, content: data.content },
+				});
+				socket
+					.to(`chat:${data.matchId}`)
+					.emit("new_message", {
+						matchId: message.matchId,
+						senderId: message.senderId,
+						content: message.content,
+					});
+			} catch (error) {
+				socket.emit("message_error", { reason: "failed_to_send" });
+			}
 		});
 
 		const matches = await matchesPromised;
