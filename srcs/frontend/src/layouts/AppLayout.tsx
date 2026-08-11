@@ -12,7 +12,6 @@ const HIRER_ITEMS: NavbarItem[] = [
 
 const ARTIST_ITEMS: NavbarItem[] = [
 	{ to: "/opportunities", label: "Opportunities", end: true },
-	{ to: "/saved", label: "Saved" },
 	{ to: "/messages", label: "Messages" },
 ];
 

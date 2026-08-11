@@ -356,9 +356,17 @@ export default function DiscoverPage() {
 
 				{status === "ready" &&
 					(isDesktop ? (
-						<DesktopArtistDeck artists={artists} onSwipe={handleSwipe} />
+						<DesktopArtistDeck
+							artists={artists}
+							selectedDisciplines={disciplines}
+							onSwipe={handleSwipe}
+						/>
 					) : (
-						<MobileArtistStack artists={artists} onSwipe={handleSwipe} />
+						<MobileArtistStack
+							artists={artists}
+							selectedDisciplines={disciplines}
+							onSwipe={handleSwipe}
+						/>
 					))}
 			</div>
 		</div>

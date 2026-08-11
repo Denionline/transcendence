@@ -319,9 +319,9 @@ export default function OpportunitiesPage() {
 
 				{status === "ready" &&
 					(isDesktop ? (
-						<DesktopGigDeck gigs={gigs} onSwipe={handleSwipe} />
+						<DesktopGigDeck gigs={gigs} selectedDisciplines={disciplines} onSwipe={handleSwipe} />
 					) : (
-						<MobileGigStack gigs={gigs} onSwipe={handleSwipe} />
+						<MobileGigStack gigs={gigs} selectedDisciplines={disciplines} onSwipe={handleSwipe} />
 					))}
 			</div>
 		</div>

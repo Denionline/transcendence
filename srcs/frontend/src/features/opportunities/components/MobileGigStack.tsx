@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import { CheckIcon, StarIcon, Undo2Icon, XIcon } from "lucide-react";
+import { CheckIcon, Undo2Icon, XIcon } from "lucide-react";
 import GigCard from "./GigCard";
 import GigDetailsModal from "./GigDetailsModal";
 import type { GigListing } from "../gigTypes";
@@ -11,29 +11,24 @@ const TAP_THRESHOLD = 6;
 
 interface MobileGigStackProps {
 	gigs: GigListing[];
+	/** Discipline slugs currently checked in the sidebar filter — passed through to highlight the matching category badge. */
+	selectedDisciplines?: Set<string>;
 	onSwipe?: (gig: GigListing, liked: boolean) => void;
 }
 
-export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
+export default function MobileGigStack({
+	gigs,
+	selectedDisciplines,
+	onSwipe,
+}: MobileGigStackProps) {
 	const [index, setIndex] = useState(0);
 	const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
 	const [exitDir, setExitDir] = useState<1 | -1 | 0>(0);
-	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detailGig, setDetailGig] = useState<GigListing | null>(null);
 	const startRef = useRef<{ x: number; y: number } | null>(null);
 	const wasDragRef = useRef(false);
-	const pointerDownTargetRef = useRef<EventTarget | null>(null);
 
 	const stackItems = [gigs[index], gigs[index + 1]].filter((g): g is GigListing => Boolean(g));
-
-	function toggleSave(id: string) {
-		setSavedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-	}
 
 	function commitSwipe(dir: 1 | -1) {
 		if (exitDir || index >= gigs.length) return;
@@ -56,7 +51,6 @@ export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 		if (exitDir) return;
 		startRef.current = { x: e.clientX, y: e.clientY };
 		wasDragRef.current = false;
-		pointerDownTargetRef.current = e.target;
 		setDrag({ x: 0, y: 0, dragging: true });
 		e.currentTarget.setPointerCapture(e.pointerId);
 	}
@@ -81,17 +75,11 @@ export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 
 	// Pointer capture retargets the compatibility `click` event to this wrapper
 	// (the capturing element) rather than whatever was actually tapped, so tap
-	// handling for the card body and its inner buttons is dispatched from here.
+	// handling for the card body is dispatched from here.
 	function handleFrontClick() {
 		const wasDrag = wasDragRef.current;
 		wasDragRef.current = false;
 		if (wasDrag || !front) return;
-
-		const downTarget = pointerDownTargetRef.current;
-		if (downTarget instanceof Element && downTarget.closest("[data-card-save]")) {
-			toggleSave(front.id);
-			return;
-		}
 		setDetailGig(front);
 	}
 
@@ -135,7 +123,7 @@ export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 								onPointerCancel={handlePointerUp}
 								onClick={handleFrontClick}
 							>
-								<GigCard gig={gig} size="stack" saved={savedIds.has(gig.id)} />
+								<GigCard gig={gig} size="stack" selectedDisciplines={selectedDisciplines} />
 								<div
 									style={{ opacity: interestedOpacity }}
 									className="pointer-events-none absolute top-10 left-6 -rotate-12 rounded-lg border-4 border-primary px-3 py-1 text-xl font-black tracking-wider text-primary"
@@ -156,7 +144,7 @@ export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 							key={gig.id}
 							className="pointer-events-none absolute inset-0 z-0 scale-95 translate-y-3 opacity-60 transition-all duration-200 ease-out"
 						>
-							<GigCard gig={gig} size="stack" />
+							<GigCard gig={gig} size="stack" selectedDisciplines={selectedDisciplines} />
 						</div>
 					);
 				})}
@@ -190,19 +178,6 @@ export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 				</button>
 				<button
 					type="button"
-					onClick={() => front && toggleSave(front.id)}
-					disabled={!canAct}
-					aria-label="Save"
-					aria-pressed={front ? savedIds.has(front.id) : undefined}
-					className="btn btn-circle border-base-content/15 bg-base-100 transition-[background-color,border-color,transform] duration-150 hover:scale-110 hover:border-primary/50 hover:bg-primary/10 disabled:opacity-30"
-				>
-					<StarIcon
-						className={`size-4 ${front && savedIds.has(front.id) ? "fill-primary text-primary" : "text-base-content/70"}`}
-						aria-hidden="true"
-					/>
-				</button>
-				<button
-					type="button"
 					onClick={() => commitSwipe(1)}
 					disabled={!canAct}
 					aria-label="Interested"
@@ -214,9 +189,8 @@ export default function MobileGigStack({ gigs, onSwipe }: MobileGigStackProps) {
 
 			<GigDetailsModal
 				gig={detailGig}
-				saved={detailGig ? savedIds.has(detailGig.id) : false}
+				selectedDisciplines={selectedDisciplines}
 				onClose={() => setDetailGig(null)}
-				onToggleSave={() => detailGig && toggleSave(detailGig.id)}
 				onPass={() => {
 					if (detailGig && detailGig.id === front?.id) commitSwipe(-1);
 				}}
