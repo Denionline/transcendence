@@ -1,21 +1,20 @@
-import { BadgeCheckIcon, StarIcon, XIcon } from "lucide-react";
+import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import type { Artist } from "../types";
 
 interface ArtistDetailsModalProps {
 	artist: Artist | null;
-	saved: boolean;
+	/** Discipline slugs currently checked in the sidebar filter — matching tags render highlighted. */
+	selectedDisciplines?: Set<string>;
 	onClose: () => void;
-	onToggleSave: () => void;
 	onPass: () => void;
 	onInterested: () => void;
 }
 
 export default function ArtistDetailsModal({
 	artist,
-	saved,
+	selectedDisciplines,
 	onClose,
-	onToggleSave,
 	onPass,
 	onInterested,
 }: ArtistDetailsModalProps) {
@@ -61,12 +60,19 @@ export default function ArtistDetailsModal({
 						</div>
 
 						<div className="flex flex-wrap gap-2">
-							{artist.tags.map((tag) => (
-								<span key={tag} className="badge badge-sm badge-outline border-base-content/15">
-									{tag}
-								</span>
-							))}
-							<span className="badge badge-sm badge-primary">{artist.priceTier}</span>
+							{artist.tags.map((tag, i) => {
+								const isSelected = Boolean(selectedDisciplines?.has(artist.categorySlugs[i]));
+								return (
+									<span
+										key={tag}
+										className={`badge badge-sm ${
+											isSelected ? "badge-primary" : "badge-outline border-base-content/15"
+										}`}
+									>
+										{tag}
+									</span>
+								);
+							})}
 						</div>
 
 						<p className="text-sm leading-relaxed text-base-content/70">{artist.bio}</p>
@@ -82,18 +88,6 @@ export default function ArtistDetailsModal({
 								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-5" aria-hidden="true" />
-							</button>
-							<button
-								type="button"
-								onClick={onToggleSave}
-								aria-label={saved ? "Remove from shortlist" : "Add to shortlist"}
-								aria-pressed={saved}
-								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-							>
-								<StarIcon
-									className={`size-5 ${saved ? "fill-primary text-primary" : ""}`}
-									aria-hidden="true"
-								/>
 							</button>
 							<button
 								type="button"
