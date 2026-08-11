@@ -11,7 +11,6 @@ export interface Artist {
 	remoteOk: boolean;
 	availabilityLabel: string;
 	availabilityTone: "available" | "soon";
-	priceTier: string;
 	tags: string[];
 	verified?: boolean;
 	photoUrl?: string | null;
