@@ -21,4 +21,9 @@ export default tseslint.config(
 			"prefer-arrow-callback": "off",
 		},
 	},
+	{
+		//	prisma/seed.ts is a CLI script — its output is the point.
+		files: ["prisma/**/*.ts"],
+		rules: { "no-console": "off" },
+	},
 );
