@@ -4,14 +4,31 @@
 // location, or rate — so the "real" filtering promised by the left-side
 // sidebar happens here, on whatever the backend streams back.
 
-// Discipline is single-select, not multi: the backend only ever matches
-// candidates to *one* category (the opportunity's, or the artist's own), so
-// letting several be checked at once just let unrelated selections silently
-// do nothing — every combination that still included the real category
-// looked identical, which read as "the filter isn't working". A `null`
-// selection means "no restriction" — every category passes.
+// A gig only ever has one category, so matching it against a single
+// selection is exhaustive. A `null` selection means "no restriction" — every
+// category passes.
 export function matchesCategoryFilter(itemCategory: string, selected: string | null): boolean {
 	return selected === null || selected === itemCategory;
+}
+
+// An artist can carry several categories (see the multi-category migration),
+// so the Discover sidebar's discipline facet is a real multi-select: a
+// candidate passes if *any* of their categories is checked. An empty
+// selection means "no restriction" — nothing is checked, so nothing is
+// filtered out.
+export function matchesDisciplineFilter(
+	itemCategorySlugs: string[],
+	selected: Set<string>,
+): boolean {
+	return selected.size === 0 || itemCategorySlugs.some((slug) => selected.has(slug));
+}
+
+/** `null` selection means "no restriction" — every availability passes. */
+export function matchesAvailabilityFilter(
+	itemTone: "available" | "soon",
+	selected: "available" | "soon" | null,
+): boolean {
+	return selected === null || selected === itemTone;
 }
 
 // "Location TBD" is what mapGig.ts/mapCandidate.ts substitute in for a gig or
