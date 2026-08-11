@@ -11,7 +11,6 @@ export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artis
 		remoteOk: false,
 		availabilityLabel: candidate.availability ? "Available now" : "Unavailable",
 		availabilityTone: candidate.availability ? "available" : "soon",
-		priceTier: "Rate on request",
 		tags: candidate.categories.map((category) => category.label),
 		photoUrl: candidate.user?.avatarUrl ?? null,
 		bio: candidate.bio ?? "",

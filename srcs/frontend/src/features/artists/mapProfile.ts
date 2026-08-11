@@ -12,7 +12,6 @@ export function mapProfileToArtist(profile: ProfileDto): Artist {
 		remoteOk: false,
 		availabilityLabel: profile.availability ? "Free" : "Unavailable",
 		availabilityTone: profile.availability ? "available" : "soon",
-		priceTier: profile.rate != null ? `€${profile.rate}` : "Rate TBD",
 		//	Every category the artist holds, not just the headline one.
 		tags: profile.categories.map((category) => category.label),
 		photoUrl: profile.user?.avatarUrl ?? null,
