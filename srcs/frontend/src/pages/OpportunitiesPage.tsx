@@ -3,12 +3,13 @@ import DesktopGigDeck from "../features/opportunities/components/DesktopGigDeck"
 import MobileGigStack from "../features/opportunities/components/MobileGigStack";
 import { getNextGig, postSwipe } from "../features/swipes/api";
 import {
-	matchesCategoryFilter,
+	matchesDisciplineFilter,
 	matchesLocationFilter,
 	matchesMinRateFilter,
 } from "../features/swipes/filters";
 import { mapGigToListing } from "../features/opportunities/mapGig";
-import { CATEGORIES } from "../features/opportunities/constants";
+import { useCategories } from "../features/categories/hooks/useCategories";
+import { useAuth } from "../features/auth/hooks/useAuth";
 import { fetchMyProfile } from "../features/profile/api";
 import { onProfileUpdated } from "../features/profile/profileEvents";
 import { useMediaQuery } from "../lib/useMediaQuery";
@@ -28,21 +29,23 @@ export default function OpportunitiesPage() {
 	// mount so the initial fetch burst matches whichever layout is live.
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
 
+	const { user } = useAuth();
+	const { categories } = useCategories();
+
 	// Discipline/location/rate are the real filters — they drive which
 	// fetched gigs actually make it into the deck (see fetchMatchingGig
-	// below). Discipline and location are locked to the artist's own
-	// profile, not editable: the backend never returns a gig in any other
-	// category for this artist, so letting either be picked freely just
-	// produced an honestly-empty deck for every other choice, which read as
-	// broken. Shown (disabled) anyway so it's clear what's driving the
-	// match. Both are set (and re-set) only once the artist's profile loads,
-	// never directly by the artist.
+	// below). The backend widens the feed to every category the artist
+	// holds (see getNextGigForArtist), so discipline defaults to all of the
+	// artist's own categories but is a real multi-select on top of that —
+	// checking fewer narrows to gigs in just those. Location stays locked to
+	// the artist's own profile (not editable here). Both are set (and
+	// re-set) once the artist's profile loads.
 	//
-	// Rate is the one real, editable filter left. `minRateInput` is the
+	// Rate is the one other real, editable filter. `minRateInput` is the
 	// *draft* value bound to its input — editing it doesn't search by
 	// itself. The search only reacts to `appliedMinRateInput`, which only
 	// changes when the artist hits "Apply filters".
-	const [discipline, setDiscipline] = useState<string | null>(null);
+	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
 	const [appliedMinRateInput, setAppliedMinRateInput] = useState("");
@@ -92,15 +95,25 @@ export default function OpportunitiesPage() {
 		[],
 	);
 
-	// Load the artist's own category/location to mark the filters with it —
-	// the backend only ever hands back gigs in the caller's own category, so
-	// that's what's really driving results here.
+	function toggleDiscipline(slug: string) {
+		setDisciplines((prev) => {
+			const next = new Set(prev);
+			if (next.has(slug)) next.delete(slug);
+			else next.add(slug);
+			return next;
+		});
+	}
+
+	// Load the artist's own categories/location to mark the filters with
+	// them — the backend widens the feed to every category the artist
+	// holds, so that's the sensible starting selection here.
 	useEffect(() => {
+		if (!user) return;
 		let cancelled = false;
-		fetchMyProfile()
+		fetchMyProfile(user.id)
 			.then((profile) => {
 				if (cancelled) return;
-				setDiscipline(profile.category);
+				setDisciplines(new Set(profile.categories.map((category) => category.slug)));
 				setLocationQuery(profile.location ?? "");
 			})
 			.catch((err: unknown) => {
@@ -109,7 +122,7 @@ export default function OpportunitiesPage() {
 		return () => {
 			cancelled = true;
 		};
-	}, [profileVersion]);
+	}, [user, profileVersion]);
 
 	async function fetchGig(generation: number): Promise<GigListing | null> {
 		const excludeIds = new Set([...seenIds.current, ...swipedIds.current]);
@@ -123,7 +136,7 @@ export default function OpportunitiesPage() {
 	/** Keeps pulling gigs until one clears the active filters, or the pool runs out. */
 	async function fetchMatchingGig(
 		generation: number,
-		selectedDiscipline: string | null,
+		selectedDisciplines: Set<string>,
 		location: string,
 		minRateText: string,
 	): Promise<GigListing | null> {
@@ -132,7 +145,7 @@ export default function OpportunitiesPage() {
 			const gig = await fetchGig(generation);
 			if (!gig) return null;
 			if (
-				matchesCategoryFilter(gig.category, selectedDiscipline) &&
+				matchesDisciplineFilter([gig.category], selectedDisciplines) &&
 				matchesLocationFilter(gig.location, location) &&
 				matchesMinRateFilter(gig.rate, minRate)
 			) {
@@ -147,7 +160,7 @@ export default function OpportunitiesPage() {
 		const generation = generationRef.current;
 		seenIds.current = new Set();
 		let cancelled = false;
-		const selectedDiscipline = discipline;
+		const selectedDisciplines = disciplines;
 		const activeLocation = locationQuery;
 		const activeMinRateInput = appliedMinRateInput;
 		(async () => {
@@ -156,7 +169,7 @@ export default function OpportunitiesPage() {
 			for (let i = 0; i < slotCount; i++) {
 				const gig = await fetchMatchingGig(
 					generation,
-					selectedDiscipline,
+					selectedDisciplines,
 					activeLocation,
 					activeMinRateInput,
 				);
@@ -177,7 +190,7 @@ export default function OpportunitiesPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [discipline, locationQuery, appliedMinRateInput, retryToken]);
+	}, [disciplines, locationQuery, appliedMinRateInput, retryToken]);
 
 	const hasPendingFilterChanges = minRateInput !== appliedMinRateInput;
 
@@ -194,7 +207,7 @@ export default function OpportunitiesPage() {
 		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchMatchingGig(generationRef.current, discipline, locationQuery, appliedMinRateInput)
+		fetchMatchingGig(generationRef.current, disciplines, locationQuery, appliedMinRateInput)
 			.then((next) => {
 				if (next) setGigs((prev) => [...prev, next]);
 			})
@@ -224,27 +237,20 @@ export default function OpportunitiesPage() {
 							Discipline
 						</h3>
 						<p className="mb-2 text-xs text-base-content/40">
-							Locked to your artist category — every gig here matches it already.
+							Starts on your own categories — every gig here matches at least one already.
 						</p>
-						<div className="flex flex-wrap gap-1.5">
-							{CATEGORIES.map((category) => {
-								const active = discipline === category;
-								return (
-									<button
-										key={category}
-										type="button"
-										disabled
-										aria-pressed={active}
-										className={`btn btn-xs rounded-full font-normal disabled:opacity-100 ${
-											active
-												? "btn-primary"
-												: "btn-outline border-base-content/15 text-base-content/30"
-										}`}
-									>
-										{category}
-									</button>
-								);
-							})}
+						<div className="flex flex-col gap-2">
+							{categories.map((category) => (
+								<label key={category.slug} className="flex cursor-pointer items-center gap-2">
+									<input
+										type="checkbox"
+										className="checkbox checkbox-sm checkbox-primary"
+										checked={disciplines.has(category.slug)}
+										onChange={() => toggleDiscipline(category.slug)}
+									/>
+									<span>{category.label}</span>
+								</label>
+							))}
 						</div>
 					</div>
 

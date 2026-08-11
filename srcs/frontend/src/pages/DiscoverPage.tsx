@@ -3,10 +3,13 @@ import { Link, useSearchParams } from "react-router-dom";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
-import { matchesCategoryFilter, matchesLocationFilter } from "../features/swipes/filters";
+import {
+	matchesAvailabilityFilter,
+	matchesDisciplineFilter,
+	matchesLocationFilter,
+} from "../features/swipes/filters";
 import { mapArtistCandidateToArtist } from "../features/artists/mapCandidate";
 import { listMyGigs } from "../features/gigs/api";
-import { CATEGORIES } from "../features/opportunities/constants";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
@@ -14,9 +17,13 @@ import type { GigDto } from "../features/gigs/types";
 import { useCategories } from "../features/categories/hooks/useCategories";
 
 // The discipline facet used to be a fourth hardcoded vocabulary that matched
-// no real data. It now lists real categories; the filter itself is still
-// client-side only and does not narrow the deck yet.
-const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
+// no real data. It now lists real categories, sourced from useCategories(),
+// and does narrow the deck client-side (see matchesDisciplineFilter).
+const AVAILABILITY_OPTIONS: { value: "available" | "soon" | null; label: string }[] = [
+	{ value: null, label: "Any" },
+	{ value: "available", label: "Available now" },
+	{ value: "soon", label: "Available soon" },
+];
 const DESKTOP_QUERY = "(min-width: 1024px)";
 // GET /swipes/next only ever returns the single next candidate; matching one
 // of the active filters means fetching (and permanently skipping past, via
@@ -32,9 +39,8 @@ export default function DiscoverPage() {
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
 	const { categories } = useCategories();
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
-	const [availability, setAvailability] = useState<"now" | "soon" | null>("now");
-	const [remoteOnly, setRemoteOnly] = useState(false);
-	const [sort, setSort] = useState(SORT_OPTIONS[0]);
+	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
+	const [locationQuery, setLocationQuery] = useState("");
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	// GET /swipes/next requires a gigId for hirers — candidates are always
@@ -71,13 +77,22 @@ export default function DiscoverPage() {
 	// generation is still current.
 	const generationRef = useRef(0);
 
-	// Discipline is locked to the gig's category on the backend anyway (a
-	// candidate never comes back for any other category), and location is
-	// the field the hirer is most likely to care about matching too — so
-	// selecting an opportunity marks both filters with its info.
+	// A candidate never comes back for any category but the gig's own, so that
+	// category is always a safe default selection; location is the field the
+	// hirer is most likely to care about matching too. Both are just a
+	// starting point — the hirer can broaden discipline further afterward.
 	function markFiltersFromGig(gig: GigDto) {
-		setDiscipline(gig.category);
+		setDisciplines(new Set([gig.category.slug]));
 		setLocationQuery(gig.location ?? "");
+	}
+
+	function toggleDiscipline(slug: string) {
+		setDisciplines((prev) => {
+			const next = new Set(prev);
+			if (next.has(slug)) next.delete(slug);
+			else next.add(slug);
+			return next;
+		});
 	}
 
 	// Load the hirer's own open gigs — candidates are always reviewed in the
@@ -127,15 +142,17 @@ export default function DiscoverPage() {
 	async function fetchMatchingCandidate(
 		gigId: string,
 		generation: number,
-		selectedDiscipline: string | null,
+		selectedDisciplines: Set<string>,
 		location: string,
+		selectedAvailability: "available" | "soon" | null,
 	): Promise<Artist | null> {
 		for (let attempt = 0; attempt < MAX_FETCH_ATTEMPTS; attempt++) {
 			const artist = await fetchCandidate(gigId, generation);
 			if (!artist) return null;
 			if (
-				matchesCategoryFilter(artist.discipline, selectedDiscipline) &&
-				matchesLocationFilter(artist.location, location)
+				matchesDisciplineFilter(artist.categorySlugs, selectedDisciplines) &&
+				matchesLocationFilter(artist.location, location) &&
+				matchesAvailabilityFilter(artist.availabilityTone, selectedAvailability)
 			) {
 				return artist;
 			}
@@ -153,8 +170,9 @@ export default function DiscoverPage() {
 		const generation = generationRef.current;
 		seenIds.current = new Set();
 		let cancelled = false;
-		const selectedDiscipline = discipline;
+		const selectedDisciplines = disciplines;
 		const activeLocation = locationQuery;
+		const selectedAvailability = availability;
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
@@ -162,8 +180,9 @@ export default function DiscoverPage() {
 				const artist = await fetchMatchingCandidate(
 					activeGigId,
 					generation,
-					selectedDiscipline,
+					selectedDisciplines,
 					activeLocation,
+					selectedAvailability,
 				);
 				if (cancelled) return;
 				if (!artist) break;
@@ -179,7 +198,7 @@ export default function DiscoverPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeGigId, discipline, locationQuery]);
+	}, [activeGigId, disciplines, locationQuery, availability]);
 
 	function handleGigChange(gigId: string) {
 		setActiveGigId(gigId);
@@ -201,7 +220,13 @@ export default function DiscoverPage() {
 		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchMatchingCandidate(activeGigId, generationRef.current, discipline, locationQuery)
+		fetchMatchingCandidate(
+			activeGigId,
+			generationRef.current,
+			disciplines,
+			locationQuery,
+			availability,
+		)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -231,6 +256,29 @@ export default function DiscoverPage() {
 									/>
 									<span>{category.label}</span>
 								</label>
+							))}
+						</div>
+					</div>
+
+					<div>
+						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+							Availability
+						</h3>
+						<div className="flex flex-wrap gap-1.5">
+							{AVAILABILITY_OPTIONS.map((option) => (
+								<button
+									key={option.label}
+									type="button"
+									onClick={() => setAvailability(option.value)}
+									aria-pressed={availability === option.value}
+									className={`btn btn-xs rounded-full font-normal ${
+										availability === option.value
+											? "btn-primary"
+											: "btn-outline border-base-content/15 text-base-content/30"
+									}`}
+								>
+									{option.label}
+								</button>
 							))}
 						</div>
 					</div>
