@@ -67,6 +67,15 @@ https://localhost
 docker compose -f srcs/docker-compose.yml down
 ```
 
+### Seeding demo data
+```bash
+make seed
+```
+Populates the database with a small demo cast (categories, an admin, 4
+artists, 3 hirers with gigs, a few swipes/matches/chats) for manual testing.
+Safe to re-run. Needs the database up (`make up`); every seeded account logs
+in with the password printed at the end of the run.
+
 ---
 
 ## Resources: Documentation/tutorials used
