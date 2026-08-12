@@ -11,13 +11,10 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import type { UserRole } from "./features/auth/types";
 import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
-import ProfilePage from "./pages/ProfilePage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
-import ShortlistPage from "./pages/ShortlistPage";
 import MessagesPage from "./pages/MessagesPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
-import SavedPage from "./pages/SavedPage";
 import NewOpportunityPage from "./pages/NewOpportunityPage";
 import MyOpportunitiesPage from "./pages/MyOpportunitiesPage";
 import OpportunityDetailPage from "./pages/OpportunityDetailPage";
@@ -57,12 +54,10 @@ export const router = createBrowserRouter([
 		),
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
-			{ path: "/profile", element: <ProfilePage /> },
-			{ path: "/shortlist", element: <ShortlistPage /> },
+			{ path: "/profile", element: <Navigate to="/settings" replace /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
 			{ path: "/opportunities/mine", element: <MyOpportunitiesPage /> },
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
-			{ path: "/saved", element: <SavedPage /> },
 			{ path: "/messages", element: <MessagesPage /> },
 		],
 	},

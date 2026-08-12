@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { LogOutIcon, MenuIcon, PlusIcon, SearchIcon, SettingsIcon, XIcon } from "lucide-react";
+import { LogOutIcon, MenuIcon, PlusIcon, SettingsIcon, XIcon } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import Avatar from "./Avatar";
 import { useAuth } from "../features/auth/hooks/useAuth";
+import ProfileSearchBox from "../features/search/components/ProfileSearchBox";
 
 export interface NavbarItem {
 	to: string;
@@ -67,10 +68,7 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 				</div>
 
 				<div className="hidden flex-1 justify-center lg:flex">
-					<label className="input w-full max-w-md rounded-full">
-						<SearchIcon className="size-4 opacity-50" aria-hidden="true" />
-						<input type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder} />
-					</label>
+					<ProfileSearchBox placeholder={searchPlaceholder} className="w-full max-w-md" />
 				</div>
 
 				<div className="flex flex-1 items-center justify-end gap-3 sm:gap-6 lg:flex-none">
@@ -134,10 +132,11 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 					id="navbar-mobile-menu"
 					className="border-t border-base-content/10 px-4 py-4 lg:hidden"
 				>
-					<label className="input mb-4 w-full rounded-full">
-						<SearchIcon className="size-4 opacity-50" aria-hidden="true" />
-						<input type="search" placeholder={searchPlaceholder} aria-label={searchPlaceholder} />
-					</label>
+					<ProfileSearchBox
+						placeholder={searchPlaceholder}
+						className="mb-4 w-full"
+						onSelect={() => setIsMenuOpen(false)}
+					/>
 
 					<ul className="flex flex-col gap-1 text-sm font-medium">
 						{items.map(({ to, label, end }) => (

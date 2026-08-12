@@ -8,25 +8,53 @@ interface ModalProps {
 	onClose: () => void;
 	labelledBy: string;
 	children: ReactNode;
+	/**
+	 * Set to false for a modal the caller must resolve to proceed (e.g. a
+	 * mandatory onboarding step): hides the close button and stops Escape and
+	 * a backdrop click from calling `onClose`. Defaults to true.
+	 */
+	dismissible?: boolean;
 }
 
-export default function Modal({ open, onClose, labelledBy, children }: ModalProps) {
+export default function Modal({
+	open,
+	onClose,
+	labelledBy,
+	children,
+	dismissible = true,
+}: ModalProps) {
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const dialogRef = useRef<HTMLDivElement>(null);
+	// Callers routinely pass an inline `onClose` (`onClose={() => setX(null)}`)
+	// that's a fresh function on every one of *their* renders — including
+	// renders triggered by typing into a field this modal contains. Mirroring
+	// it into a ref (kept current via its own effect, not written during
+	// render) lets the focus/scroll-lock effect below depend on `open` alone,
+	// instead of re-running — and re-stealing focus into the dialog — on
+	// every keystroke.
+	const onCloseRef = useRef(onClose);
+	useEffect(() => {
+		onCloseRef.current = onClose;
+	}, [onClose]);
+	const dismissibleRef = useRef(dismissible);
+	useEffect(() => {
+		dismissibleRef.current = dismissible;
+	}, [dismissible]);
 
 	useEffect(() => {
 		if (!open) return;
 		function handleKeyDown(e: KeyboardEvent) {
-			if (e.key === "Escape") onClose();
+			if (dismissibleRef.current && e.key === "Escape") onCloseRef.current();
 		}
 		window.addEventListener("keydown", handleKeyDown);
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = "hidden";
-		closeButtonRef.current?.focus();
+		(dismissibleRef.current ? closeButtonRef.current : dialogRef.current)?.focus();
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 			document.body.style.overflow = previousOverflow;
 		};
-	}, [open, onClose]);
+	}, [open]);
 
 	if (!open) return null;
 
@@ -34,23 +62,27 @@ export default function Modal({ open, onClose, labelledBy, children }: ModalProp
 		<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
 			<div
 				className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fade-in_180ms_ease-out]"
-				onClick={onClose}
+				onClick={dismissible ? onClose : undefined}
 			/>
 			<div
+				ref={dialogRef}
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby={labelledBy}
-				className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
+				tabIndex={-1}
+				className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl outline-none animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
 			>
-				<button
-					ref={closeButtonRef}
-					type="button"
-					onClick={onClose}
-					aria-label="Close"
-					className="btn btn-circle btn-sm absolute top-3 right-3 z-10 border-none bg-base-100/80 backdrop-blur hover:bg-base-100"
-				>
-					<XIcon className="size-4" aria-hidden="true" />
-				</button>
+				{dismissible && (
+					<button
+						ref={closeButtonRef}
+						type="button"
+						onClick={onClose}
+						aria-label="Close"
+						className="btn btn-circle btn-sm absolute top-3 right-3 z-10 border-none bg-base-100/80 backdrop-blur hover:bg-base-100"
+					>
+						<XIcon className="size-4" aria-hidden="true" />
+					</button>
+				)}
 				{children}
 			</div>
 		</div>,

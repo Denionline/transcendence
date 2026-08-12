@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { UserRole } from "../../auth/types";
 import type { ManagedUser } from "../types";
-import { deleteUsers, fetchUsers, setUsersActive, updateUser } from "../api";
+import { deleteUsers, fetchUsers, updateUser } from "../api";
 
 export function useUsers() {
 	const [users, setUsers] = useState<ManagedUser[]>([]);
@@ -29,12 +29,6 @@ export function useUsers() {
 		};
 	}, []);
 
-	async function setActive(ids: string[], isActive: boolean) {
-		const updated = await setUsersActive(ids, isActive);
-		const updatedById = new Map(updated.map((u) => [u.id, u]));
-		setUsers((prev) => prev.map((u) => updatedById.get(u.id) ?? u));
-	}
-
 	async function remove(ids: string[]) {
 		await deleteUsers(ids);
 		const idSet = new Set(ids);
@@ -46,5 +40,5 @@ export function useUsers() {
 		setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
 	}
 
-	return { users, isLoading, error, setActive, remove, update };
+	return { users, isLoading, error, remove, update };
 }

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Ban, CircleCheck, ShieldCheck, Users2 } from "lucide-react";
+import { ShieldCheck, Users2 } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
 import { ROLE_BADGE } from "../features/admin/constants";
@@ -11,12 +11,9 @@ export default function AdminDashboardPage() {
 	const { users, isLoading, error } = useUsers();
 
 	const stats = useMemo(() => {
-		const active = users.filter((u) => u.isActive).length;
 		const admins = users.filter((u) => u.role === "admin").length;
 		return {
 			total: users.length,
-			active,
-			disabled: users.length - active,
 			admins,
 		};
 	}, [users]);
@@ -57,22 +54,6 @@ export default function AdminDashboardPage() {
 							</div>
 							<div className="stat-title">Total users</div>
 							<div className="stat-value">{stats.total}</div>
-						</div>
-
-						<div className="stat">
-							<div className="stat-figure text-success">
-								<CircleCheck className="size-8" />
-							</div>
-							<div className="stat-title">Active</div>
-							<div className="stat-value text-success">{stats.active}</div>
-						</div>
-
-						<div className="stat">
-							<div className="stat-figure text-error">
-								<Ban className="size-8" />
-							</div>
-							<div className="stat-title">Disabled</div>
-							<div className="stat-value text-error">{stats.disabled}</div>
 						</div>
 
 						<div className="stat">

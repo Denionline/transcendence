@@ -15,16 +15,29 @@ interface Slot {
 
 interface DesktopArtistDeckProps {
 	artists: Artist[];
+	/** Discipline slugs currently checked in the sidebar filter — passed through to highlight matching tags. */
+	selectedDisciplines?: Set<string>;
 	onSwipe?: (artist: Artist, liked: boolean) => void;
 }
 
-export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDeckProps) {
+export default function DesktopArtistDeck({
+	artists,
+	selectedDisciplines,
+	onSwipe,
+}: DesktopArtistDeckProps) {
+	// Always start with exactly SLOT_COUNT cells, even if fewer artists are
+	// available yet — a real (rather than decorative) filter can legitimately
+	// leave the pool smaller than a full deck, and mounting with fewer slots
+	// than SLOT_COUNT would silently drop the "no more matches" placeholder
+	// for the missing ones instead of showing it, making a working filter
+	// look like it hadn't searched at all.
 	const [slots, setSlots] = useState<Slot[]>(() =>
-		artists
-			.slice(0, SLOT_COUNT)
-			.map((artist) => ({ current: artist, outgoing: null, exitDir: null })),
+		Array.from({ length: SLOT_COUNT }, (_, i) => ({
+			current: artists[i] ?? null,
+			outgoing: null,
+			exitDir: null,
+		})),
 	);
-	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detail, setDetail] = useState<{ artist: Artist; index: number } | null>(null);
 	const nextIndexRef = useRef(SLOT_COUNT);
 
@@ -70,15 +83,6 @@ export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDec
 		}, EXIT_MS);
 	}
 
-	function toggleSave(id: string) {
-		setSavedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-	}
-
 	function exitStyle(dir: 1 | -1 | null): CSSProperties {
 		if (!dir) return {};
 		return {
@@ -102,8 +106,7 @@ export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDec
 								>
 									<ArtistCard
 										artist={current}
-										saved={savedIds.has(current.id)}
-										onToggleSave={() => toggleSave(current.id)}
+										selectedDisciplines={selectedDisciplines}
 										onPass={() => decide(index, -1)}
 										onInterested={() => decide(index, 1)}
 										onOpenDetails={() => setDetail({ artist: current, index })}
@@ -117,7 +120,7 @@ export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDec
 									style={exitStyle(exitDir)}
 									className="pointer-events-none absolute inset-0 z-10"
 								>
-									<ArtistCard artist={outgoing} saved={savedIds.has(outgoing.id)} />
+									<ArtistCard artist={outgoing} selectedDisciplines={selectedDisciplines} />
 								</div>
 							)}
 
@@ -134,9 +137,8 @@ export default function DesktopArtistDeck({ artists, onSwipe }: DesktopArtistDec
 
 			<ArtistDetailsModal
 				artist={detail?.artist ?? null}
-				saved={detail ? savedIds.has(detail.artist.id) : false}
+				selectedDisciplines={selectedDisciplines}
 				onClose={() => setDetail(null)}
-				onToggleSave={() => detail && toggleSave(detail.artist.id)}
 				onPass={() => detail && decide(detail.index, -1)}
 				onInterested={() => detail && decide(detail.index, 1)}
 			/>

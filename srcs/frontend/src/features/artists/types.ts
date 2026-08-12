@@ -5,11 +5,12 @@ export interface Artist {
 	userId: string;
 	name: string;
 	discipline: string;
+	/** Normalized matching keys for every category the artist carries — used by the discipline filter. */
+	categorySlugs: string[];
 	location: string;
 	remoteOk: boolean;
 	availabilityLabel: string;
 	availabilityTone: "available" | "soon";
-	priceTier: string;
 	tags: string[];
 	verified?: boolean;
 	photoUrl?: string | null;

@@ -1,9 +1,9 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { Briefcase, UserRound } from "lucide-react";
-import { useAuth } from "../features/auth/hooks/useAuth";
-import Avatar from "../components/Avatar";
-import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../features/profile/api";
-import { useCategories } from "../features/categories/hooks/useCategories";
+import { useAuth } from "../../auth/hooks/useAuth";
+import Avatar from "../../../components/Avatar";
+import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
+import { useCategories } from "../../categories/hooks/useCategories";
 
 type Status = { type: "success" | "error"; text: string } | null;
 
@@ -104,12 +104,7 @@ export default function ProfilePage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div>
-				<h1 className="text-xl font-bold">Profile</h1>
-				<p className="text-sm text-base-content/60">Manage your account and profile details.</p>
-			</div>
-
+		<div className="flex flex-col gap-6">
 			<div className="rounded-box border border-base-content/10 bg-base-100">
 				<div className="flex items-center gap-2 border-b border-base-content/10 p-4">
 					<UserRound className="size-5 text-base-content/60" />
