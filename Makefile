@@ -121,6 +121,11 @@ oblivion:
 # Demo data. Runs on the host against the db container's published port, like
 # `make ci` does. Needs the database up; safe to re-run.
 seed: srcs/backend/node_modules/.package-lock.json
+	@echo "SEED    Apply migrations"
+	DBPORT="$$(grep -oP '(?<=^POSTGRES_HOST_PORT=).*' .env 2>/dev/null || echo 5432)"; \
+	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:$${DBPORT:-5432}/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
+		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
+	@echo "SEED    Populate demo data"
 	npm run seed --prefix $(BACKEND_PATH)
 
 dbaccess:
