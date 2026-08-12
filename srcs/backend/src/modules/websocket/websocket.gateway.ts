@@ -17,10 +17,15 @@ declare module "socket.io" {
 
 let ioInstance: Server;
 
-export function isUserOnline(userId: string) {
+export function isUserOnline(userId: string, matchId: string) {
 	if (!ioInstance) return false;
-	const room = ioInstance.sockets.adapter.rooms.get(`user:${userId}`);
-	return !!room && room.size > 0;
+	const userSockets = ioInstance.sockets.adapter.rooms.get(`user:${userId}`);
+	const chatSockets = ioInstance.sockets.adapter.rooms.get(`chat:${matchId}`);
+	if (!userSockets || !chatSockets) return false;
+	for (const socketId of userSockets) {
+		if (chatSockets.has(socketId)) return true;
+	}
+	return false;
 }
 
 async function handleSendMessage(

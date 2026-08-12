@@ -7,6 +7,8 @@ import type { AddressInfo } from "node:net";
 import jwt from "jsonwebtoken";
 import { io as ioClient, type Socket as ClientSocket } from "socket.io-client";
 
+import type { Server } from "socket.io";
+
 import app from "../src/app.js";
 import { initWebsocket } from "../src/modules/websocket/websocket.gateway.js";
 import { SECRET } from "../src/lib/env.js";
@@ -27,16 +29,32 @@ async function withServer<T>(run: (baseUrl: string) => Promise<T>): Promise<T> {
 //	Unlike withServer, this also wires up the WebSocket gateway on the same
 //	HTTP server, so a real socket connection is reflected by isUserOnline —
 //	needed to test counterpartOnline against a live socket, not a mock.
-async function withLiveServer<T>(run: (baseUrl: string) => Promise<T>): Promise<T> {
+async function withLiveServer<T>(run: (baseUrl: string, io: Server) => Promise<T>): Promise<T> {
 	const httpServer = createServer(app);
 	const io = initWebsocket(httpServer);
 	await new Promise<void>((resolve) => httpServer.listen(0, resolve));
 	const { port } = httpServer.address() as AddressInfo;
 	try {
-		return await run(`http://localhost:${port}`);
+		return await run(`http://localhost:${port}`, io);
 	} finally {
 		await io.close();
 	}
+}
+
+//	isUserOnline now requires the socket to have joined the match's own room,
+//	not just its personal one — "connect" fires before that join finishes, so
+//	tests must poll server-side room state instead of racing the client event.
+function waitUntil(predicate: () => boolean, timeoutMs = 2000, intervalMs = 20): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const start = Date.now();
+		const tick = () => {
+			if (predicate()) return resolve();
+			if (Date.now() - start > timeoutMs)
+				return reject(new Error("timed out waiting for condition"));
+			setTimeout(tick, intervalMs);
+		};
+		tick();
+	});
 }
 
 function tokenFor(user: { id: string; role: UserRole }): string {
@@ -165,7 +183,7 @@ test("a hirer sees the artist's username as the counterpart", async () => {
 test("counterpartOnline reflects a live socket connection, not a cached flag", async () => {
 	const { artist, hirer, match } = await makeMatch("Matches Test Org 3");
 
-	await withLiveServer(async (baseUrl) => {
+	await withLiveServer(async (baseUrl, io) => {
 		const offlineCheck = await api(baseUrl, "GET", "/api/matches", { token: tokenFor(hirer) });
 		const offlineEntry = (offlineCheck.body!.items as Record<string, unknown>[]).find(
 			(item) => item.matchId === match.id,
@@ -175,6 +193,9 @@ test("counterpartOnline reflects a live socket connection, not a cached flag", a
 		const artistSocket = connectClient(baseUrl, tokenFor(artist));
 		try {
 			await waitForEvent(artistSocket, "connect");
+			//	"connect" fires before the server finishes joining chat:<matchId> —
+			//	isUserOnline now requires that join too, so wait for it here.
+			await waitUntil(() => (io.sockets.adapter.rooms.get(`chat:${match.id}`)?.size ?? 0) === 1);
 
 			const onlineCheck = await api(baseUrl, "GET", "/api/matches", { token: tokenFor(hirer) });
 			const onlineEntry = (onlineCheck.body!.items as Record<string, unknown>[]).find(

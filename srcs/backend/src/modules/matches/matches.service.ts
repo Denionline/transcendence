@@ -33,7 +33,7 @@ export async function getMatchesForUser(userId: string, role: string): Promise<M
 			matchId: match.id,
 			counterpartId: match.gig.hirer.id,
 			counterpartName: match.gig.hirer.hirerProfile?.organizationName ?? "",
-			counterpartOnline: isUserOnline(match.gig.hirer.id),
+			counterpartOnline: isUserOnline(match.gig.hirer.id, match.id),
 		}));
 	}
 
@@ -47,6 +47,6 @@ export async function getMatchesForUser(userId: string, role: string): Promise<M
 		matchId: match.id,
 		counterpartId: match.artist.id,
 		counterpartName: match.artist.username,
-		counterpartOnline: isUserOnline(match.artist.id),
+		counterpartOnline: isUserOnline(match.artist.id, match.id),
 	}));
 }
