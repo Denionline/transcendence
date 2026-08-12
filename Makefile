@@ -23,7 +23,7 @@ RM						= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess seed
+.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess dbstats seed
 
 all: up
 
@@ -127,6 +127,9 @@ seed: srcs/backend/node_modules/.package-lock.json
 		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
 	@echo "SEED    Populate demo data"
 	npm run seed --prefix $(BACKEND_PATH)
+
+dbstats:
+	docker exec transcendence-db psql -U $$(grep -oP '(?<=^POSTGRES_USER=).*' .env) -d $$(grep -oP '(?<=^POSTGRES_DB=).*' .env) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories;"
 
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
