@@ -10,6 +10,7 @@ import type { Server } from "socket.io";
 
 import app from "../src/app.js";
 import { initWebsocket } from "../src/modules/websocket/websocket.gateway.js";
+import { authEvents } from "../src/lib/auth-events.js";
 import { SECRET } from "../src/lib/env.js";
 import { prisma } from "../src/lib/prisma.js";
 import { UserRole } from "../generated/prisma/client.js";
@@ -28,7 +29,7 @@ async function withServer<T>(run: (baseUrl: string, io: Server) => Promise<T>): 
 }
 
 function tokenFor(user: { id: string; role: UserRole }): string {
-	return jwt.sign({ userId: user.id, role: user.role }, SECRET, {
+	return jwt.sign({ userId: user.id, role: user.role, sessionId: crypto.randomUUID() }, SECRET, {
 		algorithm: "HS256",
 		expiresIn: "15m",
 	});
@@ -157,6 +158,20 @@ test("connecting with an expired token is rejected", async () => {
 		try {
 			const err = await waitForEvent<Error>(socket, "connect_error");
 			assert.equal(err.message, "unauthorized");
+		} finally {
+			socket.close();
+		}
+	});
+});
+
+test("connecting with a role that has no chat access is rejected", async () => {
+	const admin = await makeUser(UserRole.admin);
+
+	await withServer(async (baseUrl) => {
+		const socket = connectClient(baseUrl, tokenFor(admin));
+		try {
+			const err = await waitForEvent<Error>(socket, "connect_error");
+			assert.equal(err.message, "role not supported for chat");
 		} finally {
 			socket.close();
 		}
@@ -299,6 +314,81 @@ test("the sender does not receive its own broadcasted message", async () => {
 		} finally {
 			hirerSocket.close();
 			artistSocket.close();
+		}
+	});
+});
+
+test("a match created while both participants are already connected joins them to its room live", async () => {
+	const artist = await makeUser(UserRole.artist);
+	const hirer = await makeUser(UserRole.hirer);
+	const gig = await prisma.gig.create({
+		data: { hirerId: hirer.id, title: "ws-test gig", ...(await gigCategory("ws-test category")) },
+	});
+
+	await withServer(async (baseUrl, io) => {
+		const hirerSocket = connectClient(baseUrl, tokenFor(hirer));
+		const artistSocket = connectClient(baseUrl, tokenFor(artist));
+		try {
+			await Promise.all([
+				waitForEvent(hirerSocket, "connect"),
+				waitForEvent(artistSocket, "connect"),
+			]);
+
+			//	Neither socket has this match's room yet — it did not exist when
+			//	either of them connected. authEvents.emit stands in for the
+			//	validateMatch call that creates the row in the real swipe flow.
+			const match = await prisma.match.create({ data: { artistId: artist.id, gigId: gig.id } });
+			const newMatchPromise = waitForEvent<{ matchId: string }>(hirerSocket, "new_match");
+			authEvents.emit("new_match", { matchId: match.id, userIds: [artist.id, hirer.id] });
+			const payload = await newMatchPromise;
+			assert.equal(payload.matchId, match.id);
+
+			await waitUntil(() => (io.sockets.adapter.rooms.get(`chat:${match.id}`)?.size ?? 0) === 2);
+
+			const messagePromise = waitForEvent<{ matchId: string; content: string }>(
+				hirerSocket,
+				"new_message",
+			);
+			artistSocket.emit("send_message", { matchId: match.id, content: "ws-test live join" });
+			const message = await messagePromise;
+			assert.equal(message.content, "ws-test live join");
+		} finally {
+			hirerSocket.close();
+			artistSocket.close();
+		}
+	});
+});
+
+test("logging out disconnects only the matching session, not the user's other sessions", async () => {
+	const artist = await makeUser(UserRole.artist);
+	const sessionA = crypto.randomUUID();
+	const sessionB = crypto.randomUUID();
+	const tokenA = jwt.sign({ userId: artist.id, role: artist.role, sessionId: sessionA }, SECRET, {
+		algorithm: "HS256",
+		expiresIn: "15m",
+	});
+	const tokenB = jwt.sign({ userId: artist.id, role: artist.role, sessionId: sessionB }, SECRET, {
+		algorithm: "HS256",
+		expiresIn: "15m",
+	});
+
+	await withServer(async (baseUrl) => {
+		const socketA = connectClient(baseUrl, tokenA);
+		const socketB = connectClient(baseUrl, tokenB);
+		try {
+			await Promise.all([waitForEvent(socketA, "connect"), waitForEvent(socketB, "connect")]);
+
+			const disconnectPromise = waitForEvent(socketA, "disconnect");
+			const staysConnected = expectNoEvent(socketB, "disconnect");
+			authEvents.emit("logout", { sessionId: sessionA });
+
+			await disconnectPromise;
+			await staysConnected;
+			assert.equal(socketA.connected, false);
+			assert.equal(socketB.connected, true);
+		} finally {
+			socketA.close();
+			socketB.close();
 		}
 	});
 });
