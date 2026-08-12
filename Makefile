@@ -118,8 +118,7 @@ oblivion:
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
 
-# Demo data. Runs on the host against the db container's published port, like
-# `make ci` does. Needs the database up; safe to re-run.
+# See docs/db_seeding.md
 seed: srcs/backend/node_modules/.package-lock.json
 	@echo "SEED    Apply migrations"
 	DBPORT="$$(grep -oP '(?<=^POSTGRES_HOST_PORT=).*' .env 2>/dev/null || echo 5432)"; \

@@ -1,18 +1,5 @@
-// Demo/test data for `make seed`. The actual content — who exists, which
-// gigs they post, who swipes on what — lives in prisma/seed-data.json so it
-// can be edited without touching this script.
-//
-// Safe to re-run: users and their profiles are upserted in place (stable
-// ids), while the gigs/swipes/matches/chat threads owned by the seed hirers
-// are torn down and rebuilt from scratch every time — that's the only way to
-// replay the swipe/match flow without accumulating duplicate demo state.
-//
-// This script runs standalone via `tsx prisma/seed.ts`, so — unlike
-// src/server.ts, which loads the repo-root .env through its own
-// `dotenv-expand/config` import — nothing has populated process.env yet by
-// the time the prisma client below is constructed. Reusing the test suite's
-// loader (itself just env-loading, nothing test-specific) fixes that; it
-// must stay the first import so it runs before ../src/lib/prisma.js does.
+// Must run first: populates process.env from the repo-root .env before
+// ../src/lib/prisma.js constructs the client. See docs/db_seeding.md.
 import "../test/setup.js";
 
 import { prisma } from "../src/lib/prisma.js";
@@ -86,10 +73,7 @@ async function seedPeople(passwordHash: string) {
 }
 
 async function seedGigs(actors: Record<string, SeedActor>) {
-	// Gigs (and everything that hangs off them — swipes, matches, chat
-	// messages) are transactional demo data with no natural business key, so
-	// rebuilding them from scratch is what makes a rerun idempotent. Deleting
-	// the gig cascades to its swipes, matches, and match chat threads.
+	// No natural key for gigs, so rebuild rather than upsert; cascades to their swipes/matches/chats.
 	const hirerIds = seedData.hirers.map((hirer) => actors[hirer.email].id);
 	await prisma.gig.deleteMany({ where: { hirerId: { in: hirerIds } } });
 

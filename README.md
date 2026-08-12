@@ -71,10 +71,8 @@ docker compose -f srcs/docker-compose.yml down
 ```bash
 make seed
 ```
-Populates the database with a demo cast (6 categories, an admin, 300 artists
-— 50 per category, 10 hirers posting 30 gigs, plus swipes/matches/chats) for
-manual testing. Safe to re-run. Needs the database up (`make up`); every
-seeded account logs in with the password printed at the end of the run.
+Populates the database with a demo cast for manual testing. Needs the
+database up (`make up`). See [`docs/db_seeding.md`](docs/db_seeding.md).
 
 ---
 
