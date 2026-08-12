@@ -15,6 +15,13 @@ declare module "socket.io" {
 	}
 }
 
+let ioInstance: Server;
+
+export function isUserOnline(userId: string) {
+	const room = ioInstance.sockets.adapter.rooms.get(`user:${userId}`);
+	return !!room && room.size > 0;
+}
+
 async function handleSendMessage(
 	socket: Socket,
 	data: { matchId: string; content: string },
@@ -39,8 +46,7 @@ async function handleSendMessage(
 	}
 }
 
-async function handleDisconnect(
-	matchesPromised: ReturnType<typeof getMatchesForUser>,
+function handleDisconnect(
 	reason: DisconnectReason,
 	io: Server,
 	socket: Socket,
@@ -48,12 +54,12 @@ async function handleDisconnect(
 ) {
 	// eslint-disable-next-line no-console
 	console.log(styleText("red", `[WebSocket] Client off: ${socket.userId}, reason: ${reason}`));
+	const chatRooms = [...socket.rooms].filter((room) => room.startsWith("chat:"));
 	const room = io.sockets.adapter.rooms.get(`user:${socket.userId}`);
-	const remaining = room ? room.size : 0;
+	const remaining = room ? room.size - 1 : 0;
 	if (remaining === 0) {
-		const matches = await matchesPromised;
-		matches.forEach((match) => {
-			socket.to(`chat:${match.id}`).emit("user_offline", { userId: socket.userId });
+		chatRooms.forEach((roomName) => {
+			socket.to(roomName).emit("user_offline", { userId: socket.userId });
 		});
 	}
 	clearTimeout(expiryTimer);
@@ -66,11 +72,14 @@ export function initWebsocket(httpServer: HttpServer) {
 			credentials: true,
 		},
 	});
-
+	ioInstance = io;
 	io.use((socket, next) => {
 		const token = socket.handshake.auth.token;
 		try {
 			const payload = verifyAccessToken(token);
+			if (payload.role !== "artist" && payload.role !== "hirer") {
+				return next(new Error("role not supported for chat"));
+			}
 			socket.userId = payload.userId;
 			socket.role = payload.role;
 			socket.sessionId = payload.sessionId;
@@ -95,9 +104,7 @@ export function initWebsocket(httpServer: HttpServer) {
 
 		const matchesPromised = getMatchesForUser(socket.userId, socket.role);
 
-		socket.on("disconnect", (reason) =>
-			handleDisconnect(matchesPromised, reason, io, socket, expiryTimer),
-		);
+		socket.on("disconnecting", (reason) => handleDisconnect(reason, io, socket, expiryTimer));
 
 		socket.on("error", (err) => {
 			// eslint-disable-next-line no-console
@@ -108,13 +115,19 @@ export function initWebsocket(httpServer: HttpServer) {
 
 		const matches = await matchesPromised;
 		matches.forEach((match) => {
-			socket.join(`chat:${match.id}`);
-			socket.to(`chat:${match.id}`).emit("user_online", { userId: socket.userId });
+			socket.join(`chat:${match.matchId}`);
 		});
 	});
 
 	authEvents.on("logout", ({ sessionId }) => {
 		io.in(`session:${sessionId}`).disconnectSockets(true);
+	});
+
+	authEvents.on("new_match", ({ matchId, userIds }: { matchId: string; userIds: string[] }) => {
+		userIds.forEach((userId) => {
+			io.in(`user:${userId}`).socketsJoin(`chat:${matchId}`);
+		});
+		io.to(`chat:${matchId}`).emit("new_match", { matchId });
 	});
 	return io;
 }

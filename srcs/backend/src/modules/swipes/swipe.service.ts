@@ -7,6 +7,7 @@ import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.servic
 import { flattenCategories, publicArtistSelect } from "../profile/profile.service.js";
 import { publicCategorySelect } from "../categories/categories.service.js";
 import { buildMeta } from "../../lib/pagination.js";
+import { authEvents } from "../../lib/auth-events.js";
 
 interface SwipeData {
 	swiperId: string;
@@ -82,6 +83,7 @@ async function validateMatch(
 			where: { id: data.gigId },
 			data: { status: "closed" },
 		});
+		authEvents.emit("new_match", { matchId: created.id, userIds: [data.swiperId, data.swipedId] });
 		return created.id;
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {

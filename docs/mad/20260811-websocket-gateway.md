@@ -50,7 +50,17 @@ instead of requiring them to be hand-built on raw `ws`.
 * Presence (`user_online` / `user_offline`) is derived from room membership rather than
   a hand-rolled counter: a user is announced offline only once their personal room's
   socket count reaches zero, so one of several open devices disconnecting does not
-  falsely mark the user away.
+  falsely mark the user away. The offline broadcast reads `socket.rooms` from the
+  `"disconnecting"` event, not `"disconnect"` — by the time `"disconnect"` fires,
+  socket.io has already removed the socket from every room, leaving nothing to read.
+* A match formed while both participants are already connected does not need a
+  reconnect to become live. Match creation emits an internal `new_match` event carrying
+  both participants' ids; the gateway joins any of their already-connected sockets to
+  the new match's room (`io.in(user:<id>).socketsJoin(chat:<matchId>)`) and broadcasts
+  the notice to that room. Whether a match's counterpart is online is never read from
+  event history — `GET /api/matches` computes `counterpartOnline` live, from the same
+  room registry, on every call, so a client gets the correct answer regardless of when
+  it connected or which events it missed.
 * An access token issued for 15 minutes does not stop being trusted just because the
   socket stays open longer than that. Each connection schedules a timer for the token's
   own `exp` claim; when it fires, the server uses an acknowledged emit
@@ -80,6 +90,9 @@ instead of requiring them to be hand-built on raw `ws`.
 * Good, because logout revocation piggybacks on a value (the refresh-token hash) that
   already existed as a database key, so no new lookup or storage was needed to make it
   session-scoped rather than all-or-nothing for the user.
+* Good, because presence is a live query (`isUserOnline`, backed by the same room
+  registry) rather than a cached flag, so it can never go stale and needs no write path
+  of its own — it costs nothing until something actually asks.
 * Neutral, because `auth.service.ts` now emits a `logout` event that, today, only the
   WebSocket module listens to — an indirection whose only present purpose is keeping the
   auth module unaware that WebSocket exists.
