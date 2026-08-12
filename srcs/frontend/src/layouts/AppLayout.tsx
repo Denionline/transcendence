@@ -1,20 +1,17 @@
 import { Outlet } from "react-router-dom";
 import Navbar, { type NavbarItem } from "../components/Navbar";
 import { useAuth } from "../features/auth/hooks/useAuth";
+import ProfileOnboardingGate from "../features/onboarding/ProfileOnboardingGate";
 
 const HIRER_ITEMS: NavbarItem[] = [
 	{ to: "/discover", label: "Discover", end: true },
 	{ to: "/opportunities/mine", label: "My opportunities" },
-	{ to: "/shortlist", label: "Shortlist" },
 	{ to: "/messages", label: "Messages" },
-	{ to: "/profile", label: "Profile" },
 ];
 
 const ARTIST_ITEMS: NavbarItem[] = [
 	{ to: "/opportunities", label: "Opportunities", end: true },
-	{ to: "/saved", label: "Saved" },
 	{ to: "/messages", label: "Messages" },
-	{ to: "/profile", label: "Profile" },
 ];
 
 export default function AppLayout() {
@@ -23,6 +20,7 @@ export default function AppLayout() {
 
 	return (
 		<div className="min-h-screen bg-base-100">
+			<ProfileOnboardingGate />
 			<Navbar
 				items={isHirer ? HIRER_ITEMS : ARTIST_ITEMS}
 				searchPlaceholder={

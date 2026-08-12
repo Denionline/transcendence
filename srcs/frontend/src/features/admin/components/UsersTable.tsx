@@ -8,7 +8,6 @@ interface UsersTableProps {
 	currentUserId?: string;
 	selectedIds: Set<string>;
 	setSelectedIds: Dispatch<SetStateAction<Set<string>>>;
-	onToggleActive: (id: string, isActive: boolean) => void;
 	onEdit: (id: string) => void;
 	onDelete: (id: string) => void;
 }
@@ -19,7 +18,6 @@ export default function UsersTable({
 	currentUserId,
 	selectedIds,
 	setSelectedIds,
-	onToggleActive,
 	onEdit,
 	onDelete,
 }: UsersTableProps) {
@@ -74,7 +72,6 @@ export default function UsersTable({
 					</th>
 					<th>User</th>
 					<th>Role</th>
-					<th>Status</th>
 					<th>Joined</th>
 					<th className="text-right">Actions</th>
 				</tr>
@@ -82,7 +79,7 @@ export default function UsersTable({
 			<tbody>
 				{isLoading && (
 					<tr>
-						<td colSpan={6} className="py-10 text-center">
+						<td colSpan={5} className="py-10 text-center">
 							<span className="loading loading-spinner loading-md" />
 						</td>
 					</tr>
@@ -90,7 +87,7 @@ export default function UsersTable({
 
 				{!isLoading && users.length === 0 && (
 					<tr>
-						<td colSpan={6} className="py-10 text-center text-base-content/60">
+						<td colSpan={5} className="py-10 text-center text-base-content/60">
 							No users match your search.
 						</td>
 					</tr>
@@ -104,7 +101,6 @@ export default function UsersTable({
 							isSelf={u.id === currentUserId}
 							selected={selectedIds.has(u.id)}
 							onToggleSelect={() => toggleSelectRow(u.id)}
-							onToggleActive={() => onToggleActive(u.id, !u.isActive)}
 							onEdit={() => onEdit(u.id)}
 							onDelete={() => onDelete(u.id)}
 						/>

@@ -16,13 +16,18 @@ export function mapGigToListing(gig: GigDto): GigListing {
 	return {
 		id: gig.id,
 		hirerName: gig.hirer?.username ?? "Unnamed hirer",
-		location: gig.location ?? "Location TBD",
+		category: gig.category.slug,
+		categoryLabel: gig.category.label,
+		// `??` alone misses an explicitly empty string (as opposed to a genuinely
+		// unset/null location) — both mean "nothing was specified" and should
+		// fall back the same way.
+		location: gig.location?.trim() ? gig.location : "Location TBD",
+		rate: gig.rate,
 		remoteOk: false,
 		postedLabel: label,
 		isNew,
 		title: gig.title,
 		description: gig.description ?? "",
-		budget: gig.rate != null ? `€${gig.rate}` : "Rate on request",
 		duration: "Flexible",
 		tags: [],
 		coverPhotoUrl: null,

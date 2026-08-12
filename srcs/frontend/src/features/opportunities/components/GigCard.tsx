@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, StarIcon, XIcon } from "lucide-react";
+import { BadgeCheckIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { initials } from "../../../lib/format";
 import type { GigListing } from "../gigTypes";
@@ -6,8 +6,8 @@ import type { GigListing } from "../gigTypes";
 interface GigCardProps {
 	gig: GigListing;
 	size?: "grid" | "stack";
-	saved?: boolean;
-	onToggleSave?: () => void;
+	/** Discipline slugs currently checked in the sidebar filter — the category badge highlights when it's one of them. */
+	selectedDisciplines?: Set<string>;
 	onPass?: () => void;
 	onInterested?: () => void;
 	onOpenDetails?: () => void;
@@ -16,17 +16,11 @@ interface GigCardProps {
 export default function GigCard({
 	gig,
 	size = "grid",
-	saved,
-	onToggleSave,
+	selectedDisciplines,
 	onPass,
 	onInterested,
 	onOpenDetails,
 }: GigCardProps) {
-	function handleSaveClick(e: MouseEvent) {
-		e.stopPropagation();
-		onToggleSave?.();
-	}
-
 	function handlePassClick(e: MouseEvent) {
 		e.stopPropagation();
 		onPass?.();
@@ -48,6 +42,8 @@ export default function GigCard({
 	const {
 		hirerName,
 		verified,
+		category,
+		categoryLabel,
 		location,
 		remoteOk,
 		postedLabel,
@@ -57,6 +53,7 @@ export default function GigCard({
 		duration,
 		coverPhotoUrl,
 	} = gig;
+	const isDisciplineSelected = Boolean(selectedDisciplines?.has(category));
 
 	const photo = coverPhotoUrl ? (
 		<img src={coverPhotoUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -82,19 +79,6 @@ export default function GigCard({
 				>
 					{postedLabel}
 				</span>
-				<button
-					type="button"
-					data-card-save
-					onClick={handleSaveClick}
-					aria-label={saved ? "Remove from saved" : "Save gig"}
-					aria-pressed={saved}
-					className="btn btn-circle btn-sm absolute top-3 right-3 border-none bg-base-100/80 backdrop-blur transition-[background-color,color,transform] duration-150 hover:scale-110 hover:bg-base-100 hover:text-primary"
-				>
-					<StarIcon
-						className={`size-4 ${saved ? "fill-primary text-primary" : "text-base-content/70"}`}
-						aria-hidden="true"
-					/>
-				</button>
 			</div>
 
 			<div className="flex shrink-0 flex-col gap-3 p-4">
@@ -120,7 +104,13 @@ export default function GigCard({
 				<h3 className="line-clamp-2 leading-snug font-semibold">{title}</h3>
 
 				<div className="flex flex-wrap gap-2">
-					{/* <span className="badge badge-sm badge-primary">{budget}</span> */}
+					<span
+						className={`badge badge-sm ${
+							isDisciplineSelected ? "badge-primary" : "badge-outline border-base-content/15"
+						}`}
+					>
+						{categoryLabel}
+					</span>
 					<span className="badge badge-sm badge-outline border-base-content/15">{duration}</span>
 					<span className="badge badge-sm badge-outline border-base-content/15">
 						{remoteOk ? "Remote" : "On-site"}
@@ -147,18 +137,6 @@ export default function GigCard({
 								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-4" aria-hidden="true" />
-							</button>
-							<button
-								type="button"
-								onClick={handleSaveClick}
-								aria-label={saved ? "Remove from saved" : "Save gig"}
-								aria-pressed={saved}
-								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-							>
-								<StarIcon
-									className={`size-4 ${saved ? "fill-primary text-primary" : ""}`}
-									aria-hidden="true"
-								/>
 							</button>
 							<button
 								type="button"

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Ban, CircleCheck, SearchIcon, Trash2 } from "lucide-react";
+import { SearchIcon, Trash2 } from "lucide-react";
 import type { User } from "../features/auth/types";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
@@ -8,9 +8,24 @@ import EditUserDialog from "../features/admin/components/EditUserDialog";
 
 const PAGE_SIZE = 8;
 
+/** Windowed page list: first, last, and pages around `current`, with "…" gaps. */
+function getPageWindow(current: number, total: number): (number | "…")[] {
+	if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+	const pages = new Set([1, total, current - 1, current, current + 1]);
+	const sorted = [...pages].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+
+	const result: (number | "…")[] = [];
+	sorted.forEach((p, i) => {
+		if (i > 0 && p - sorted[i - 1] > 1) result.push("…");
+		result.push(p);
+	});
+	return result;
+}
+
 export default function AdminUsersPage() {
 	const { user: currentUser } = useAuth();
-	const { users, isLoading, error, setActive, update, remove } = useUsers();
+	const { users, isLoading, error, update, remove } = useUsers();
 
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
@@ -29,19 +44,13 @@ export default function AdminUsersPage() {
 		const query = search.trim().toLowerCase();
 		if (!query) return users;
 		return users.filter((u) =>
-			[u.username, u.email, u.role, u.isActive ? "active" : "disabled"].some((field) =>
-				field.toLowerCase().includes(query),
-			),
+			[u.username, u.email, u.role].some((field) => field.toLowerCase().includes(query)),
 		);
 	}, [users, search]);
 
 	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
 	const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-	async function handleBulkSetActive(isActive: boolean) {
-		await setActive(Array.from(selectedIds), isActive);
-	}
 
 	async function confirmDelete() {
 		if (!pendingDeleteIds) return;
@@ -80,20 +89,6 @@ export default function AdminUsersPage() {
 					<span className="text-sm font-medium">{selectedCount} selected</span>
 					<div className="ml-auto flex flex-wrap gap-2">
 						<button
-							className="btn btn-sm btn-outline btn-success"
-							onClick={() => handleBulkSetActive(true)}
-						>
-							<CircleCheck className="size-4" />
-							Enable
-						</button>
-						<button
-							className="btn btn-sm btn-outline btn-warning"
-							onClick={() => handleBulkSetActive(false)}
-						>
-							<Ban className="size-4" />
-							Disable
-						</button>
-						<button
 							className="btn btn-sm btn-outline btn-error"
 							onClick={() => setPendingDeleteIds(Array.from(selectedIds))}
 						>
@@ -120,7 +115,6 @@ export default function AdminUsersPage() {
 					currentUserId={currentUser?.id}
 					selectedIds={selectedIds}
 					setSelectedIds={setSelectedIds}
-					onToggleActive={(id, isActive) => setActive([id], isActive)}
 					onEdit={(id) => setEditingUser(users.find((u) => u.id === id) ?? null)}
 					onDelete={(id) => setPendingDeleteIds([id])}
 				/>
@@ -140,15 +134,21 @@ export default function AdminUsersPage() {
 						>
 							«
 						</button>
-						{Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-							<button
-								key={p}
-								className={`join-item btn btn-sm ${p === currentPage ? "btn-active" : ""}`}
-								onClick={() => setPage(p)}
-							>
-								{p}
-							</button>
-						))}
+						{getPageWindow(currentPage, totalPages).map((p, i) =>
+							p === "…" ? (
+								<button key={`ellipsis-${i}`} className="join-item btn btn-sm btn-disabled">
+									…
+								</button>
+							) : (
+								<button
+									key={p}
+									className={`join-item btn btn-sm ${p === currentPage ? "btn-active" : ""}`}
+									onClick={() => setPage(p)}
+								>
+									{p}
+								</button>
+							),
+						)}
 						<button
 							className="join-item btn btn-sm"
 							disabled={currentPage === totalPages}

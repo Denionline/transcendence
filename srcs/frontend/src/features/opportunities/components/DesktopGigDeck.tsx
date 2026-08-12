@@ -15,14 +15,29 @@ interface Slot {
 
 interface DesktopGigDeckProps {
 	gigs: GigListing[];
+	/** Discipline slugs currently checked in the sidebar filter — passed through to highlight the matching category badge. */
+	selectedDisciplines?: Set<string>;
 	onSwipe?: (gig: GigListing, liked: boolean) => void;
 }
 
-export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
+export default function DesktopGigDeck({
+	gigs,
+	selectedDisciplines,
+	onSwipe,
+}: DesktopGigDeckProps) {
+	// Always start with exactly SLOT_COUNT cells, even if fewer gigs are
+	// available yet — a real (rather than decorative) filter can legitimately
+	// leave the pool smaller than a full deck, and mounting with fewer slots
+	// than SLOT_COUNT would silently drop the "no more gigs" placeholder for
+	// the missing ones instead of showing it, making a working filter look
+	// like it hadn't searched at all.
 	const [slots, setSlots] = useState<Slot[]>(() =>
-		gigs.slice(0, SLOT_COUNT).map((gig) => ({ current: gig, outgoing: null, exitDir: null })),
+		Array.from({ length: SLOT_COUNT }, (_, i) => ({
+			current: gigs[i] ?? null,
+			outgoing: null,
+			exitDir: null,
+		})),
 	);
-	const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 	const [detail, setDetail] = useState<{ gig: GigListing; index: number } | null>(null);
 	const nextIndexRef = useRef(SLOT_COUNT);
 
@@ -67,15 +82,6 @@ export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
 		}, EXIT_MS);
 	}
 
-	function toggleSave(id: string) {
-		setSavedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
-			return next;
-		});
-	}
-
 	function exitStyle(dir: 1 | -1 | null): CSSProperties {
 		if (!dir) return {};
 		return {
@@ -99,8 +105,7 @@ export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
 								>
 									<GigCard
 										gig={current}
-										saved={savedIds.has(current.id)}
-										onToggleSave={() => toggleSave(current.id)}
+										selectedDisciplines={selectedDisciplines}
 										onPass={() => decide(index, -1)}
 										onInterested={() => decide(index, 1)}
 										onOpenDetails={() => setDetail({ gig: current, index })}
@@ -114,7 +119,7 @@ export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
 									style={exitStyle(exitDir)}
 									className="pointer-events-none absolute inset-0 z-10"
 								>
-									<GigCard gig={outgoing} saved={savedIds.has(outgoing.id)} />
+									<GigCard gig={outgoing} selectedDisciplines={selectedDisciplines} />
 								</div>
 							)}
 
@@ -131,9 +136,8 @@ export default function DesktopGigDeck({ gigs, onSwipe }: DesktopGigDeckProps) {
 
 			<GigDetailsModal
 				gig={detail?.gig ?? null}
-				saved={detail ? savedIds.has(detail.gig.id) : false}
+				selectedDisciplines={selectedDisciplines}
 				onClose={() => setDetail(null)}
-				onToggleSave={() => detail && toggleSave(detail.gig.id)}
 				onPass={() => detail && decide(detail.index, -1)}
 				onInterested={() => detail && decide(detail.index, 1)}
 			/>

@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/*
+ * Some pages (Discover, Opportunities) break their filters sidebar out to
+ * full viewport width with `lg:mx-[calc(50%-50vw)]`. `100vw` includes the
+ * vertical scrollbar's width, which `50%` (of the scrollbar-less content
+ * box) doesn't — so whenever a page is tall enough to scroll, that mismatch
+ * pushes content a few pixels past the right edge and opens a horizontal
+ * scrollbar on the whole document. Clip it at the root instead of chasing
+ * every full-bleed element.
+ */
+html,
+body {
+	overflow-x: hidden;
+}
+
 @keyframes swipe-card-in {
 	from {
 		opacity: 0;

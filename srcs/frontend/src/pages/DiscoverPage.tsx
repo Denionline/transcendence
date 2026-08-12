@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
+import {
+	matchesAvailabilityFilter,
+	matchesDisciplineFilter,
+	matchesLocationFilter,
+} from "../features/swipes/filters";
 import { mapArtistCandidateToArtist } from "../features/artists/mapCandidate";
 import { listMyGigs } from "../features/gigs/api";
 import { ApiError } from "../lib/apiClient";
@@ -13,10 +17,20 @@ import type { GigDto } from "../features/gigs/types";
 import { useCategories } from "../features/categories/hooks/useCategories";
 
 // The discipline facet used to be a fourth hardcoded vocabulary that matched
-// no real data. It now lists real categories; the filter itself is still
-// client-side only and does not narrow the deck yet.
-const SORT_OPTIONS = ["Best match", "Newest", "Nearby"];
+// no real data. It now lists real categories, sourced from useCategories(),
+// and does narrow the deck client-side (see matchesDisciplineFilter).
+const AVAILABILITY_OPTIONS: { value: "available" | "soon" | null; label: string }[] = [
+	{ value: null, label: "Any" },
+	{ value: "available", label: "Available now" },
+	{ value: "soon", label: "Available soon" },
+];
 const DESKTOP_QUERY = "(min-width: 1024px)";
+// GET /swipes/next only ever returns the single next candidate; matching one
+// of the active filters means fetching (and permanently skipping past, via
+// excludeIds) candidates that don't match until one does. Cap the number of
+// skips per slot so a very restrictive filter combination fails fast instead
+// of hammering the backend once the pool is exhausted.
+const MAX_FETCH_ATTEMPTS = 50;
 
 export default function DiscoverPage() {
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -25,9 +39,8 @@ export default function DiscoverPage() {
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
 	const { categories } = useCategories();
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
-	const [availability, setAvailability] = useState<"now" | "soon" | null>("now");
-	const [remoteOnly, setRemoteOnly] = useState(false);
-	const [sort, setSort] = useState(SORT_OPTIONS[0]);
+	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
+	const [locationQuery, setLocationQuery] = useState("");
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	// GET /swipes/next requires a gigId for hirers — candidates are always
@@ -39,10 +52,20 @@ export default function DiscoverPage() {
 	const [error, setError] = useState<string | null>(null);
 	// /next is stateless — it deterministically keeps handing back the same
 	// not-yet-reviewed candidate until that candidate is actually swiped on.
-	// Track every id already pulled into the deck this session and pass it as
-	// excludeIds so the backend skips straight to a genuinely different
-	// candidate for each slot.
+	// Track every id already pulled into the deck this fetch burst and pass it
+	// as excludeIds so the backend skips straight to a genuinely different
+	// candidate for each slot. Reset on every re-search (gig switch or filter
+	// change) — it only needs to dedupe within one burst.
 	const seenIds = useRef<Set<string>>(new Set());
+	// Unlike seenIds, this tracks every candidate swiped on for the active gig
+	// and is *not* reset when filters change, only when the gig itself does
+	// (swipes are recorded per gig). The backend already excludes swiped
+	// candidates permanently via the Swipe table, but that exclusion only
+	// takes effect once the POST /swipes call actually lands — recording it
+	// here too, synchronously, closes the race where changing a filter right
+	// after a swipe could re-fetch a card that's mid-flight to being recorded.
+	const swipedIds = useRef<Set<string>>(new Set());
+	const prevGigIdRef = useRef<string | null>(null);
 	// StrictMode runs the fetch effect below twice on mount (and it can also
 	// legitimately re-run when the hirer switches gigs). Every run shares the
 	// same `seenIds` ref, so without this guard a stale invocation's in-flight
@@ -54,6 +77,24 @@ export default function DiscoverPage() {
 	// generation is still current.
 	const generationRef = useRef(0);
 
+	// A candidate never comes back for any category but the gig's own, so that
+	// category is always a safe default selection; location is the field the
+	// hirer is most likely to care about matching too. Both are just a
+	// starting point — the hirer can broaden discipline further afterward.
+	function markFiltersFromGig(gig: GigDto) {
+		setDisciplines(new Set([gig.category.slug]));
+		setLocationQuery(gig.location ?? "");
+	}
+
+	function toggleDiscipline(slug: string) {
+		setDisciplines((prev) => {
+			const next = new Set(prev);
+			if (next.has(slug)) next.delete(slug);
+			else next.add(slug);
+			return next;
+		});
+	}
+
 	// Load the hirer's own open gigs — candidates are always reviewed in the
 	// context of one specific gig, so default to the first one unless the URL
 	// already named one (e.g. arriving via "Search related artists").
@@ -63,12 +104,17 @@ export default function DiscoverPage() {
 			.then((gigs) => {
 				if (cancelled) return;
 				setMyOpenGigs(gigs);
-				if (activeGigId) return;
+				if (activeGigId) {
+					const gig = gigs.find((g) => g.id === activeGigId);
+					if (gig) markFiltersFromGig(gig);
+					return;
+				}
 				if (gigs.length === 0) {
 					setStatus("no-gigs");
 					return;
 				}
 				setActiveGigId(gigs[0].id);
+				markFiltersFromGig(gigs[0]);
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
@@ -83,25 +129,61 @@ export default function DiscoverPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	async function fetchOne(gigId: string, generation: number): Promise<Artist | null> {
-		const dto = await getNextArtistCandidate(gigId, Array.from(seenIds.current));
+	async function fetchCandidate(gigId: string, generation: number): Promise<Artist | null> {
+		const excludeIds = new Set([...seenIds.current, ...swipedIds.current]);
+		const dto = await getNextArtistCandidate(gigId, Array.from(excludeIds));
 		if (generation !== generationRef.current) return null;
-		if (!dto || seenIds.current.has(dto.id)) return null;
+		if (!dto || excludeIds.has(dto.id)) return null;
 		seenIds.current.add(dto.id);
 		return mapArtistCandidateToArtist(dto);
 	}
 
+	/** Keeps pulling candidates until one clears the active filters, or the pool runs out. */
+	async function fetchMatchingCandidate(
+		gigId: string,
+		generation: number,
+		selectedDisciplines: Set<string>,
+		location: string,
+		selectedAvailability: "available" | "soon" | null,
+	): Promise<Artist | null> {
+		for (let attempt = 0; attempt < MAX_FETCH_ATTEMPTS; attempt++) {
+			const artist = await fetchCandidate(gigId, generation);
+			if (!artist) return null;
+			if (
+				matchesDisciplineFilter(artist.categorySlugs, selectedDisciplines) &&
+				matchesLocationFilter(artist.location, location) &&
+				matchesAvailabilityFilter(artist.availabilityTone, selectedAvailability)
+			) {
+				return artist;
+			}
+		}
+		return null;
+	}
+
 	useEffect(() => {
 		if (!activeGigId) return;
+		if (prevGigIdRef.current !== activeGigId) {
+			swipedIds.current = new Set();
+			prevGigIdRef.current = activeGigId;
+		}
 		generationRef.current += 1;
 		const generation = generationRef.current;
 		seenIds.current = new Set();
 		let cancelled = false;
+		const selectedDisciplines = disciplines;
+		const activeLocation = locationQuery;
+		const selectedAvailability = availability;
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
 			for (let i = 0; i < slotCount; i++) {
-				const artist = await fetchOne(activeGigId, generation);
+				const artist = await fetchMatchingCandidate(
+					activeGigId,
+					generation,
+					selectedDisciplines,
+					activeLocation,
+					selectedAvailability,
+				);
 				if (cancelled) return;
 				if (!artist) break;
 				setArtists((prev) => [...prev, artist]);
@@ -116,19 +198,12 @@ export default function DiscoverPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeGigId]);
-
-	function toggleDiscipline(discipline: string) {
-		setDisciplines((prev) => {
-			const next = new Set(prev);
-			if (next.has(discipline)) next.delete(discipline);
-			else next.add(discipline);
-			return next;
-		});
-	}
+	}, [activeGigId, disciplines, locationQuery, availability]);
 
 	function handleGigChange(gigId: string) {
 		setActiveGigId(gigId);
+		const gig = myOpenGigs.find((g) => g.id === gigId);
+		if (gig) markFiltersFromGig(gig);
 		setSearchParams(
 			(prev) => {
 				const next = new URLSearchParams(prev);
@@ -141,10 +216,17 @@ export default function DiscoverPage() {
 
 	function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
+		swipedIds.current.add(artist.id);
 		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
-		fetchOne(activeGigId, generationRef.current)
+		fetchMatchingCandidate(
+			activeGigId,
+			generationRef.current,
+			disciplines,
+			locationQuery,
+			availability,
+		)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -160,63 +242,63 @@ export default function DiscoverPage() {
 
 				<div className="flex flex-col gap-6 text-sm">
 					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Discipline
 						</h3>
-						<div className="flex flex-col gap-2">
+						<div className="flex flex-wrap gap-1.5">
 							{categories.map((category) => (
-								<label key={category.slug} className="flex cursor-pointer items-center gap-2">
-									<input
-										type="checkbox"
-										className="checkbox checkbox-sm checkbox-primary"
-										checked={disciplines.has(category.slug)}
-										onChange={() => toggleDiscipline(category.slug)}
-									/>
-									<span>{category.label}</span>
-								</label>
+								<button
+									key={category.slug}
+									type="button"
+									onClick={() => toggleDiscipline(category.slug)}
+									aria-pressed={disciplines.has(category.slug)}
+									className={`btn btn-xs rounded-full font-normal ${
+										disciplines.has(category.slug)
+											? "btn-primary"
+											: "btn-outline border-base-content/15 text-base-content/30"
+									}`}
+								>
+									{category.label}
+								</button>
 							))}
 						</div>
 					</div>
 
 					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Availability
 						</h3>
-						<div className="flex flex-wrap gap-2">
-							<button
-								type="button"
-								onClick={() => setAvailability((a) => (a === "now" ? null : "now"))}
-								className={`btn btn-sm rounded-full ${
-									availability === "now" ? "btn-primary" : "btn-outline border-base-content/20"
-								}`}
-							>
-								Now
-							</button>
-							<button
-								type="button"
-								onClick={() => setAvailability((a) => (a === "soon" ? null : "soon"))}
-								className={`btn btn-sm rounded-full ${
-									availability === "soon" ? "btn-primary" : "btn-outline border-base-content/20"
-								}`}
-							>
-								≤ 2 wks
-							</button>
+						<div className="flex flex-wrap gap-1.5">
+							{AVAILABILITY_OPTIONS.map((option) => (
+								<button
+									key={option.label}
+									type="button"
+									onClick={() => setAvailability(option.value)}
+									aria-pressed={availability === option.value}
+									className={`btn btn-xs rounded-full font-normal ${
+										availability === option.value
+											? "btn-primary"
+											: "btn-outline border-base-content/15 text-base-content/30"
+									}`}
+								>
+									{option.label}
+								</button>
+							))}
 						</div>
 					</div>
 
 					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Location
 						</h3>
-						<label className="flex cursor-pointer items-center gap-2">
-							<input
-								type="checkbox"
-								className="checkbox checkbox-sm checkbox-primary"
-								checked={remoteOnly}
-								onChange={() => setRemoteOnly((v) => !v)}
-							/>
-							<span>Remote</span>
-						</label>
+						<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
+						<input
+							type="text"
+							value={locationQuery}
+							disabled
+							placeholder="Not specified"
+							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
+						/>
 					</div>
 				</div>
 			</aside>
@@ -227,52 +309,27 @@ export default function DiscoverPage() {
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
 						<p className="text-sm text-base-content/50">
 							{status === "ready"
-								? `${artists.length} matches · sorted by fit`
+								? `${artists.length} matches`
 								: status === "no-gigs"
 									? "No open opportunities yet"
 									: "Loading matches…"}
 						</p>
 					</div>
 
-					<div className="flex items-center gap-2">
-						{myOpenGigs.length > 0 && (
-							<select
-								value={activeGigId ?? ""}
-								onChange={(e) => handleGigChange(e.target.value)}
-								aria-label="Reviewing for opportunity"
-								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-							>
-								{myOpenGigs.map((gig) => (
-									<option key={gig.id} value={gig.id}>
-										{gig.title}
-									</option>
-								))}
-							</select>
-						)}
-
-						<div className="dropdown dropdown-end hidden lg:block">
-							<div
-								tabIndex={0}
-								role="button"
-								className="btn btn-sm rounded-full border-base-content/15 bg-transparent font-normal"
-							>
-								{sort}
-								<ChevronDownIcon className="size-4" aria-hidden="true" />
-							</div>
-							<ul
-								tabIndex={0}
-								className="menu dropdown-content menu-sm z-1 mt-2 w-40 rounded-box bg-base-100 p-2 shadow"
-							>
-								{SORT_OPTIONS.map((option) => (
-									<li key={option}>
-										<button type="button" onClick={() => setSort(option)}>
-											{option}
-										</button>
-									</li>
-								))}
-							</ul>
-						</div>
-					</div>
+					{myOpenGigs.length > 0 && (
+						<select
+							value={activeGigId ?? ""}
+							onChange={(e) => handleGigChange(e.target.value)}
+							aria-label="Reviewing for opportunity"
+							className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
+						>
+							{myOpenGigs.map((gig) => (
+								<option key={gig.id} value={gig.id}>
+									{gig.title}
+								</option>
+							))}
+						</select>
+					)}
 				</div>
 
 				{status === "no-gigs" && (
@@ -299,9 +356,17 @@ export default function DiscoverPage() {
 
 				{status === "ready" &&
 					(isDesktop ? (
-						<DesktopArtistDeck artists={artists} onSwipe={handleSwipe} />
+						<DesktopArtistDeck
+							artists={artists}
+							selectedDisciplines={disciplines}
+							onSwipe={handleSwipe}
+						/>
 					) : (
-						<MobileArtistStack artists={artists} onSwipe={handleSwipe} />
+						<MobileArtistStack
+							artists={artists}
+							selectedDisciplines={disciplines}
+							onSwipe={handleSwipe}
+						/>
 					))}
 			</div>
 		</div>
