@@ -18,6 +18,7 @@ declare module "socket.io" {
 let ioInstance: Server;
 
 export function isUserOnline(userId: string) {
+	if (!ioInstance) return false;
 	const room = ioInstance.sockets.adapter.rooms.get(`user:${userId}`);
 	return !!room && room.size > 0;
 }
