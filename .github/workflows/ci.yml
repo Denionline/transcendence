@@ -113,3 +113,5 @@ jobs:
         run: npx prisma migrate deploy
       - name: Run tests
         run: npm test
+      - name: Seed database twice (idempotency check)
+        run: npm run seed && npm run seed
