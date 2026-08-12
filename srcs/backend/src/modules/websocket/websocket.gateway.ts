@@ -40,10 +40,14 @@ export function initWebsocket(httpServer: HttpServer) {
 		socket.on("disconnect", async (reason) => {
 			// eslint-disable-next-line no-console
 			console.log(styleText("red", `[WebSocket] Client off: ${socket.userId}, reason: ${reason}`));
-			const matches = await matchesPromised;
-			matches.forEach((match) => {
-				socket.to(`chat:${match.id}`).emit("user_offline", { userId: socket.userId });
-			});
+			const room = io.sockets.adapter.rooms.get(`user:${socket.userId}`);
+			const remaining = room ? room.size : 0;
+			if (remaining === 0) {
+				const matches = await matchesPromised;
+				matches.forEach((match) => {
+					socket.to(`chat:${match.id}`).emit("user_offline", { userId: socket.userId });
+				});
+			}
 		});
 
 		socket.on("error", (err) => {
