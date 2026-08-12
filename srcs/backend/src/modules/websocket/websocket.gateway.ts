@@ -9,6 +9,7 @@ declare module "socket.io" {
 	interface Socket {
 		userId: string;
 		role: string;
+		tokenExp: number;
 	}
 }
 
@@ -25,6 +26,7 @@ export function initWebsocket(httpServer: HttpServer) {
 			const payload = verifyAccessToken(token);
 			socket.userId = payload.userId;
 			socket.role = payload.role;
+			socket.tokenExp = payload.exp * 1000;
 			next();
 		} catch {
 			next(new Error("unauthorized"));
@@ -34,6 +36,12 @@ export function initWebsocket(httpServer: HttpServer) {
 		// eslint-disable-next-line no-console
 		console.log(styleText("green", `[WebSocket] Client on: ${socket.userId}`));
 		socket.join("user:" + socket.userId);
+
+		const expiryTimer = setTimeout(() => {
+			socket.timeout(2000).emit("token_expired", () => {
+				socket.disconnect(true);
+			});
+		}, socket.tokenExp - Date.now());
 
 		const matchesPromised = getMatchesForUser(socket.userId, socket.role);
 
@@ -48,6 +56,7 @@ export function initWebsocket(httpServer: HttpServer) {
 					socket.to(`chat:${match.id}`).emit("user_offline", { userId: socket.userId });
 				});
 			}
+			clearTimeout(expiryTimer);
 		});
 
 		socket.on("error", (err) => {

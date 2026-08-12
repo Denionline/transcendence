@@ -5,6 +5,7 @@ import type { UserRole } from "../../generated/prisma/client.js";
 export interface TokenPayload {
 	userId: string;
 	role: UserRole;
+	exp: number;
 }
 
 export function verifyAccessToken(token: string): TokenPayload {
