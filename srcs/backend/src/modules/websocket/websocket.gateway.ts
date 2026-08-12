@@ -122,6 +122,7 @@ export function initWebsocket(httpServer: HttpServer) {
 		const matches = await matchesPromised;
 		matches.forEach((match) => {
 			socket.join(`chat:${match.matchId}`);
+			socket.to(`chat:${match.matchId}`).emit("user_online", { userId: socket.userId });
 		});
 	});
 
