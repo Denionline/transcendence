@@ -141,4 +141,5 @@ export function initWebsocket(httpServer: HttpServer) {
 	authEvents.on("send_message", async ({ senderId, content, matchId, chatMessageId }) => {
 		io.to(`chat:${matchId}`).emit("new_message", { senderId, content, matchId, chatMessageId });
 	});
+	return io;
 }
