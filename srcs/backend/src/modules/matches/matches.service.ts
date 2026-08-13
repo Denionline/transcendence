@@ -4,9 +4,16 @@ import { isUserOnline } from "../websocket/websocket.gateway.js";
 
 export interface MatchSummary {
 	matchId: string;
-	counterpartId: string;
-	counterpartName: string;
-	counterpartOnline: boolean;
+	otherUser: {
+		id: string;
+		displayName: string;
+		avatarUrl: string | null;
+		online: boolean;
+	};
+	gig: {
+		id: string;
+		title: string;
+	};
 }
 
 export async function getMatchesForUser(userId: string, role: string): Promise<MatchSummary[]> {
@@ -19,9 +26,12 @@ export async function getMatchesForUser(userId: string, role: string): Promise<M
 			include: {
 				gig: {
 					select: {
+						id: true,
+						title: true,
 						hirer: {
 							select: {
 								id: true,
+								avatarUrl: true,
 								hirerProfile: { select: { organizationName: true } },
 							},
 						},
@@ -31,22 +41,31 @@ export async function getMatchesForUser(userId: string, role: string): Promise<M
 		});
 		return matches.map((match) => ({
 			matchId: match.id,
-			counterpartId: match.gig.hirer.id,
-			counterpartName: match.gig.hirer.hirerProfile?.organizationName ?? "",
-			counterpartOnline: isUserOnline(match.gig.hirer.id, match.id),
+			otherUser: {
+				id: match.gig.hirer.id,
+				displayName: match.gig.hirer.hirerProfile?.organizationName ?? "",
+				avatarUrl: match.gig.hirer.avatarUrl,
+				online: isUserOnline(match.gig.hirer.id, match.id),
+			},
+			gig: { id: match.gig.id, title: match.gig.title },
 		}));
 	}
 
 	const matches = await prisma.match.findMany({
 		where: { gig: { hirerId: userId } },
 		include: {
-			artist: { select: { id: true, username: true } },
+			gig: { select: { id: true, title: true } },
+			artist: { select: { id: true, username: true, avatarUrl: true } },
 		},
 	});
 	return matches.map((match) => ({
 		matchId: match.id,
-		counterpartId: match.artist.id,
-		counterpartName: match.artist.username,
-		counterpartOnline: isUserOnline(match.artist.id, match.id),
+		otherUser: {
+			id: match.artist.id,
+			displayName: match.artist.username,
+			avatarUrl: match.artist.avatarUrl,
+			online: isUserOnline(match.artist.id, match.id),
+		},
+		gig: { id: match.gig.id, title: match.gig.title },
 	}));
 }

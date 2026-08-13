@@ -158,9 +158,12 @@ test("an artist sees the hirer's organization name as the counterpart", async ()
 		const items = body!.items as Record<string, unknown>[];
 		const entry = items.find((item) => item.matchId === match.id);
 		assert.ok(entry, "match not found in response");
-		assert.equal(entry!.counterpartId, hirer.id);
-		assert.equal(entry!.counterpartName, "Matches Test Org");
-		assert.equal(entry!.counterpartOnline, false);
+		const otherUser = entry!.otherUser as Record<string, unknown>;
+		assert.equal(otherUser.id, hirer.id);
+		assert.equal(otherUser.displayName, "Matches Test Org");
+		assert.equal(otherUser.online, false);
+		const gig = entry!.gig as Record<string, unknown>;
+		assert.equal(gig.title, "matches-test gig");
 	});
 });
 
@@ -175,12 +178,13 @@ test("a hirer sees the artist's username as the counterpart", async () => {
 		const items = body!.items as Record<string, unknown>[];
 		const entry = items.find((item) => item.matchId === match.id);
 		assert.ok(entry, "match not found in response");
-		assert.equal(entry!.counterpartId, artist.id);
-		assert.equal(entry!.counterpartName, artist.username);
+		const otherUser = entry!.otherUser as Record<string, unknown>;
+		assert.equal(otherUser.id, artist.id);
+		assert.equal(otherUser.displayName, artist.username);
 	});
 });
 
-test("counterpartOnline reflects a live socket connection, not a cached flag", async () => {
+test("otherUser.online reflects a live socket connection, not a cached flag", async () => {
 	const { artist, hirer, match } = await makeMatch("Matches Test Org 3");
 
 	await withLiveServer(async (baseUrl, io) => {
@@ -188,7 +192,7 @@ test("counterpartOnline reflects a live socket connection, not a cached flag", a
 		const offlineEntry = (offlineCheck.body!.items as Record<string, unknown>[]).find(
 			(item) => item.matchId === match.id,
 		);
-		assert.equal(offlineEntry!.counterpartOnline, false);
+		assert.equal((offlineEntry!.otherUser as Record<string, unknown>).online, false);
 
 		const artistSocket = connectClient(baseUrl, tokenFor(artist));
 		try {
@@ -201,7 +205,7 @@ test("counterpartOnline reflects a live socket connection, not a cached flag", a
 			const onlineEntry = (onlineCheck.body!.items as Record<string, unknown>[]).find(
 				(item) => item.matchId === match.id,
 			);
-			assert.equal(onlineEntry!.counterpartOnline, true);
+			assert.equal((onlineEntry!.otherUser as Record<string, unknown>).online, true);
 		} finally {
 			artistSocket.close();
 		}
