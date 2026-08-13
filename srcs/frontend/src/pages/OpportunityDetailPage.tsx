@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeftIcon, SearchIcon } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { getGig, updateGigStatus } from "../features/gigs/api";
+import { listMatches } from "../features/matches/api";
 import { formatDate } from "../lib/format";
 import { ApiError } from "../lib/apiClient";
 import type { GigDto } from "../features/gigs/types";
@@ -16,6 +17,11 @@ export default function OpportunityDetailPage() {
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [error, setError] = useState<string | null>(null);
 	const [isUpdating, setIsUpdating] = useState(false);
+	// A gig closes automatically the moment it matches (see swipe.service.ts),
+	// and there's currently no way to undo a match — so once matched, "Reopen"
+	// has to stay off the table rather than let the hirer bypass a closed
+	// match into a still-open gig.
+	const [hasMatch, setHasMatch] = useState(false);
 
 	useEffect(() => {
 		if (!id) return;
@@ -39,6 +45,22 @@ export default function OpportunityDetailPage() {
 			cancelled = true;
 		};
 	}, [id]);
+
+	useEffect(() => {
+		if (!gig) return;
+		let cancelled = false;
+		listMatches()
+			.then((matches) => {
+				if (cancelled) return;
+				setHasMatch(matches.some((match) => match.gig.id === gig.id));
+			})
+			.catch((err: unknown) => {
+				console.error("Failed to check for an existing match:", err);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [gig]);
 
 	const isOwner = Boolean(gig && user && gig.hirerId === user.id);
 
@@ -122,18 +144,30 @@ export default function OpportunityDetailPage() {
 								<SearchIcon className="size-4" aria-hidden="true" />
 								Search related artists
 							</Link>
-							<button
-								type="button"
-								onClick={toggleStatus}
-								disabled={isUpdating}
-								className="btn btn-outline rounded-full border-base-content/15"
-							>
-								{isUpdating
-									? "Updating…"
-									: gig.status === "open"
-										? "Close opportunity"
-										: "Reopen opportunity"}
-							</button>
+							{gig.status === "closed" && hasMatch ? (
+								<button
+									type="button"
+									disabled
+									aria-label="You matched on this opportunity, so it stays closed"
+									className="btn btn-outline tooltip rounded-full border-base-content/15 opacity-50"
+									data-tip="You matched on this opportunity, so it stays closed"
+								>
+									Reopen opportunity
+								</button>
+							) : (
+								<button
+									type="button"
+									onClick={toggleStatus}
+									disabled={isUpdating}
+									className="btn btn-outline rounded-full border-base-content/15"
+								>
+									{isUpdating
+										? "Updating…"
+										: gig.status === "open"
+											? "Close opportunity"
+											: "Reopen opportunity"}
+								</button>
+							)}
 						</div>
 					)}
 				</div>
