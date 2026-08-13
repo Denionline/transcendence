@@ -6,6 +6,7 @@ import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
+import { authEvents } from "../../lib/auth-events.js";
 
 const REGISTERABLE_ROLES: UserRole[] = [UserRole.artist, UserRole.hirer];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -38,14 +39,18 @@ function toPublicUser(user: User) {
 // revocability. Shared by both password login (userLogin) and 42 OAuth
 // (loginWith42), so both flows return the same session shape.
 async function issueSession(user: User) {
-	const token = jwt.sign({ userId: user.id, role: user.role }, SECRET, {
-		algorithm: "HS256",
-		expiresIn: "15m",
-	});
 	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, {
 		algorithm: "HS256",
 		expiresIn: "7d",
 	});
+	const token = jwt.sign(
+		{ userId: user.id, role: user.role, sessionId: hashToken(refreshToken) },
+		SECRET,
+		{
+			algorithm: "HS256",
+			expiresIn: "15m",
+		},
+	);
 	await prisma.refreshToken.create({
 		data: {
 			userId: user.id,
@@ -135,6 +140,8 @@ export async function loginWith42(code: string) {
 export async function logoutUser(refreshToken: string) {
 	if (!refreshToken) return;
 	await prisma.refreshToken.deleteMany({ where: { tokenHash: hashToken(refreshToken) } });
+	const sessionId = hashToken(refreshToken);
+	authEvents.emit("logout", { sessionId });
 }
 
 export async function refreshAccessToken(refreshToken: string) {

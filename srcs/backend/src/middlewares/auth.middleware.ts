@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { SECRET } from "../lib/env.js";
 import { throwError } from "../lib/http-error.js";
 import { UserRole } from "../../generated/prisma/client.js";
 import jwt from "jsonwebtoken";
+import { verifyAccessToken } from "../lib/jwt.js";
 
 export interface AuthenticatedUser {
 	id: string;
@@ -18,11 +18,6 @@ declare global {
 	}
 }
 
-interface TokenPayload {
-	userId: string;
-	role: UserRole;
-}
-
 export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 	const authHeader = req.headers.authorization;
 	if (!authHeader || !authHeader.startsWith("Bearer "))
@@ -30,7 +25,7 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 
 	const token = authHeader.slice("Bearer ".length);
 	try {
-		const payload = jwt.verify(token, SECRET, { algorithms: ["HS256"] }) as TokenPayload;
+		const payload = verifyAccessToken(token);
 		req.user = { id: payload.userId, role: payload.role };
 		next();
 	} catch (error) {
