@@ -2,6 +2,7 @@ import { Server, Socket, DisconnectReason } from "socket.io";
 import type { Server as HttpServer } from "node:http";
 import { verifyAccessToken } from "../../lib/jwt.js";
 import { getMatchesForUser } from "../matches/matches.service.js";
+import { UserRole } from "../../../generated/prisma/enums.js";
 import { styleText } from "node:util";
 import { authEvents } from "../../lib/auth-events.js";
 import { createMessage } from "../messages/messages.service.js";
@@ -85,7 +86,7 @@ export function initWebsocket(httpServer: HttpServer) {
 			});
 		}, socket.tokenExp - Date.now());
 
-		const matchesPromised = getMatchesForUser(socket.userId, socket.role);
+		const matchesPromised = getMatchesForUser({ id: socket.userId, role: socket.role as UserRole });
 
 		socket.on("disconnecting", (reason) => handleDisconnect(reason, io, socket, expiryTimer));
 
