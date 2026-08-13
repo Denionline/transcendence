@@ -6,7 +6,7 @@ interface MessagesQuery {
 	pageSize: number;
 }
 
-interface HandleSendMessageOptions {
+interface CreateMessageData {
 	matchId: string;
 	senderId: string;
 	content: string;
@@ -19,7 +19,7 @@ export function parseMessageContent(content: unknown) {
 	return true;
 }
 
-export async function createMessage(data: HandleSendMessageOptions) {
+export async function createMessage(data: CreateMessageData) {
 	try {
 		const message = await prisma.chatMessage.create({
 			data: { matchId: data.matchId, senderId: data.senderId, content: data.content },
