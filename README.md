@@ -67,6 +67,13 @@ https://localhost
 docker compose -f srcs/docker-compose.yml down
 ```
 
+### Seeding demo data
+```bash
+make seed
+```
+Populates the database with a demo cast for manual testing. Needs the
+database up (`make up`). See [`docs/db_seeding.md`](docs/db_seeding.md).
+
 ---
 
 ## Resources: Documentation/tutorials used

@@ -23,7 +23,7 @@ RM						= rm -rf
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess
+.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess dbstats seed
 
 all: up
 
@@ -117,6 +117,18 @@ oblivion:
 	$(RM) srcs/backend/node_modules srcs/frontend/node_modules
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
+
+# See docs/db_seeding.md
+seed: srcs/backend/node_modules/.package-lock.json
+	@echo "SEED    Apply migrations"
+	DBPORT="$$(grep -oP '(?<=^POSTGRES_HOST_PORT=).*' .env 2>/dev/null || echo 5432)"; \
+	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:$${DBPORT:-5432}/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
+		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
+	@echo "SEED    Populate demo data"
+	npm run seed --prefix $(BACKEND_PATH)
+
+dbstats:
+	@docker exec transcendence-db psql -U $$(grep -oP '(?<=^POSTGRES_USER=).*' .env) -d $$(grep -oP '(?<=^POSTGRES_DB=).*' .env) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories, (SELECT count(*) FROM \"User\" WHERE role = 'artist') artists, (SELECT count(*) FROM \"User\" WHERE role = 'hirer') hirers, (SELECT count(*) FROM \"User\" WHERE role = 'admin') admins;"
 
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
