@@ -120,6 +120,100 @@ async function verifyArtistAvailability(profile: ArtistProfile) {
 		throwError(409, "ARTIST_UNAVAILABLE", "this artist is not currently available");
 }
 
+export interface PendingInterestSummary {
+	gigId: string;
+	gig: { id: string; title: string };
+	otherUser: { id: string; displayName: string; avatarUrl: string | null };
+	createdAt: Date;
+}
+
+//	"Interest received but not yet answered": the other side already liked me
+//	for this gig, and I haven't swiped back (in either direction) yet. There's
+//	no separate "declined" flag to maintain — the moment I do swipe back, my
+//	own row makes this fall out of the query below, match or no match.
+async function getInterestsReceivedByArtist(userId: string): Promise<PendingInterestSummary[]> {
+	const swipes = await prisma.swipe.findMany({
+		where: {
+			swipedId: userId,
+			liked: true,
+			gig: { swipes: { none: { swiperId: userId } } },
+		},
+		include: {
+			gig: {
+				select: {
+					id: true,
+					title: true,
+					hirer: {
+						select: {
+							id: true,
+							avatarUrl: true,
+							hirerProfile: { select: { organizationName: true } },
+						},
+					},
+				},
+			},
+		},
+		orderBy: { createdAt: "desc" },
+	});
+	return swipes.map((swipe) => ({
+		gigId: swipe.gigId,
+		gig: { id: swipe.gig.id, title: swipe.gig.title },
+		otherUser: {
+			id: swipe.gig.hirer.id,
+			displayName: swipe.gig.hirer.hirerProfile?.organizationName ?? "",
+			avatarUrl: swipe.gig.hirer.avatarUrl,
+		},
+		createdAt: swipe.createdAt,
+	}));
+}
+
+//	Unlike the artist side, a gig relation can't express "and I haven't
+//	swiped this particular artist back yet" (several artists can like the
+//	same gig), so the exclusion is a second query matched in memory instead.
+async function getInterestsReceivedByHirer(userId: string): Promise<PendingInterestSummary[]> {
+	const received = await prisma.swipe.findMany({
+		where: { swipedId: userId, liked: true, gig: { hirerId: userId } },
+		include: {
+			gig: { select: { id: true, title: true } },
+			swiper: { select: { id: true, username: true, avatarUrl: true } },
+		},
+		orderBy: { createdAt: "desc" },
+	});
+	if (received.length === 0) return [];
+
+	const myResponses = await prisma.swipe.findMany({
+		where: {
+			swiperId: userId,
+			OR: received.map((swipe) => ({ swipedId: swipe.swiperId, gigId: swipe.gigId })),
+		},
+		select: { swipedId: true, gigId: true },
+	});
+	const responded = new Set(myResponses.map((r) => `${r.swipedId}:${r.gigId}`));
+
+	return received
+		.filter((swipe) => !responded.has(`${swipe.swiperId}:${swipe.gigId}`))
+		.map((swipe) => ({
+			gigId: swipe.gigId,
+			gig: { id: swipe.gig.id, title: swipe.gig.title },
+			otherUser: {
+				id: swipe.swiper.id,
+				displayName: swipe.swiper.username,
+				avatarUrl: swipe.swiper.avatarUrl,
+			},
+			createdAt: swipe.createdAt,
+		}));
+}
+
+export async function getPendingInterests(
+	user: AuthenticatedUser,
+): Promise<PendingInterestSummary[]> {
+	if (user.role !== UserRole.artist && user.role !== UserRole.hirer) {
+		throwError(403, "FORBIDDEN", "only artists and hirers have interests to review");
+	}
+	if (user.role === UserRole.artist) return await getInterestsReceivedByArtist(user.id);
+	return await getInterestsReceivedByHirer(user.id);
+}
+
 export async function handleSwipe(
 	swiper: AuthenticatedUser,
 	gigId: string,

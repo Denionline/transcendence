@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { throwError } from "../../lib/http-error.js";
-import { handleSwipe, handleNext, handleSwipeHistory } from "./swipe.service.js";
+import {
+	handleSwipe,
+	handleNext,
+	handleSwipeHistory,
+	getPendingInterests,
+} from "./swipe.service.js";
 import { parseId } from "../gigs/gigs.routes.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { parsePagination } from "../../lib/pagination.js";
@@ -40,6 +45,15 @@ router.get("/next", requireAuth, async (req, res) => {
 
 	const result = await handleNext(user, gigId, excludeIds);
 	res.status(200).json(result);
+});
+
+// Likes I've received but haven't answered yet (in either direction) — the
+// list the "who's interested in you" page swipes accept/decline against via
+// the same POST /swipes the rest of the app uses.
+router.get("/interests", requireAuth, async (req, res) => {
+	const user = req.user!;
+	const items = await getPendingInterests(user);
+	res.status(200).json({ items });
 });
 
 function parseLiked(value: unknown): boolean | undefined {
