@@ -429,7 +429,7 @@ A match only ever exists because both users swiped **like** on each other **for 
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl }` and `gig: { id, title }` — exactly what the chat sidebar needs |
+| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl, online }` and `gig: { id, title }` — exactly what the chat sidebar needs. `online` is computed live from the WebSocket gateway's room state (not cached), true only while the other user has a socket connected **and** joined to this specific match's room |
 | GET | `/:id` | member | Single match, with both users' info and the gig |
 | DELETE | `/:id` | member | Unmatch — closes the chat and cascades its messages |
 
