@@ -9,7 +9,7 @@ import {
 import { throwError } from "../../lib/http-error.js";
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { rateLimit } from "../../middlewares/rate-limit.middleware.js";
+import { rateLimit } from "../../middlewares/rate.limit.middleware.js";
 import crypto from "node:crypto";
 import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
 

@@ -2,8 +2,8 @@
 status: "accepted"
 date: 2026-08-12
 decision-makers: carlaugu
-consulted: {team members}
-informed: {team members}
+consulted: {abessa-m, dximenes, leoaguia}
+informed: {abessa-m, dximenes, leoaguia}
 ---
 
 # Real-time gateway on socket.io, not raw ws
