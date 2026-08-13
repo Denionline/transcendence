@@ -7,20 +7,6 @@ import { buildMeta } from "../../lib/pagination.js";
 
 import { isUserOnline } from "../websocket/websocket.gateway.js";
 
-export interface MatchSummary {
-	matchId: string;
-	otherUser: {
-		id: string;
-		displayName: string;
-		avatarUrl: string | null;
-		online: boolean;
-	};
-	gig: {
-		id: string;
-		title: string;
-	};
-}
-
 export interface MatchListOptions {
 	page: number;
 	pageSize: number;
@@ -29,7 +15,7 @@ export interface MatchListOptions {
 
 export interface MatchSummary {
 	matchId: string;
-	otherUser: { id: string; displayName: string; avatarUrl: string | null };
+	otherUser: { id: string; displayName: string; avatarUrl: string | null; online: boolean };
 	gig: { id: string; title: string };
 }
 
@@ -68,11 +54,13 @@ function toSummary(user: AuthenticatedUser, match: MatchRow): MatchSummary {
 					id: match.gig.hirer.id,
 					displayName: match.gig.hirer.hirerProfile?.organizationName ?? "",
 					avatarUrl: match.gig.hirer.avatarUrl,
+					online: isUserOnline(match.gig.hirer.id, match.id),
 				}
 			: {
 					id: match.artist.id,
 					displayName: match.artist.username,
 					avatarUrl: match.artist.avatarUrl,
+					online: isUserOnline(match.artist.id, match.id),
 				};
 
 	return { matchId: match.id, otherUser, gig: { id: match.gig.id, title: match.gig.title } };
