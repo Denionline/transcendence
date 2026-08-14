@@ -1,6 +1,6 @@
 import { Router, Request } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { rateLimit } from "../../middlewares/rate-limit.middleware.js";
+import { rateLimit } from "../../middlewares/rate.limit.middleware.js";
 import { parsePagination } from "../../lib/pagination.js";
 import {
 	GIG_SORTS,

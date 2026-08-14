@@ -474,6 +474,7 @@ Chat is only reachable through a match — no match, no messages.
 | `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence |
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
+| `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
 | `EMAIL_EXISTS` | 409 | Email already registered |
 | `PROFILE_EXISTS` | 409 | User already has a profile |
 | `SWIPE_EXISTS` | 409 | A swipe already exists for this (swiper, swiped, gig) combination |

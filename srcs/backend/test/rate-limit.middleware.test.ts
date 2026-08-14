@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
 import express from "express";
 
-import { rateLimit } from "../src/middlewares/rate-limit.middleware.js";
+import { rateLimit } from "../src/middlewares/rate.limit.middleware.js";
 import { errorHandler } from "../src/middlewares/error.middleware.js";
 
 function makeTestApp(options: { windowMs: number; max: number }) {

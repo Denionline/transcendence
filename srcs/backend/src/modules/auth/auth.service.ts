@@ -163,10 +163,11 @@ export async function refreshAccessToken(refreshToken: string) {
 			throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
 		}
 
-		const newToken = jwt.sign({ userId: data.userId, role: data.role }, SECRET, {
-			algorithm: "HS256",
-			expiresIn: "15m",
-		});
+		const newToken = jwt.sign(
+			{ userId: data.userId, role: data.role, sessionId: hashToken(refreshToken) },
+			SECRET,
+			{ algorithm: "HS256", expiresIn: "15m" },
+		);
 		return { token: newToken };
 	} catch {
 		throwError(401, "INVALID_REFRESH_TOKEN", "invalid or expired refresh token");
