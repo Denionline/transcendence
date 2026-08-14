@@ -453,3 +453,118 @@ test("GET /api/swipes requires authentication (401 without a token)", async () =
 		assert.equal(status, 401);
 	});
 });
+
+test("GET /api/swipes/interests requires authentication (401 without a token)", async () => {
+	await withServer(async (baseUrl) => {
+		const { status } = await api(baseUrl, "GET", "/api/swipes/interests");
+		assert.equal(status, 401);
+	});
+});
+
+test("GET /api/swipes/interests lists a hirer's gig liked by an artist who hasn't been answered", async () => {
+	const category = uniqueCategory();
+	const artist = await makeArtist([category]);
+	const hirer = await makeHirer();
+	const gig = await makeGig(hirer, category);
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", "/api/swipes", {
+			token: tokenFor(artist),
+			body: { gigId: gig.id, liked: true },
+		});
+
+		const { status, body } = await api(baseUrl, "GET", "/api/swipes/interests", {
+			token: tokenFor(hirer),
+		});
+
+		assert.equal(status, 200);
+		const items = body?.items as Array<Record<string, unknown>>;
+		assert.equal(items.length, 1);
+		assert.equal(items[0]?.gigId, gig.id);
+		assert.equal((items[0]?.otherUser as Record<string, unknown>)?.id, artist.id);
+	});
+});
+
+test("GET /api/swipes/interests lists an artist's hirer who liked them, keyed by displayName", async () => {
+	const category = uniqueCategory();
+	const artist = await makeArtist([category]);
+	const hirer = await makeHirer();
+	await prisma.hirerProfile.create({
+		data: { userId: hirer.id, organizationName: "Interests Test Org" },
+	});
+	const gig = await makeGig(hirer, category);
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", "/api/swipes", {
+			token: tokenFor(hirer),
+			body: { gigId: gig.id, liked: true, targetUserId: artist.id },
+		});
+
+		const { status, body } = await api(baseUrl, "GET", "/api/swipes/interests", {
+			token: tokenFor(artist),
+		});
+
+		assert.equal(status, 200);
+		const items = body?.items as Array<Record<string, unknown>>;
+		assert.equal(items.length, 1);
+		assert.equal(items[0]?.gigId, gig.id);
+		const otherUser = items[0]?.otherUser as Record<string, unknown>;
+		assert.equal(otherUser?.id, hirer.id);
+		assert.equal(otherUser?.displayName, "Interests Test Org");
+	});
+});
+
+test("GET /api/swipes/interests drops an item once the caller has swiped back (match or decline)", async () => {
+	const category = uniqueCategory();
+	const artist = await makeArtist([category]);
+	const hirer = await makeHirer();
+	const gig = await makeGig(hirer, category);
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", "/api/swipes", {
+			token: tokenFor(hirer),
+			body: { gigId: gig.id, liked: true, targetUserId: artist.id },
+		});
+
+		// Artist declines: their own swipe row should make the item disappear
+		// from their "received" list too, not just the hirer's.
+		await api(baseUrl, "POST", "/api/swipes", {
+			token: tokenFor(artist),
+			body: { gigId: gig.id, liked: false },
+		});
+
+		const hirerView = await api(baseUrl, "GET", "/api/swipes/interests", {
+			token: tokenFor(hirer),
+		});
+		assert.equal((hirerView.body?.items as unknown[]).length, 0);
+	});
+});
+
+test("GET /api/swipes/interests never lists something the caller already matched on", async () => {
+	const category = uniqueCategory();
+	const artist = await makeArtist([category]);
+	const hirer = await makeHirer();
+	const gig = await makeGig(hirer, category);
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", "/api/swipes", {
+			token: tokenFor(hirer),
+			body: { gigId: gig.id, liked: true, targetUserId: artist.id },
+		});
+		const artistSwipe = await api(baseUrl, "POST", "/api/swipes", {
+			token: tokenFor(artist),
+			body: { gigId: gig.id, liked: true },
+		});
+		assert.equal(typeof artistSwipe.body?.matchId, "string");
+
+		const artistView = await api(baseUrl, "GET", "/api/swipes/interests", {
+			token: tokenFor(artist),
+		});
+		assert.equal((artistView.body?.items as unknown[]).length, 0);
+
+		const hirerView = await api(baseUrl, "GET", "/api/swipes/interests", {
+			token: tokenFor(hirer),
+		});
+		assert.equal((hirerView.body?.items as unknown[]).length, 0);
+	});
+});
