@@ -135,56 +135,12 @@ export async function deleteMatch(user: AuthenticatedUser, id: string) {
 	await prisma.match.delete({ where: { id } });
 }
 
-export async function getMatchesForUser(userId: string, role: string): Promise<MatchSummary[]> {
-	if (role !== UserRole.artist && role !== UserRole.hirer)
-		throw new Error(`getMatchesForUser called with unsupported role: ${role}`);
-
-	if (role === UserRole.artist) {
-		const matches = await prisma.match.findMany({
-			where: { artistId: userId },
-			include: {
-				gig: {
-					select: {
-						id: true,
-						title: true,
-						hirer: {
-							select: {
-								id: true,
-								avatarUrl: true,
-								hirerProfile: { select: { organizationName: true } },
-							},
-						},
-					},
-				},
-			},
-		});
-		return matches.map((match) => ({
-			matchId: match.id,
-			otherUser: {
-				id: match.gig.hirer.id,
-				displayName: match.gig.hirer.hirerProfile?.organizationName ?? "",
-				avatarUrl: match.gig.hirer.avatarUrl,
-				online: isUserOnline(match.gig.hirer.id, match.id),
-			},
-			gig: { id: match.gig.id, title: match.gig.title },
-		}));
-	}
-
-	const matches = await prisma.match.findMany({
-		where: { gig: { hirerId: userId } },
-		include: {
-			gig: { select: { id: true, title: true } },
-			artist: { select: { id: true, username: true, avatarUrl: true } },
-		},
-	});
-	return matches.map((match) => ({
-		matchId: match.id,
-		otherUser: {
-			id: match.artist.id,
-			displayName: match.artist.username,
-			avatarUrl: match.artist.avatarUrl,
-			online: isUserOnline(match.artist.id, match.id),
-		},
-		gig: { id: match.gig.id, title: match.gig.title },
-	}));
+//	The WebSocket gateway needs every match a user belongs to, unpaginated, to
+//	join all of their chat rooms on connect — listMatches only ever returns
+//	one page, which would silently drop rooms past the first page's worth.
+export async function getMatchesForUser(user: AuthenticatedUser): Promise<MatchSummary[]> {
+	requireParticipant(user);
+	const where = whereForCaller(user);
+	const matches = await prisma.match.findMany({ where, select: matchSelect });
+	return matches.map((match) => toSummary(user, match));
 }

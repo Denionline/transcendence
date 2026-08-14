@@ -27,12 +27,12 @@ async function seedCategories() {
 }
 
 async function seedUser(
-	input: { email: string; username: string; role: UserRole },
+	input: { email: string; username: string; avatarUrl: string; role: UserRole },
 	passwordHash: string,
 ) {
 	return await prisma.user.upsert({
 		where: { email: input.email },
-		update: { username: input.username, role: input.role },
+		update: { username: input.username, avatarUrl: input.avatarUrl, role: input.role },
 		create: { ...input, passwordHash },
 	});
 }
@@ -44,7 +44,12 @@ async function seedPeople(passwordHash: string) {
 
 	for (const artist of seedData.artists) {
 		const user = await seedUser(
-			{ email: artist.email, username: artist.username, role: UserRole.artist },
+			{
+				email: artist.email,
+				username: artist.username,
+				avatarUrl: artist.avatarUrl,
+				role: UserRole.artist,
+			},
 			passwordHash,
 		);
 		await upsertArtistProfile(user.id, {
@@ -57,7 +62,12 @@ async function seedPeople(passwordHash: string) {
 
 	for (const hirer of seedData.hirers) {
 		const user = await seedUser(
-			{ email: hirer.email, username: hirer.username, role: UserRole.hirer },
+			{
+				email: hirer.email,
+				username: hirer.username,
+				avatarUrl: hirer.avatarUrl,
+				role: UserRole.hirer,
+			},
 			passwordHash,
 		);
 		await upsertHirerProfile(user.id, {

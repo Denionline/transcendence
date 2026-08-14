@@ -318,6 +318,33 @@ test("the sender does not receive its own broadcasted message", async () => {
 	});
 });
 
+test("send_message acknowledges the sender with the created message's id", async () => {
+	const { artist, hirer, match } = await makeMatch();
+
+	await withServer(async (baseUrl, io) => {
+		const hirerSocket = connectClient(baseUrl, tokenFor(hirer));
+		const artistSocket = connectClient(baseUrl, tokenFor(artist));
+		try {
+			await Promise.all([
+				waitForEvent(hirerSocket, "connect"),
+				waitForEvent(artistSocket, "connect"),
+			]);
+			await waitUntil(() => (io.sockets.adapter.rooms.get(`chat:${match.id}`)?.size ?? 0) === 2);
+
+			const ack = await new Promise<{ chatMessageId: string }>((resolve) => {
+				artistSocket.emit("send_message", { matchId: match.id, content: "ws-test ack" }, resolve);
+			});
+
+			assert.ok(ack.chatMessageId);
+			const stored = await prisma.chatMessage.findUnique({ where: { id: ack.chatMessageId } });
+			assert.equal(stored?.content, "ws-test ack");
+		} finally {
+			hirerSocket.close();
+			artistSocket.close();
+		}
+	});
+});
+
 test("a match created while both participants are already connected joins them to its room live", async () => {
 	const artist = await makeUser(UserRole.artist);
 	const hirer = await makeUser(UserRole.hirer);

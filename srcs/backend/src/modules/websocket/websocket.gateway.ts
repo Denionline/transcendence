@@ -2,9 +2,11 @@ import { Server, Socket, DisconnectReason } from "socket.io";
 import type { Server as HttpServer } from "node:http";
 import { verifyAccessToken } from "../../lib/jwt.js";
 import { getMatchesForUser } from "../matches/matches.service.js";
+import { UserRole } from "../../../generated/prisma/enums.js";
 import { styleText } from "node:util";
-import { prisma } from "../../lib/prisma.js";
 import { authEvents } from "../../lib/auth-events.js";
+import { createMessage } from "../messages/messages.service.js";
+import { parseMessageContent } from "../messages/messages.service.js";
 
 declare module "socket.io" {
 	interface Socket {
@@ -26,30 +28,6 @@ export function isUserOnline(userId: string, matchId: string) {
 		if (chatSockets.has(socketId)) return true;
 	}
 	return false;
-}
-
-async function handleSendMessage(
-	socket: Socket,
-	data: { matchId: string; content: string },
-	matchesPromised: ReturnType<typeof getMatchesForUser>,
-) {
-	const room = `chat:${data.matchId}`;
-	await matchesPromised;
-	if (!socket.rooms.has(room)) return;
-	try {
-		const message = await prisma.chatMessage.create({
-			data: { matchId: data.matchId, senderId: socket.userId, content: data.content },
-		});
-		socket.to(`chat:${data.matchId}`).emit("new_message", {
-			matchId: message.matchId,
-			senderId: message.senderId,
-			content: message.content,
-		});
-	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.error(`[WebSocket] Failed to save message for ${socket.userId}:`, error);
-		socket.emit("message_error", { reason: "failed_to_send" });
-	}
 }
 
 function handleDisconnect(
@@ -108,7 +86,7 @@ export function initWebsocket(httpServer: HttpServer) {
 			});
 		}, socket.tokenExp - Date.now());
 
-		const matchesPromised = getMatchesForUser(socket.userId, socket.role);
+		const matchesPromised = getMatchesForUser({ id: socket.userId, role: socket.role as UserRole });
 
 		socket.on("disconnecting", (reason) => handleDisconnect(reason, io, socket, expiryTimer));
 
@@ -117,7 +95,31 @@ export function initWebsocket(httpServer: HttpServer) {
 			console.error(`[WebSocket] Socket error for ${socket.userId}:`, err);
 		});
 
-		socket.on("send_message", (data) => handleSendMessage(socket, data, matchesPromised));
+		socket.on("send_message", async (data, ack?: (response: { chatMessageId: string }) => void) => {
+			if (!parseMessageContent(data.content)) {
+				socket.emit("message_error", { reason: "invalid_content" });
+				return;
+			}
+			const room = `chat:${data.matchId}`;
+			await matchesPromised;
+			if (!socket.rooms.has(room)) return;
+			const result = await createMessage({
+				matchId: data.matchId,
+				senderId: socket.userId,
+				content: data.content,
+			});
+			if (result.state === false) {
+				socket.emit("message_error", { reason: "failed_to_send" });
+				return;
+			}
+			ack?.({ chatMessageId: result.message!.id });
+			socket.to(`chat:${data.matchId}`).emit("new_message", {
+				matchId: data.matchId,
+				senderId: socket.userId,
+				content: data.content,
+				chatMessageId: result.message!.id,
+			});
+		});
 
 		const matches = await matchesPromised;
 		matches.forEach((match) => {
@@ -135,6 +137,10 @@ export function initWebsocket(httpServer: HttpServer) {
 			io.in(`user:${userId}`).socketsJoin(`chat:${matchId}`);
 		});
 		io.to(`chat:${matchId}`).emit("new_match", { matchId });
+	});
+
+	authEvents.on("send_message", async ({ senderId, content, matchId, chatMessageId }) => {
+		io.to(`chat:${matchId}`).emit("new_message", { senderId, content, matchId, chatMessageId });
 	});
 	return io;
 }

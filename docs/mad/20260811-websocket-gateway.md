@@ -2,8 +2,8 @@
 status: "accepted"
 date: 2026-08-12
 decision-makers: carlaugu
-consulted: {team members}
-informed: {team members}
+consulted: {abessa-m, dximenes, leoaguia}
+informed: {abessa-m, dximenes, leoaguia}
 ---
 
 # Real-time gateway on socket.io, not raw ws
@@ -67,6 +67,15 @@ instead of requiring them to be hand-built on raw `ws`.
   (`socket.timeout(...).emit("token_expired", ack)`) to give the client a chance to
   receive the notice before the connection is force-closed with `disconnect(true)`,
   requiring a reconnect with a refreshed token.
+* Sending a message has two entry points — a socket.io `send_message` event and a REST
+  `POST /api/matches/:matchId/messages` — but only one write path: both call the same
+  `createMessage` service function, so persistence never diverges between them. The REST
+  route emits an internal `send_message` event afterward purely so the gateway can
+  broadcast `new_message` to the room the same way it does for the socket.io path.
+  Neither path can rely on the room broadcast to tell the sender their own message's id —
+  `socket.to()` excludes the sender by design, and a fire-and-forget internal event has no
+  return value at all — so each path gets the created row's id back on its own channel
+  instead: an acknowledged emit for socket.io, the HTTP response body for REST.
 * Logging out closes the matching socket immediately, not just at token expiry. Each
   access token carries a `sessionId` — the hash of its paired refresh token, the same
   value already used as that refresh token's database key — and every connection joins a
