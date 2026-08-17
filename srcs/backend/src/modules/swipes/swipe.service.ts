@@ -8,6 +8,8 @@ import { flattenCategories, publicArtistSelect } from "../profile/profile.servic
 import { publicCategorySelect } from "../categories/categories.service.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { authEvents } from "../../lib/auth-events.js";
+import { createNotification } from "../notifications/notifications.service.js";
+import { NotificationType } from "../../../generated/prisma/enums.js";
 
 interface SwipeData {
 	swiperId: string;
@@ -84,6 +86,17 @@ async function validateMatch(
 			data: { status: "closed" },
 		});
 		authEvents.emit("new_match", { matchId: created.id, userIds: [data.swiperId, data.swipedId] });
+		await createNotification(
+			{
+				userId: data.swipedId,
+				type: NotificationType.new_match,
+				data: {
+					matchId: created.id,
+					swiperId: data.swiperId,
+				},
+			},
+			tx,
+		);
 		return created.id;
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {

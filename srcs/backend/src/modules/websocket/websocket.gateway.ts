@@ -7,6 +7,8 @@ import { styleText } from "node:util";
 import { authEvents } from "../../lib/auth-events.js";
 import { createMessage } from "../messages/messages.service.js";
 import { parseMessageContent } from "../messages/messages.service.js";
+import { createNotification } from "../notifications/notifications.service.js";
+import { NotificationType } from "../../../generated/prisma/enums.js";
 
 declare module "socket.io" {
 	interface Socket {
@@ -101,8 +103,10 @@ export function initWebsocket(httpServer: HttpServer) {
 				return;
 			}
 			const room = `chat:${data.matchId}`;
-			await matchesPromised;
+			const matches = await matchesPromised;
 			if (!socket.rooms.has(room)) return;
+			const match = matches.find((m) => m.matchId === data.matchId);
+			if (!match) return;
 			const result = await createMessage({
 				matchId: data.matchId,
 				senderId: socket.userId,
@@ -112,6 +116,16 @@ export function initWebsocket(httpServer: HttpServer) {
 				socket.emit("message_error", { reason: "failed_to_send" });
 				return;
 			}
+			const recipientId = match.otherUser.id;
+			await createNotification({
+				userId: recipientId,
+				type: NotificationType.new_message,
+				data: {
+					matchId: data.matchId,
+					senderId: socket.userId,
+					preview: data.content,
+				},
+			});
 			ack?.({ chatMessageId: result.message!.id });
 			socket.to(`chat:${data.matchId}`).emit("new_message", {
 				matchId: data.matchId,
