@@ -17,7 +17,7 @@ COMPOSE_FILE			= srcs/docker-compose.yml
 # **************************************************************************** #
 
 ifeq ($(wildcard .env),)
-$(error .env not found - run: cp .env.example .env)
+$(error .env not found)
 endif
 
 include .env
