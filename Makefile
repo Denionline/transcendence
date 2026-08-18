@@ -60,8 +60,8 @@ fclean: clean
 re: down up
 
 lint:
-	npm run lint --prefix srcs/frontend
-	npm run lint --prefix srcs/backend
+	npm run lint --prefix $(FRONTEND_PATH)
+	npm run lint --prefix $(BACKEND_PATH)
 
 format:
 	npx prettier --write "srcs/**/*.{ts,tsx,js,json,css}"
