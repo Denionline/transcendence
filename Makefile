@@ -92,8 +92,7 @@ srcs/frontend/package-lock.json: srcs/frontend/package.json
 
 ci:
 	@echo "TEST    Lint (frontend + backend)"
-	npm run lint --prefix $(FRONTEND_PATH)
-	npm run lint --prefix $(BACKEND_PATH)
+	$(MAKE) lint
 	@echo "TEST    Frontend build"
 	npm run build --prefix $(FRONTEND_PATH)
 	@echo "TEST    Backend typecheck (prisma generate + tsc)"
