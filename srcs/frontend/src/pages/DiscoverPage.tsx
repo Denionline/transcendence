@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { ChevronDownIcon } from "lucide-react";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
@@ -236,6 +237,8 @@ export default function DiscoverPage() {
 		);
 	}
 
+	const activeGig = myOpenGigs.find((g) => g.id === activeGigId) ?? null;
+
 	async function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
 		const gigId = activeGigId;
@@ -361,18 +364,43 @@ export default function DiscoverPage() {
 					</div>
 
 					{myOpenGigs.length > 0 && (
-						<select
-							value={activeGigId ?? ""}
-							onChange={(e) => handleGigChange(e.target.value)}
-							aria-label="Reviewing for opportunity"
-							className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-						>
-							{myOpenGigs.map((gig) => (
-								<option key={gig.id} value={gig.id}>
-									{gig.title}
-								</option>
-							))}
-						</select>
+						<div className="dropdown dropdown-end">
+							<div
+								tabIndex={0}
+								role="button"
+								aria-label="Reviewing for opportunity"
+								className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
+							>
+								<span className="max-w-48 truncate">
+									{activeGig?.title ?? "Select opportunity"}
+								</span>
+								<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
+							</div>
+							<ul
+								tabIndex={0}
+								className="menu dropdown-content menu-sm z-1 mt-2 w-72 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg"
+							>
+								<li className="menu-title">Reviewing for</li>
+								{myOpenGigs.map((gig) => (
+									<li key={gig.id}>
+										<button
+											type="button"
+											aria-current={gig.id === activeGigId}
+											className={gig.id === activeGigId ? "active" : ""}
+											onClick={(e) => {
+												handleGigChange(gig.id);
+												e.currentTarget.blur();
+											}}
+										>
+											<span className="min-w-0 flex-1 truncate">{gig.title}</span>
+											<span className="badge badge-ghost badge-sm shrink-0">
+												{gig.category.label}
+											</span>
+										</button>
+									</li>
+								))}
+							</ul>
+						</div>
 					)}
 				</div>
 
