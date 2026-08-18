@@ -47,14 +47,7 @@ export default function DiscoverPage() {
 	// reviewed in the context of one of the hirer's own open gigs.
 	const [activeGigId, setActiveGigId] = useState<string | null>(searchParams.get("gigId"));
 	const [myOpenGigs, setMyOpenGigs] = useState<GigDto[]>([]);
-	// Every candidate ever pulled into `artists` this burst, including ones
-	// already passed/liked — a swipe appends its replacement rather than
-	// removing the swiped card (the deck needs the full history to back-fill
-	// slots by index). So the header count has to subtract however many of
-	// those have actually been decided, or it would keep climbing on every
-	// pass instead of reflecting what's left to review.
 	const [artists, setArtists] = useState<Artist[]>([]);
-	const [decidedInBurst, setDecidedInBurst] = useState(0);
 	const [status, setStatus] = useState<"loading" | "ready" | "error" | "no-gigs">("loading");
 	const [error, setError] = useState<string | null>(null);
 	// /next is stateless — it deterministically keeps handing back the same
@@ -183,7 +176,6 @@ export default function DiscoverPage() {
 		(async () => {
 			setStatus("loading");
 			setArtists([]);
-			setDecidedInBurst(0);
 			for (let i = 0; i < slotCount; i++) {
 				const artist = await fetchMatchingCandidate(
 					activeGigId,
@@ -232,7 +224,6 @@ export default function DiscoverPage() {
 		if (!activeGigId) return;
 		const gigId = activeGigId;
 		swipedIds.current.add(artist.id);
-		setDecidedInBurst((n) => n + 1);
 		let matched = false;
 		try {
 			const result = await postSwipe({ gigId, liked, targetUserId: artist.userId });
@@ -338,13 +329,6 @@ export default function DiscoverPage() {
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
-						<p className="text-sm text-base-content/50">
-							{status === "ready"
-								? `${Math.max(artists.length - decidedInBurst, 0)} artists to review`
-								: status === "no-gigs"
-									? "No open opportunities yet"
-									: "Loading artists…"}
-						</p>
 					</div>
 
 					{myOpenGigs.length > 0 && (
