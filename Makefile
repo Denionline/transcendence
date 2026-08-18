@@ -52,11 +52,9 @@ down:
 
 clean:
 	docker compose --env-file .env -f $(COMPOSE_FILE) down
-	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
 
-fclean:
+fclean: clean
 	docker compose --env-file .env -f $(COMPOSE_FILE) down -v
-	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
 
 re: down up
 
