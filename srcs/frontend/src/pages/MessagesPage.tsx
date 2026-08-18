@@ -7,6 +7,7 @@ import type { MatchDto } from "../features/matches/types";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
+import { getSocket } from "../lib/socket";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
@@ -44,6 +45,33 @@ export default function MessagesPage() {
 			});
 		return () => {
 			cancelled = true;
+		};
+	}, []);
+
+	useEffect(() => {
+		const socket = getSocket();
+
+		function setOnline(userId: string, online: boolean) {
+			setMatches((prev) =>
+				prev.map((m) =>
+					m.otherUser.id === userId ? { ...m, otherUser: { ...m.otherUser, online } } : m,
+				),
+			);
+		}
+
+		function handleUserOnline({ userId }: { userId: string }) {
+			setOnline(userId, true);
+		}
+		function handleUserOffline({ userId }: { userId: string }) {
+			setOnline(userId, false);
+		}
+
+		socket.on("user_online", handleUserOnline);
+		socket.on("user_offline", handleUserOffline);
+
+		return () => {
+			socket.off("user_online", handleUserOnline);
+			socket.off("user_offline", handleUserOffline);
 		};
 	}, []);
 

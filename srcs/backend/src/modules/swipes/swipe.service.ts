@@ -43,7 +43,16 @@ async function createSwipeRow(tx: Prisma.TransactionClient, data: SwipeData) {
 				liked: data.liked,
 			},
 		});
-		if (data.liked) {
+		const existing = await prisma.swipe.findUnique({
+			where: {
+				gigId_swipedId_swiperId: {
+					swiperId: data.swipedId,
+					swipedId: data.swiperId,
+					gigId: data.gigId,
+				},
+			},
+		});
+		if (data.liked && !existing) {
 			await createNotification(
 				{
 					userId: data.swipedId,
@@ -285,7 +294,7 @@ export async function handleSwipe(
 		return validateMatch(tx, data as SwipeData);
 	});
 	if (data.liked || matchId) authEvents.emit("new_notification", { targetId: data.swipedId });
-	if (matchId)  authEvents.emit("new_match", { matchId, userIds: [ data.swiperId, data.swipedId ] });
+	if (matchId) authEvents.emit("new_match", { matchId, userIds: [data.swiperId, data.swipedId] });
 	return { matchId };
 }
 
@@ -308,7 +317,7 @@ async function getNextGigForArtist(user: AuthenticatedUser, excludeIds: string[]
 		orderBy: { createdAt: "asc" },
 		select: publicGigSelect,
 	});
-	if (!gig) throwError(404, "NO_MORE_CANDIDATES", "no more gigs to show");
+	if (!gig) return null;
 	return gig;
 }
 
@@ -331,7 +340,7 @@ async function getNextCandidateForHirer(
 		orderBy: { createdAt: "asc" },
 		select: publicArtistSelect,
 	});
-	if (!artist) throwError(404, "NO_MORE_CANDIDATES", "no more candidates to show");
+	if (!artist) return null;
 	return flattenCategories(artist);
 }
 

@@ -13,7 +13,7 @@ export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
 		icon: HeartHandshakeIcon,
 		iconClass: "text-primary",
 		message: (n) => `You matched with ${n.actor?.displayName ?? "someone"}!`,
-		href: () => "/matches",
+		href: (n) => (n.matchId ? `/messages?matchId=${n.matchId}` : "/messages"),
 	},
 	new_message: {
 		icon: MessageCircleIcon,

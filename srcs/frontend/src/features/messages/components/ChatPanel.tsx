@@ -5,14 +5,9 @@ import Avatar from "../../../components/Avatar";
 import { listMessages, sendMessage, toOptimisticMessage } from "../api";
 import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
-import { ApiError } from "../../../lib/apiClient";
 import { formatTime } from "../../../lib/format";
+import { getSocket } from "../../../lib/socket";
 
-// No websocket wiring on the frontend yet (the backend already pushes
-// "new_message" over a socket.io room per match — see websocket.gateway.ts —
-// but nothing here connects to it), so new messages from the other side are
-// picked up by polling the latest page instead of a live push.
-const POLL_MS = 4000;
 // Close enough to the bottom that an incoming message should still autoscroll
 // — past this, assume the user scrolled up to read history and leave them be.
 const NEAR_BOTTOM_PX = 80;
@@ -73,19 +68,37 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 
 	useEffect(() => {
 		if (status !== "ready") return;
-		const interval = window.setInterval(() => {
-			listMessages(match.matchId, 1)
-				.then((res) => {
-					const fresh = [...res.items].reverse().filter((m) => !knownIds.current.has(m.id));
-					if (fresh.length === 0) return;
-					fresh.forEach((m) => knownIds.current.add(m.id));
-					setMessages((prev) => [...prev, ...fresh]);
-				})
-				.catch((err: unknown) => {
-					console.error("Failed to poll for new messages:", err);
-				});
-		}, POLL_MS);
-		return () => window.clearInterval(interval);
+
+		const socket = getSocket();
+
+		function handleNewMessage(payload: {
+			matchId: string;
+			senderId: string;
+			content: string;
+			chatMessageId: string;
+		}) {
+			// The socket is shared by every match the user is in — ignore events
+			// for other conversations, and de-dupe our own just-sent message
+			// (io.to(...) echoes it back to the sender's own socket too).
+			if (payload.matchId !== match.matchId) return;
+			if (knownIds.current.has(payload.chatMessageId)) return;
+			knownIds.current.add(payload.chatMessageId);
+			setMessages((prev) => [
+				...prev,
+				{
+					id: payload.chatMessageId,
+					matchId: payload.matchId,
+					senderId: payload.senderId,
+					content: payload.content,
+					createdAt: new Date().toISOString(),
+				},
+			]);
+		}
+
+		socket.on("new_message", handleNewMessage);
+		return () => {
+			socket.off("new_message", handleNewMessage);
+		};
 	}, [match.matchId, status]);
 
 	function handleScroll() {
@@ -128,14 +141,14 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		setSending(true);
 		setSendError(null);
 		try {
-			const result = await sendMessage(match.matchId, content);
+			const result = await sendMessage(match.matchId, content, currentUserId);
 			const message = toOptimisticMessage(result);
 			knownIds.current.add(message.id);
 			setMessages((prev) => [...prev, message]);
 			setDraft("");
 			isNearBottomRef.current = true;
 		} catch (err: unknown) {
-			setSendError(err instanceof ApiError ? err.message : "Couldn't send that message.");
+			setSendError(err instanceof Error ? err.message : "Couldn't send that message.");
 		} finally {
 			setSending(false);
 		}

@@ -2,6 +2,7 @@ import { type ReactNode, createContext, useEffect, useState } from "react";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "./api";
 import type { NotificationDto } from "./types";
 import { getSocket } from "../../lib/socket";
+import { useAuth } from "../auth/hooks/useAuth";
 
 type Status = "loading" | "ready" | "error";
 
@@ -17,18 +18,26 @@ interface NotificationsContextValue {
 export const NotificationsContext = createContext<NotificationsContextValue | null>(null);
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
+	const { user, isLoading } = useAuth();
 	const [notifications, setNotifications] = useState<NotificationDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
 
 	useEffect(() => {
+		// AuthProvider's own session check (fetchMe) hasn't set the access
+		// token yet while isLoading is true — fetching now would go out
+		// without it and come back 401. Wait for that to settle, and skip
+		// entirely if it settled on "no session".
+		if (isLoading || !user) return;
+
 		let cancelled = false;
 
 		async function load() {
 			try {
 				const items = await listNotifications();
 				if (cancelled) return;
-				setNotifications(items);
+				// New-message activity belongs in the chat/messages UI, not the bell.
+				setNotifications(items.filter((n) => n.type !== "new_message"));
 				setStatus("ready");
 			} catch {
 				if (!cancelled) setStatus("error");
@@ -40,7 +49,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [retryToken]);
+	}, [retryToken, isLoading, user?.id]);
 
 	useEffect(() => {
 		const socket = getSocket();
