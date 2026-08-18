@@ -16,6 +16,10 @@ COMPOSE_FILE			= srcs/docker-compose.yml
 #                                 Environment                                  #
 # **************************************************************************** #
 
+ifeq ($(wildcard .env),)
+$(error .env not found - run: cp .env.example .env)
+endif
+
 include .env
 
 POSTGRES_HOST_PORT		?= 5432
