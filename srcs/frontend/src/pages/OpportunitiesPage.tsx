@@ -295,9 +295,6 @@ export default function OpportunitiesPage() {
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
 						<h1 className="text-2xl font-semibold">Opportunities</h1>
-						<p className="text-sm text-base-content/50">
-							{status === "ready" ? `${gigs.length} gigs` : "Loading gigs…"}
-						</p>
 					</div>
 				</div>
 

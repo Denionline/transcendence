@@ -200,9 +200,8 @@ export default function DiscoverPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeGigId, disciplines, locationQuery, availability]);
 
-	function handleGigChange(gigId: string) {
+	function switchToGig(gigId: string, gig?: GigDto) {
 		setActiveGigId(gigId);
-		const gig = myOpenGigs.find((g) => g.id === gigId);
 		if (gig) markFiltersFromGig(gig);
 		setSearchParams(
 			(prev) => {
@@ -214,19 +213,42 @@ export default function DiscoverPage() {
 		);
 	}
 
-	function handleSwipe(artist: Artist, liked: boolean) {
+	function handleGigChange(gigId: string) {
+		switchToGig(
+			gigId,
+			myOpenGigs.find((g) => g.id === gigId),
+		);
+	}
+
+	async function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
+		const gigId = activeGigId;
 		swipedIds.current.add(artist.id);
-		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
+		let matched = false;
+		try {
+			const result = await postSwipe({ gigId, liked, targetUserId: artist.userId });
+			matched = Boolean(result.matchId);
+		} catch (err: unknown) {
 			console.error("Failed to record swipe:", err);
-		});
-		fetchMatchingCandidate(
-			activeGigId,
-			generationRef.current,
-			disciplines,
-			locationQuery,
-			availability,
-		)
+		}
+
+		if (matched) {
+			// A match auto-closes the gig server-side (see swipe.service.ts). Pulling
+			// more candidates for it would now fail every time with GIG_CLOSED, so
+			// drop it from the picker and hop to another open gig ourselves instead
+			// of the deck silently stalling on repeated failed fetches below.
+			const remaining = myOpenGigs.filter((g) => g.id !== gigId);
+			setMyOpenGigs(remaining);
+			if (remaining.length > 0) {
+				switchToGig(remaining[0].id, remaining[0]);
+			} else {
+				setActiveGigId(null);
+				setStatus("no-gigs");
+			}
+			return;
+		}
+
+		fetchMatchingCandidate(gigId, generationRef.current, disciplines, locationQuery, availability)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -307,13 +329,6 @@ export default function DiscoverPage() {
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
-						<p className="text-sm text-base-content/50">
-							{status === "ready"
-								? `${artists.length} matches`
-								: status === "no-gigs"
-									? "No open opportunities yet"
-									: "Loading matches…"}
-						</p>
 					</div>
 
 					{myOpenGigs.length > 0 && (
@@ -350,7 +365,7 @@ export default function DiscoverPage() {
 
 				{status === "loading" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 items-center justify-center text-sm text-base-content/50">
-						Loading matches…
+						Loading artists…
 					</div>
 				)}
 

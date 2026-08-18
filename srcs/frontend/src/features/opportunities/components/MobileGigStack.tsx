@@ -27,12 +27,30 @@ export default function MobileGigStack({
 	const [detailGig, setDetailGig] = useState<GigListing | null>(null);
 	const startRef = useRef<{ x: number; y: number } | null>(null);
 	const wasDragRef = useRef(false);
+	// There's no way to revert a swipe already sent to the backend — Undo only
+	// rewinds this component's local position pointer, it never deletes the
+	// recorded Swipe row. Without this, redeciding an undone card in the
+	// opposite direction would silently no-op server-side (the backend treats
+	// the repeat as SWIPE_EXISTS) while the UI happily animated away as if the
+	// new decision had taken effect, leaving the user's real decision (and any
+	// resulting match) stuck on whatever they picked the first time.
+	const decidedRef = useRef<Map<number, 1 | -1>>(new Map());
 
 	const stackItems = [gigs[index], gigs[index + 1]].filter((g): g is GigListing => Boolean(g));
 
 	function commitSwipe(dir: 1 | -1) {
 		if (exitDir || index >= gigs.length) return;
-		if (front) onSwipe?.(front, dir === 1);
+		const decided = decidedRef.current.get(index);
+		// Already decided this card the other way — reject the gesture instead
+		// of pretending it changed anything.
+		if (decided !== undefined && decided !== dir) {
+			setDrag({ x: 0, y: 0, dragging: false });
+			return;
+		}
+		if (decided === undefined) {
+			if (front) onSwipe?.(front, dir === 1);
+			decidedRef.current.set(index, dir);
+		}
 		setExitDir(dir);
 		setDrag((d) => ({ ...d, dragging: false }));
 		window.setTimeout(() => {

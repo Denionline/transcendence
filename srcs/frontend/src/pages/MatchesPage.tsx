@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckIcon, XIcon } from "lucide-react";
 import Avatar from "../components/Avatar";
 import { listPendingInterests, respondToInterest } from "../features/interests/api";
@@ -20,6 +20,8 @@ export default function MatchesPage() {
 	// a double accept/decline while the swipe is still in flight.
 	const [respondingKeys, setRespondingKeys] = useState<Set<string>>(new Set());
 	const [retryToken, setRetryToken] = useState(0);
+	// "all" or a gig id — lets the user narrow the list down to one gig.
+	const [gigFilter, setGigFilter] = useState("all");
 
 	useEffect(() => {
 		let cancelled = false;
@@ -59,13 +61,52 @@ export default function MatchesPage() {
 		}
 	}
 
+	// Every gig referenced by a pending interest, deduped, so the filter always
+	// reflects what's actually on the page rather than every gig ever posted.
+	const gigOptions = useMemo(() => {
+		const byId = new Map<string, string>();
+		for (const interest of interests) byId.set(interest.gig.id, interest.gig.title);
+		return Array.from(byId, ([id, title]) => ({ id, title })).sort((a, b) =>
+			a.title.localeCompare(b.title),
+		);
+	}, [interests]);
+
+	// Fall back to "all" once the selected gig has nothing left to show (e.g.
+	// the last interest for it was just accepted/declined) instead of staying
+	// pointed at an option that's gone from the dropdown.
+	const activeGigFilter =
+		gigFilter !== "all" && gigOptions.every((gig) => gig.id !== gigFilter) ? "all" : gigFilter;
+
+	const filteredInterests =
+		activeGigFilter === "all" ? interests : interests.filter((i) => i.gig.id === activeGigFilter);
+
 	return (
 		<div className="mx-auto max-w-2xl">
-			<div className="mb-6">
-				<h1 className="text-2xl font-semibold">Matches</h1>
-				<p className="text-sm text-base-content/50">
-					{status === "ready" ? `${interests.length} people are interested in you` : "Loading…"}
-				</p>
+			<div className="mb-6 flex items-start justify-between gap-4">
+				<div>
+					<h1 className="text-2xl font-semibold">Matches</h1>
+					<p className="text-sm text-base-content/50">
+						{status === "ready"
+							? `${filteredInterests.length} people are interested in you`
+							: "Loading…"}
+					</p>
+				</div>
+
+				{status === "ready" && gigOptions.length > 0 && (
+					<select
+						value={activeGigFilter}
+						onChange={(e) => setGigFilter(e.target.value)}
+						aria-label="Filter by opportunity"
+						className="select select-sm shrink-0 rounded-full border-base-content/15 bg-transparent font-normal"
+					>
+						<option value="all">All gigs</option>
+						{gigOptions.map((gig) => (
+							<option key={gig.id} value={gig.id}>
+								{gig.title}
+							</option>
+						))}
+					</select>
+				)}
 			</div>
 
 			{status === "error" && (
@@ -84,16 +125,20 @@ export default function MatchesPage() {
 				</div>
 			)}
 
-			{status === "ready" && interests.length === 0 && (
+			{status === "ready" && filteredInterests.length === 0 && (
 				<div className="flex h-64 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-					<p className="font-medium">No one&rsquo;s shown interest yet</p>
+					<p className="font-medium">
+						{activeGigFilter === "all"
+							? "No one’s shown interest yet"
+							: "No interest for this gig yet"}
+					</p>
 					<p className="text-sm">Keep swiping — new interests show up here.</p>
 				</div>
 			)}
 
-			{status === "ready" && interests.length > 0 && (
+			{status === "ready" && filteredInterests.length > 0 && (
 				<ul className="flex flex-col gap-3">
-					{interests.map((interest) => {
+					{filteredInterests.map((interest) => {
 						const key = interestKey(interest);
 						const isResponding = respondingKeys.has(key);
 						return (
