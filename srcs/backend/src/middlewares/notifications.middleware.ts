@@ -8,7 +8,7 @@ export async function requireNotificationMatch(req: Request, _res: Response, nex
 	const caller = req.user!;
 
 	if (typeof notificationId !== "string") {
-		throwError(400, "INVALID_NO_ID", "matchId must be a single value");
+		throwError(400, "INVALID_NOTIFICATION_ID", "id must be a single value");
 	}
 	if (caller.role === UserRole.admin)
 		throwError(403, "FORBIDDEN", "admins do not have notifications");

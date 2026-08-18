@@ -153,8 +153,12 @@ export function initWebsocket(httpServer: HttpServer) {
 		io.to(`chat:${matchId}`).emit("new_match", { matchId });
 	});
 
-	authEvents.on("send_message", async ({ senderId, content, matchId, chatMessageId }) => {
+	authEvents.on("send_message", ({ senderId, content, matchId, chatMessageId }) => {
 		io.to(`chat:${matchId}`).emit("new_message", { senderId, content, matchId, chatMessageId });
+	});
+
+	authEvents.on("new_notification", ({ targetId }) => {
+		io.to(`user:${targetId}`).emit("new_notification");
 	});
 	return io;
 }
