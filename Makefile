@@ -38,7 +38,7 @@ COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed
+.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help
 
 all: up
 
@@ -136,3 +136,32 @@ dbstats:
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
 	$(COMPOSE) exec database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+
+help:
+	@echo "Stack:"
+	@echo "  all/up      start the stack in the background"
+	@echo "  build       build the images"
+	@echo "  down        stop the stack"
+	@echo "  re          restart (down + up)"
+	@echo "  rebuild     start fresh, dropping volumes (fclean + up)"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  clean       remove the containers"
+	@echo "  fclean      remove the containers and their volumes"
+	@echo "  oblivion    remove this project's containers, images, volumes and node_modules"
+	@echo ""
+	@echo "Code:"
+	@echo "  lint        lint frontend and backend"
+	@echo "  format      run prettier over srcs"
+	@echo "  ci          lint, build, typecheck, migrate and test"
+	@echo ""
+	@echo "Inspect:"
+	@echo "  logs        follow the container logs"
+	@echo "  ps          list this project's containers"
+	@echo "  status      list only the running containers"
+	@echo "  report      list all docker containers, images, volumes and networks"
+	@echo ""
+	@echo "Database:"
+	@echo "  seed        apply migrations and load demo data"
+	@echo "  dbstats     print row counts per table"
+	@echo "  dbaccess    open a psql shell"
