@@ -5,6 +5,7 @@ import Logo from "./Logo";
 import Avatar from "./Avatar";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import ProfileSearchBox from "../features/search/components/ProfileSearchBox";
+import NotificationBell from "../features/notifications/components/NotificationBell";
 
 export interface NavbarItem {
 	to: string;
@@ -98,6 +99,8 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 							<span className="hidden sm:inline">{action.label}</span>
 						</Link>
 					)}
+
+					{user && <NotificationBell />}
 
 					{user && (
 						<div className="dropdown dropdown-end">
