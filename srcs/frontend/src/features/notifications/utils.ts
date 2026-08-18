@@ -4,7 +4,7 @@ import type { NotificationDto, NotificationType } from "./types";
 interface NotificationMeta {
 	icon: typeof BriefcaseIcon;
 	iconClass: string;
-	message: (notification: NotificationDto) => string;
+	message: (notification: NotificationDto, isHirer: boolean) => string;
 	href: (notification: NotificationDto) => string;
 }
 
@@ -33,7 +33,10 @@ export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
 	swipe_liked: {
 		icon: ThumbsUpIcon,
 		iconClass: "text-accent",
-		message: (n) => `${n.actor?.displayName ?? "Someone"} is interested in you`,
+		message: (n, isHirer) =>
+			isHirer
+		? `${n.actor?.displayName ?? "Someone"} is interested in ${n.gigTitle || "your gig"}`
+		: `${n.actor?.displayName ?? "Someone"} is interested in you`,
 		href: () => "/matches",
 	},
 };

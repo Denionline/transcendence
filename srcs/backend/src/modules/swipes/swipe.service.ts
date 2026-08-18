@@ -16,6 +16,7 @@ interface SwipeData {
 	swipedId: string;
 	artistId: string;
 	gigId: string;
+	gigTitle: string;
 	liked: boolean;
 }
 
@@ -42,6 +43,20 @@ async function createSwipeRow(tx: Prisma.TransactionClient, data: SwipeData) {
 				liked: data.liked,
 			},
 		});
+		if (data.liked) {
+			await createNotification(
+				{
+					userId: data.swipedId,
+					type: NotificationType.swipe_liked,
+					data: {
+						swiperId: data.swiperId,
+						gigId: data.gigId,
+						gigTitle: data.gigTitle,
+					},
+				},
+				tx,
+			);
+		}
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
 			throwError(409, "SWIPE_EXISTS", "you already swiped this gig");
@@ -81,10 +96,21 @@ async function validateMatch(
 		const created = await tx.match.create({
 			data: { gigId: data.gigId, artistId: data.artistId },
 		});
-		await tx.gig.update({
+		const closedGig = await tx.gig.update({
 			where: { id: data.gigId },
 			data: { status: "closed" },
 		});
+		await createNotification(
+			{
+				userId: closedGig.hirerId,
+				type: NotificationType.gig_closed,
+				data: {
+					gigId: data.gigId,
+					gigTitle: closedGig.title,
+				},
+			},
+			tx,
+		);
 		authEvents.emit("new_match", { matchId: created.id, userIds: [data.swiperId, data.swipedId] });
 		await createNotification(
 			{
@@ -241,6 +267,7 @@ export async function handleSwipe(
 	data.gigId = gigId;
 	data.liked = liked;
 	const gig = await getOpenGig(gigId);
+	data.gigTitle = gig.title;
 	if (swiper.role === UserRole.artist) {
 		data.swipedId = gig.hirerId;
 		data.artistId = swiper.id;
