@@ -32,6 +32,7 @@ DBURL					= postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTG
 
 MAKE					= make --no-print-directory
 RM						= rm -rf
+COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 
 # **************************************************************************** #
 #                                    Comands                                   #
@@ -42,19 +43,19 @@ RM						= rm -rf
 all: up
 
 build:
-	docker compose --env-file .env -f $(COMPOSE_FILE) build
+	$(COMPOSE) build
 
 up: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
-	docker compose --env-file .env -f $(COMPOSE_FILE) up --build -d
+	$(COMPOSE) up --build -d
 
 down:
-	docker compose --env-file .env -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 clean:
-	docker compose --env-file .env -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 fclean: clean
-	docker compose --env-file .env -f $(COMPOSE_FILE) down -v
+	$(COMPOSE) down -v
 
 re: down up
 
@@ -68,13 +69,13 @@ format:
 
 # Commands to check docker
 logs:
-	docker compose --env-file .env -f $(COMPOSE_FILE) logs -f
+	$(COMPOSE) logs -f
 
 ps:
-	docker compose --env-file .env -f $(COMPOSE_FILE) ps
+	$(COMPOSE) ps
 
 status:
-	docker compose --env-file .env -f $(COMPOSE_FILE) ps --status running
+	$(COMPOSE) ps --status running
 
 # Development
 srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
@@ -102,7 +103,7 @@ ci:
 	@echo "TEST    Backend typecheck (prisma generate + tsc)"
 	cd $(BACKEND_PATH) && npx prisma generate && npx tsc --noEmit
 	@echo "TEST    Start test database (wait for healthy)"
-	docker compose --env-file .env -f $(COMPOSE_FILE) up -d --wait database
+	$(COMPOSE) up -d --wait database
 	@echo "TEST    Apply migrations"
 	@cd $(BACKEND_PATH) && DATABASE_URL="$(DBURL)" npx prisma migrate deploy
 	@echo "TEST    Backend tests"
@@ -122,7 +123,7 @@ oblivion:
 	@echo "\n\n    WARNING: This will delete ALL containers, images and volumes for THIS project!"
 	@echo "    Press Ctrl+C within 5 seconds to cancel..."
 	@sleep 5
-	docker compose --env-file .env -f $(COMPOSE_FILE) down -v --rmi all
+	$(COMPOSE) down -v --rmi all
 	$(RM) srcs/backend/node_modules srcs/frontend/node_modules
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
@@ -135,8 +136,8 @@ seed: srcs/backend/node_modules/.package-lock.json
 	npm run seed --prefix $(BACKEND_PATH)
 
 dbstats:
-	@docker exec transcendence-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories, (SELECT count(*) FROM \"User\" WHERE role = 'artist') artists, (SELECT count(*) FROM \"User\" WHERE role = 'hirer') hirers, (SELECT count(*) FROM \"User\" WHERE role = 'admin') admins;"
+	@$(COMPOSE) exec -T database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories, (SELECT count(*) FROM \"User\" WHERE role = 'artist') artists, (SELECT count(*) FROM \"User\" WHERE role = 'hirer') hirers, (SELECT count(*) FROM \"User\" WHERE role = 'admin') admins;"
 
 dbaccess:
 	@echo "INFO    type '\\q' to quit"
-	docker exec -it transcendence-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+	$(COMPOSE) exec database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
