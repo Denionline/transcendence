@@ -14,11 +14,14 @@ import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
-import { useCategories } from "../features/categories/hooks/useCategories";
 
-// The discipline facet used to be a fourth hardcoded vocabulary that matched
-// no real data. It now lists real categories, sourced from useCategories(),
-// and does narrow the deck client-side (see matchesDisciplineFilter).
+// The discipline facet used to be a freely-toggleable list of every category
+// in the vocabulary — but a candidate for a hirer's gig is always restricted
+// server-side to that gig's own single category (see
+// getNextCandidateForHirer, and verifyCategoryMatch at swipe time), so
+// checking any other category could never surface anything and unchecking
+// the gig's own emptied the deck instead. It's now a locked, single-value
+// display, matching how Location is already presented below.
 const AVAILABILITY_OPTIONS: { value: "available" | "soon" | null; label: string }[] = [
 	{ value: null, label: "Any" },
 	{ value: "available", label: "Available now" },
@@ -37,7 +40,6 @@ export default function DiscoverPage() {
 	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
 	// mount so the initial fetch burst matches whichever layout is live.
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
-	const { categories } = useCategories();
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
@@ -77,22 +79,14 @@ export default function DiscoverPage() {
 	// generation is still current.
 	const generationRef = useRef(0);
 
-	// A candidate never comes back for any category but the gig's own, so that
-	// category is always a safe default selection; location is the field the
-	// hirer is most likely to care about matching too. Both are just a
-	// starting point — the hirer can broaden discipline further afterward.
+	// A candidate never comes back for any category but the gig's own — it's
+	// not just a starting point, it's the only category that will ever
+	// produce results for this gig, so discipline is locked here rather than
+	// user-editable. Location is the other field locked to the gig for the
+	// same reason (see the Location facet below).
 	function markFiltersFromGig(gig: GigDto) {
 		setDisciplines(new Set([gig.category.slug]));
 		setLocationQuery(gig.location ?? "");
-	}
-
-	function toggleDiscipline(slug: string) {
-		setDisciplines((prev) => {
-			const next = new Set(prev);
-			if (next.has(slug)) next.delete(slug);
-			else next.add(slug);
-			return next;
-		});
 	}
 
 	// Load the hirer's own open gigs — candidates are always reviewed in the
@@ -220,6 +214,8 @@ export default function DiscoverPage() {
 		);
 	}
 
+	const activeGig = myOpenGigs.find((g) => g.id === activeGigId) ?? null;
+
 	async function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
 		const gigId = activeGigId;
@@ -267,23 +263,10 @@ export default function DiscoverPage() {
 						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 							Discipline
 						</h3>
-						<div className="flex flex-wrap gap-1.5">
-							{categories.map((category) => (
-								<button
-									key={category.slug}
-									type="button"
-									onClick={() => toggleDiscipline(category.slug)}
-									aria-pressed={disciplines.has(category.slug)}
-									className={`btn btn-xs rounded-full font-normal ${
-										disciplines.has(category.slug)
-											? "btn-primary"
-											: "btn-outline border-base-content/15 text-base-content/30"
-									}`}
-								>
-									{category.label}
-								</button>
-							))}
-						</div>
+						<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
+						<span className="btn btn-xs rounded-full font-normal btn-primary pointer-events-none">
+							{activeGig?.category.label ?? "—"}
+						</span>
 					</div>
 
 					<div>

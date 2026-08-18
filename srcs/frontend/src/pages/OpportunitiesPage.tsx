@@ -8,12 +8,12 @@ import {
 	matchesMinRateFilter,
 } from "../features/swipes/filters";
 import { mapGigToListing } from "../features/opportunities/mapGig";
-import { useCategories } from "../features/categories/hooks/useCategories";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { fetchMyProfile } from "../features/profile/api";
 import { onProfileUpdated } from "../features/profile/profileEvents";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import type { GigListing } from "../features/opportunities/gigTypes";
+import type { CategoryDto } from "../features/categories/types";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
 // GET /swipes/next only ever returns the single next candidate; matching one
@@ -30,21 +30,24 @@ export default function OpportunitiesPage() {
 	const [slotCount] = useState(() => (window.matchMedia(DESKTOP_QUERY).matches ? 3 : 1));
 
 	const { user } = useAuth();
-	const { categories } = useCategories();
 
 	// Discipline/location/rate are the real filters — they drive which
 	// fetched gigs actually make it into the deck (see fetchMatchingGig
-	// below). The backend widens the feed to every category the artist
-	// holds (see getNextGigForArtist), so discipline defaults to all of the
-	// artist's own categories but is a real multi-select on top of that —
-	// checking fewer narrows to gigs in just those. Location stays locked to
-	// the artist's own profile (not editable here). Both are set (and
+	// below). The backend widens the feed to every category the artist holds
+	// (see getNextGigForArtist) and never further than that — a gig outside
+	// the artist's own categories would fail CATEGORY_MISMATCH at swipe time
+	// anyway (see verifyCategoryMatch) — so the discipline facet only ever
+	// lists (and defaults to) the artist's own categories, not the full
+	// vocabulary: checking any of them narrows to gigs in just those, and
+	// there's nothing outside that set to broaden into. Location stays locked
+	// to the artist's own profile (not editable here). Both are set (and
 	// re-set) once the artist's profile loads.
 	//
 	// Rate is the one other real, editable filter. `minRateInput` is the
 	// *draft* value bound to its input — editing it doesn't search by
 	// itself. The search only reacts to `appliedMinRateInput`, which only
 	// changes when the artist hits "Apply filters".
+	const [myCategories, setMyCategories] = useState<CategoryDto[]>([]);
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
@@ -113,6 +116,7 @@ export default function OpportunitiesPage() {
 		fetchMyProfile(user.id)
 			.then((profile) => {
 				if (cancelled) return;
+				setMyCategories(profile.categories);
 				setDisciplines(new Set(profile.categories.map((category) => category.slug)));
 				setLocationQuery(profile.location ?? "");
 			})
@@ -237,10 +241,11 @@ export default function OpportunitiesPage() {
 							Discipline
 						</h3>
 						<p className="mb-2 text-xs text-base-content/40">
-							Starts on your own categories — every gig here matches at least one already.
+							Your own categories — every gig here matches at least one already. Add more from
+							Settings to widen this list.
 						</p>
 						<div className="flex flex-wrap gap-1.5">
-							{categories.map((category) => (
+							{myCategories.map((category) => (
 								<button
 									key={category.slug}
 									type="button"
