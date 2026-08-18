@@ -119,10 +119,10 @@ export function initWebsocket(httpServer: HttpServer) {
 			const recipientId = match.otherUser.id;
 			await createNotification({
 				userId: recipientId,
+				actorId: socket.userId,
 				type: NotificationType.new_message,
 				data: {
 					matchId: data.matchId,
-					senderId: socket.userId,
 					preview: data.content,
 				},
 			});

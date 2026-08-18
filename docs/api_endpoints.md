@@ -448,6 +448,45 @@ Chat is only reachable through a match — no match, no messages.
 | PUT | `/:id/read` | recipient | Mark as read — the only "edit" messages support; content is immutable |
 | DELETE | `/:id` | sender (or mod/admin) | |
 
+## Notifications `/api/notifications`
+
+Notifications are created server-side as a side effect of other actions
+(swiping, matching, messaging, a gig closing) — there is no `POST` endpoint,
+only read and mark-as-read. Every route requires a valid access token
+(`requireAuth`).
+
+| Method | Path | Who | Notes |
+|---|---|---|---|
+| GET | `/` | logged-in | The caller's own notifications, newest first. Query: `?page=1&pageSize=20`. Returns `{ items, page, pageSize, total }` |
+| PATCH | `/:id/read` | recipient | Marks one notification as read. `id` must belong to the caller → otherwise `404 NOTIFICATION_NOT_FOUND` (same response whether the id doesn't exist or belongs to someone else, so existence is never leaked) |
+| PATCH | `/read-all` | logged-in | Marks every unread notification belonging to the caller as read. Always `204`, even if there was nothing to mark |
+
+A notification item:
+
+```json
+{
+  "id": "…",
+  "type": "swipe_liked",
+  "isRead": false,
+  "createdAt": "2026-08-06T22:34:15.725Z",
+  "actor": { "id": "…", "displayName": "…", "avatarUrl": "…" },
+  "matchId": "…",
+  "gigId": "…",
+  "gigTitle": "…",
+  "preview": "…"
+}
+```
+
+`actor`, `matchId`, `gigId`, `gigTitle` and `preview` are only present when
+relevant to the `type`:
+
+| `type` | Fires when | Carries |
+|---|---|---|
+| `swipe_liked` | Someone likes the caller (or the caller's gig) | `actor`, `gigId`, `gigTitle` |
+| `new_match` | A mutual like forms a match | `actor`, `matchId` |
+| `new_message` | A chat message arrives | `actor`, `matchId`, `preview` |
+| `gig_closed` | The caller's gig auto-closes because a match formed | `gigId`, `gigTitle` (no `actor`) |
+
 ## Friends `/api/friends`
 
 | Method | Path | Who | Notes |
@@ -475,6 +514,8 @@ Chat is only reachable through a match — no match, no messages.
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
 | `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
+| `INVALID_NOTIFICATION_ID` | 400 | `:id` param on a notifications route was not a single string value |
+| `NOTIFICATION_NOT_FOUND` | 404 | No notification with that id belonging to the caller |
 | `EMAIL_EXISTS` | 409 | Email already registered |
 | `PROFILE_EXISTS` | 409 | User already has a profile |
 | `SWIPE_EXISTS` | 409 | A swipe already exists for this (swiper, swiped, gig) combination |

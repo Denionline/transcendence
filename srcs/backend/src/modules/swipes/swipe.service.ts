@@ -47,9 +47,9 @@ async function createSwipeRow(tx: Prisma.TransactionClient, data: SwipeData) {
 			await createNotification(
 				{
 					userId: data.swipedId,
+					actorId: data.swiperId,
 					type: NotificationType.swipe_liked,
 					data: {
-						swiperId: data.swiperId,
 						gigId: data.gigId,
 						gigTitle: data.gigTitle,
 					},
@@ -115,11 +115,9 @@ async function validateMatch(
 		await createNotification(
 			{
 				userId: data.swipedId,
+				actorId: data.swiperId,
 				type: NotificationType.new_match,
-				data: {
-					matchId: created.id,
-					swiperId: data.swiperId,
-				},
+				data: { matchId: created.id },
 			},
 			tx,
 		);

@@ -2,8 +2,6 @@ import { type ReactNode, createContext, useEffect, useState } from "react";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "./api";
 import type { NotificationDto } from "./types";
 
-const POLL_INTERVAL_MS = 45_000;
-
 type Status = "loading" | "ready" | "error";
 
 interface NotificationsContextValue {
@@ -37,11 +35,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 		}
 
 		load();
-		const interval = setInterval(load, POLL_INTERVAL_MS);
 
 		return () => {
 			cancelled = true;
-			clearInterval(interval);
 		};
 	}, [retryToken]);
 
