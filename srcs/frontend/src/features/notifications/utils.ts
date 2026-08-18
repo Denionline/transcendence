@@ -35,8 +35,8 @@ export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
 		iconClass: "text-accent",
 		message: (n, isHirer) =>
 			isHirer
-		? `${n.actor?.displayName ?? "Someone"} is interested in ${n.gigTitle || "your gig"}`
-		: `${n.actor?.displayName ?? "Someone"} is interested in you`,
+				? `${n.actor?.displayName ?? "Someone"} is interested in ${n.gigTitle || "your gig"}`
+				: `${n.actor?.displayName ?? "Someone"} is interested in you`,
 		href: () => "/matches",
 	},
 };

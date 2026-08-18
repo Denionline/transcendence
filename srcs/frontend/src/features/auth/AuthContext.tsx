@@ -8,6 +8,7 @@ import {
 	updateProfileRequest,
 	updatePasswordRequest,
 } from "./api";
+import { getSocket, disconnectSocket } from "../../lib/socket";
 
 interface AuthContextValue {
 	user: User | null;
@@ -49,6 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			cancelled = true;
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!user) return;
+
+		const socket = getSocket();
+		socket.connect();
+
+		return () => {
+			disconnectSocket();
+		};
+	}, [user]);
 
 	async function login(credentials: Credentials) {
 		setIsLoading(true);

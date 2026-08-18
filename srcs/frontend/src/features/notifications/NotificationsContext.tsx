@@ -1,6 +1,7 @@
 import { type ReactNode, createContext, useEffect, useState } from "react";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "./api";
 import type { NotificationDto } from "./types";
+import { getSocket } from "../../lib/socket";
 
 type Status = "loading" | "ready" | "error";
 
@@ -40,6 +41,20 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 			cancelled = true;
 		};
 	}, [retryToken]);
+
+	useEffect(() => {
+		const socket = getSocket();
+
+		function handleNotificationEvent() {
+			setRetryToken((t) => t + 1);
+		}
+
+		socket.on("new_notification", handleNotificationEvent);
+
+		return () => {
+			socket.off("new_notification", handleNotificationEvent);
+		};
+	}, []);
 
 	function refresh() {
 		setRetryToken((t) => t + 1);
