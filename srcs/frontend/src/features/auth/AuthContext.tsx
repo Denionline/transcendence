@@ -8,6 +8,7 @@ import {
 	updateProfileRequest,
 	updatePasswordRequest,
 } from "./api";
+import { connectSocket, disconnectSocket } from "../../lib/socket";
 
 interface AuthContextValue {
 	user: User | null;
@@ -35,7 +36,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		async function checkSession() {
 			try {
 				const me = await fetchMe();
-				if (!cancelled) setUser(me);
+				if (!cancelled) {
+					setUser(me);
+					if (me) connectSocket();
+				}
 			} catch {
 				if (!cancelled) setUser(null); // no session, that's fine
 			} finally {
@@ -55,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const user = await loginRequest(credentials);
 			setUser(user);
+			connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -66,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const user = await registerRequest(data);
 			setUser(user);
+			connectSocket();
 			console.log("Registered as:", user);
 			return user;
 		} finally {
@@ -78,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			await logoutRequest();
 			setUser(null);
+			disconnectSocket();
 		} finally {
 			setIsLoading(false);
 		}
