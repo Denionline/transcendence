@@ -13,6 +13,7 @@ import { useAuth } from "../features/auth/hooks/useAuth";
 import { fetchMyProfile } from "../features/profile/api";
 import { onProfileUpdated } from "../features/profile/profileEvents";
 import { useMediaQuery } from "../lib/useMediaQuery";
+import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
 import type { GigListing } from "../features/opportunities/gigTypes";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
@@ -49,6 +50,7 @@ export default function OpportunitiesPage() {
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
 	const [appliedMinRateInput, setAppliedMinRateInput] = useState("");
+	const [filtersOpen, setFiltersOpen] = useState(true);
 
 	const [gigs, setGigs] = useState<GigListing[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -217,10 +219,10 @@ export default function OpportunitiesPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-8 lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
-			<aside className="hidden w-56 shrink-0 lg:block">
-				<div className="mb-4 flex items-center justify-between gap-2">
-					<h2 className="text-sm font-semibold">Filters</h2>
+		<div className="flex flex-col lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
+			<FiltersPanel
+				open={filtersOpen}
+				actions={
 					<button
 						type="button"
 						onClick={applyFilters}
@@ -229,76 +231,73 @@ export default function OpportunitiesPage() {
 					>
 						Apply filters
 					</button>
-				</div>
-
-				<div className="flex flex-col gap-6 text-sm">
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Discipline
-						</h3>
-						<p className="mb-2 text-xs text-base-content/40">
-							Starts on your own categories — every gig here matches at least one already.
-						</p>
-						<div className="flex flex-wrap gap-1.5">
-							{categories.map((category) => (
-								<button
-									key={category.slug}
-									type="button"
-									onClick={() => toggleDiscipline(category.slug)}
-									aria-pressed={disciplines.has(category.slug)}
-									className={`btn btn-xs rounded-full font-normal ${
-										disciplines.has(category.slug)
-											? "btn-primary"
-											: "btn-outline border-base-content/15 text-base-content/30"
-									}`}
-								>
-									{category.label}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Location
-						</h3>
-						<p className="mb-2 text-xs text-base-content/40">Locked to your profile.</p>
-						<input
-							type="text"
-							value={locationQuery}
-							disabled
-							placeholder="Not specified"
-							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
-						/>
-					</div>
-
-					<div>
-						<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Minimum rate
-						</h3>
-						<input
-							type="number"
-							min={0}
-							value={minRateInput}
-							onChange={(e) => setMinRateInput(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === "Enter") applyFilters();
-							}}
-							placeholder="e.g. 500"
-							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
-						/>
+				}
+			>
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Discipline
+					</h3>
+					<p className="mb-2 text-xs text-base-content/40">
+						Starts on your own categories — every gig here matches at least one already.
+					</p>
+					<div className="flex flex-wrap gap-1.5">
+						{categories.map((category) => (
+							<button
+								key={category.slug}
+								type="button"
+								onClick={() => toggleDiscipline(category.slug)}
+								aria-pressed={disciplines.has(category.slug)}
+								className={`btn btn-xs rounded-full font-normal ${
+									disciplines.has(category.slug)
+										? "btn-primary"
+										: "btn-outline border-base-content/15 text-base-content/30"
+								}`}
+							>
+								{category.label}
+							</button>
+						))}
 					</div>
 				</div>
-			</aside>
+
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Location
+					</h3>
+					<p className="mb-2 text-xs text-base-content/40">Locked to your profile.</p>
+					<input
+						type="text"
+						value={locationQuery}
+						disabled
+						placeholder="Not specified"
+						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
+					/>
+				</div>
+
+				<div>
+					<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Minimum rate
+					</h3>
+					<input
+						type="number"
+						min={0}
+						value={minRateInput}
+						onChange={(e) => setMinRateInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") applyFilters();
+						}}
+						placeholder="e.g. 500"
+						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
+					/>
+				</div>
+			</FiltersPanel>
 
 			<div className="min-w-0 flex-1">
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
 						<h1 className="text-2xl font-semibold">Opportunities</h1>
-						<p className="text-sm text-base-content/50">
-							{status === "ready" ? `${gigs.length} gigs` : "Loading gigs…"}
-						</p>
 					</div>
+
+					<FiltersToggle open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)} />
 				</div>
 
 				{status === "error" && (

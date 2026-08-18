@@ -15,6 +15,7 @@ import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
 import { useCategories } from "../features/categories/hooks/useCategories";
+import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
 
 // The discipline facet used to be a fourth hardcoded vocabulary that matched
 // no real data. It now lists real categories, sourced from useCategories(),
@@ -41,6 +42,7 @@ export default function DiscoverPage() {
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
+	const [filtersOpen, setFiltersOpen] = useState(true);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	// GET /swipes/next requires a gigId for hirers — candidates are always
@@ -200,9 +202,8 @@ export default function DiscoverPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeGigId, disciplines, locationQuery, availability]);
 
-	function handleGigChange(gigId: string) {
+	function switchToGig(gigId: string, gig?: GigDto) {
 		setActiveGigId(gigId);
-		const gig = myOpenGigs.find((g) => g.id === gigId);
 		if (gig) markFiltersFromGig(gig);
 		setSearchParams(
 			(prev) => {
@@ -214,19 +215,42 @@ export default function DiscoverPage() {
 		);
 	}
 
-	function handleSwipe(artist: Artist, liked: boolean) {
+	function handleGigChange(gigId: string) {
+		switchToGig(
+			gigId,
+			myOpenGigs.find((g) => g.id === gigId),
+		);
+	}
+
+	async function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
+		const gigId = activeGigId;
 		swipedIds.current.add(artist.id);
-		postSwipe({ gigId: activeGigId, liked, targetUserId: artist.userId }).catch((err: unknown) => {
+		let matched = false;
+		try {
+			const result = await postSwipe({ gigId, liked, targetUserId: artist.userId });
+			matched = Boolean(result.matchId);
+		} catch (err: unknown) {
 			console.error("Failed to record swipe:", err);
-		});
-		fetchMatchingCandidate(
-			activeGigId,
-			generationRef.current,
-			disciplines,
-			locationQuery,
-			availability,
-		)
+		}
+
+		if (matched) {
+			// A match auto-closes the gig server-side (see swipe.service.ts). Pulling
+			// more candidates for it would now fail every time with GIG_CLOSED, so
+			// drop it from the picker and hop to another open gig ourselves instead
+			// of the deck silently stalling on repeated failed fetches below.
+			const remaining = myOpenGigs.filter((g) => g.id !== gigId);
+			setMyOpenGigs(remaining);
+			if (remaining.length > 0) {
+				switchToGig(remaining[0].id, remaining[0]);
+			} else {
+				setActiveGigId(null);
+				setStatus("no-gigs");
+			}
+			return;
+		}
+
+		fetchMatchingCandidate(gigId, generationRef.current, disciplines, locationQuery, availability)
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
@@ -236,100 +260,92 @@ export default function DiscoverPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-8 lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
-			<aside className="hidden w-56 shrink-0 lg:block">
-				<h2 className="mb-4 text-sm font-semibold">Filters</h2>
-
-				<div className="flex flex-col gap-6 text-sm">
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Discipline
-						</h3>
-						<div className="flex flex-wrap gap-1.5">
-							{categories.map((category) => (
-								<button
-									key={category.slug}
-									type="button"
-									onClick={() => toggleDiscipline(category.slug)}
-									aria-pressed={disciplines.has(category.slug)}
-									className={`btn btn-xs rounded-full font-normal ${
-										disciplines.has(category.slug)
-											? "btn-primary"
-											: "btn-outline border-base-content/15 text-base-content/30"
-									}`}
-								>
-									{category.label}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Availability
-						</h3>
-						<div className="flex flex-wrap gap-1.5">
-							{AVAILABILITY_OPTIONS.map((option) => (
-								<button
-									key={option.label}
-									type="button"
-									onClick={() => setAvailability(option.value)}
-									aria-pressed={availability === option.value}
-									className={`btn btn-xs rounded-full font-normal ${
-										availability === option.value
-											? "btn-primary"
-											: "btn-outline border-base-content/15 text-base-content/30"
-									}`}
-								>
-									{option.label}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Location
-						</h3>
-						<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
-						<input
-							type="text"
-							value={locationQuery}
-							disabled
-							placeholder="Not specified"
-							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
-						/>
+		<div className="flex flex-col lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
+			<FiltersPanel open={filtersOpen}>
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Discipline
+					</h3>
+					<div className="flex flex-wrap gap-1.5">
+						{categories.map((category) => (
+							<button
+								key={category.slug}
+								type="button"
+								onClick={() => toggleDiscipline(category.slug)}
+								aria-pressed={disciplines.has(category.slug)}
+								className={`btn btn-xs rounded-full font-normal ${
+									disciplines.has(category.slug)
+										? "btn-primary"
+										: "btn-outline border-base-content/15 text-base-content/30"
+								}`}
+							>
+								{category.label}
+							</button>
+						))}
 					</div>
 				</div>
-			</aside>
+
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Availability
+					</h3>
+					<div className="flex flex-wrap gap-1.5">
+						{AVAILABILITY_OPTIONS.map((option) => (
+							<button
+								key={option.label}
+								type="button"
+								onClick={() => setAvailability(option.value)}
+								aria-pressed={availability === option.value}
+								className={`btn btn-xs rounded-full font-normal ${
+									availability === option.value
+										? "btn-primary"
+										: "btn-outline border-base-content/15 text-base-content/30"
+								}`}
+							>
+								{option.label}
+							</button>
+						))}
+					</div>
+				</div>
+
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Location
+					</h3>
+					<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
+					<input
+						type="text"
+						value={locationQuery}
+						disabled
+						placeholder="Not specified"
+						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
+					/>
+				</div>
+			</FiltersPanel>
 
 			<div className="min-w-0 flex-1">
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
-						<p className="text-sm text-base-content/50">
-							{status === "ready"
-								? `${artists.length} matches`
-								: status === "no-gigs"
-									? "No open opportunities yet"
-									: "Loading matches…"}
-						</p>
 					</div>
 
-					{myOpenGigs.length > 0 && (
-						<select
-							value={activeGigId ?? ""}
-							onChange={(e) => handleGigChange(e.target.value)}
-							aria-label="Reviewing for opportunity"
-							className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-						>
-							{myOpenGigs.map((gig) => (
-								<option key={gig.id} value={gig.id}>
-									{gig.title}
-								</option>
-							))}
-						</select>
-					)}
+					<div className="flex items-center gap-2">
+						<FiltersToggle open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)} />
+						{myOpenGigs.length > 0 && (
+							<select
+								value={activeGigId ?? ""}
+								onChange={(e) => handleGigChange(e.target.value)}
+								aria-label="Reviewing for opportunity"
+								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
+							>
+								{myOpenGigs.map((gig) => (
+									<option key={gig.id} value={gig.id}>
+										{gig.title}
+									</option>
+								))}
+							</select>
+						)}
+					</div>
 				</div>
 
 				{status === "no-gigs" && (
@@ -350,7 +366,7 @@ export default function DiscoverPage() {
 
 				{status === "loading" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 items-center justify-center text-sm text-base-content/50">
-						Loading matches…
+						Loading artists…
 					</div>
 				)}
 
