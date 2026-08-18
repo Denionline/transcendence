@@ -50,7 +50,14 @@ export default function OpportunitiesPage() {
 	const [minRateInput, setMinRateInput] = useState("");
 	const [appliedMinRateInput, setAppliedMinRateInput] = useState("");
 
+	// Every gig ever pulled into `gigs` this burst, including ones already
+	// passed/liked — a swipe appends its replacement rather than removing the
+	// swiped card (the deck needs the full history to back-fill slots by
+	// index). So the header count has to subtract however many of those have
+	// actually been decided, or it would keep climbing on every pass instead
+	// of reflecting what's left to review.
 	const [gigs, setGigs] = useState<GigListing[]>([]);
+	const [decidedInBurst, setDecidedInBurst] = useState(0);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	// Bumped on every "Try again" click, and whenever the artist's profile
 	// changes elsewhere (see the effect below) — included in the gig-loading
@@ -166,6 +173,7 @@ export default function OpportunitiesPage() {
 		(async () => {
 			setStatus("loading");
 			setGigs([]);
+			setDecidedInBurst(0);
 			for (let i = 0; i < slotCount; i++) {
 				const gig = await fetchMatchingGig(
 					generation,
@@ -204,6 +212,7 @@ export default function OpportunitiesPage() {
 
 	function handleSwipe(gig: GigListing, liked: boolean) {
 		swipedIds.current.add(gig.id);
+		setDecidedInBurst((n) => n + 1);
 		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
 			console.error("Failed to record swipe:", err);
 		});
@@ -296,7 +305,9 @@ export default function OpportunitiesPage() {
 					<div>
 						<h1 className="text-2xl font-semibold">Opportunities</h1>
 						<p className="text-sm text-base-content/50">
-							{status === "ready" ? `${gigs.length} gigs` : "Loading gigs…"}
+							{status === "ready"
+								? `${Math.max(gigs.length - decidedInBurst, 0)} gigs to review`
+								: "Loading gigs…"}
 						</p>
 					</div>
 				</div>
