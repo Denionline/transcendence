@@ -57,7 +57,9 @@ clean:
 fclean: clean
 	$(COMPOSE) down -v
 
-re: down up
+re:
+	$(MAKE) down
+	$(MAKE) up
 
 lint:
 	npm run lint --prefix $(FRONTEND_PATH)
@@ -112,7 +114,9 @@ report:
 	echo "    Volumes:" ; docker volume ls ; \
 	echo "    Networks:" ; docker network ls
 
-rebuild: fclean up
+rebuild:
+	$(MAKE) fclean
+	$(MAKE) up
 
 oblivion:
 	@echo "\n\n    WARNING: This will delete ALL containers, images and volumes for THIS project!"
