@@ -15,6 +15,7 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import MessagesPage from "./pages/MessagesPage";
 import MatchesPage from "./pages/MatchesPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import OpportunitiesPage from "./pages/OpportunitiesPage";
 import NewOpportunityPage from "./pages/NewOpportunityPage";
 import MyOpportunitiesPage from "./pages/MyOpportunitiesPage";
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
 			{ path: "/matches", element: <MatchesPage /> },
 			{ path: "/messages", element: <MessagesPage /> },
+			{ path: "/notifications", element: <NotificationsPage /> },
 		],
 	},
 	{
