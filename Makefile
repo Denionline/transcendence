@@ -38,7 +38,7 @@ COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess dbstats seed
+.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed
 
 all: up
 
@@ -89,10 +89,6 @@ srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/f
 
 srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
-
-# test: up
-# 	@echo "INFO    access OAuth with: http://localhost:9000/api/auth/42"
-# 	@echo "INFO    access db with 'make dbaccess'"
 
 ci:
 	@echo "TEST    Lint (frontend + backend)"
