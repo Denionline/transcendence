@@ -109,11 +109,10 @@ report:
 rebuild: fclean up
 
 oblivion:
-	@echo "\n\n    WARNING: This will delete ALL Docker data on this system!"
+	@echo "\n\n    WARNING: This will delete ALL containers, images and volumes for THIS project!"
 	@echo "    Press Ctrl+C within 5 seconds to cancel..."
 	@sleep 5
-	$(MAKE) fclean
-	docker system prune --all --force
+	docker compose --env-file .env -f $(COMPOSE_FILE) down -v --rmi all
 	$(RM) srcs/backend/node_modules srcs/frontend/node_modules
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
