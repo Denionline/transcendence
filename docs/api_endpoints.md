@@ -433,8 +433,8 @@ A match only ever exists because both users swiped **like** on each other **for 
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl, online }` and `gig: { id, title }` — exactly what the chat sidebar needs. `online` is computed live from the WebSocket gateway's room state (not cached), true only while the other user has a socket connected **and** joined to this specific match's room |
-| GET | `/:id` | member | Single match, with both users' info and the gig |
+| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl, online }` and `gig: { id, title }` — exactly what the chat sidebar needs. `online` is computed live from the WebSocket gateway's room state (not cached), true only while the other user has a socket connected **and** joined to this specific match's room. Also includes `unreadCount` (number) — messages in that match not sent by the caller and not yet marked read. **Only present here, not on `GET /:id`** — the single-match fetch has no list to badge |
+| GET | `/:id` | member | Single match, with both users' info and the gig. No `unreadCount` — see above |
 | DELETE | `/:id` | member | Unmatch — closes the chat and cascades its messages |
 
 ## Messages `/api/matches/:matchId/messages`
@@ -444,8 +444,8 @@ Chat is only reachable through a match — no match, no messages.
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | POST | `/` | match member | Body: `{ "content": "..." }` (1–2000 chars). REST path; the WebSocket gateway performs the same write, so history is identical either way |
-| GET | `/` | match member | Paginated history, newest first |
-| PUT | `/:id/read` | recipient | Mark as read — the only "edit" messages support; content is immutable |
+| GET | `/` | match member | Paginated history, newest first. Side effect: marks every message on the returned page that wasn't sent by the caller as read |
+| PATCH | `/read` | match member | Marks **every** unread message in the match not sent by the caller as read, regardless of pagination — not tied to a specific message id. Used by the frontend when the chat is already open and a message arrives live over the socket (the `GET` above only catches messages fetched via that call, not ones that arrive afterwards). Always `204`, even if there was nothing to mark |
 | DELETE | `/:id` | sender (or mod/admin) | |
 
 ## Notifications `/api/notifications`
