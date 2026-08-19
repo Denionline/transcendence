@@ -255,9 +255,9 @@ export default function DiscoverPage() {
 			if (err instanceof ApiError && err.code === "CATEGORY_MISMATCH") {
 				setSwipeNotice(`${artist.name} isn't eligible for this opportunity's category.`);
 				window.setTimeout(() => setSwipeNotice(null), 4000);
-			} else {
-				console.error("Failed to record swipe:", err);
 			}
+			// Any other failure just leaves `matched` false below — the deck
+			// moves on the same as a normal, unmatched swipe.
 		}
 
 		if (matched) {
@@ -280,8 +280,8 @@ export default function DiscoverPage() {
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
-			.catch((err: unknown) => {
-				console.error("Failed to load next artist:", err);
+			.catch(() => {
+				// Deck just stays one card short — the next swipe tries again.
 			});
 	}
 

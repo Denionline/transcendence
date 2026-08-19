@@ -51,8 +51,8 @@ export default function MatchesPage() {
 		try {
 			await respondToInterest(interest, liked);
 			setInterests((prev) => prev.filter((item) => interestKey(item) !== key));
-		} catch (err: unknown) {
-			console.error("Failed to respond to interest:", err);
+		} catch {
+			// Button re-enables below so the hirer can just try again.
 			setRespondingKeys((prev) => {
 				const next = new Set(prev);
 				next.delete(key);

@@ -54,8 +54,9 @@ export default function OpportunityDetailPage() {
 				if (cancelled) return;
 				setHasMatch(matches.some((match) => match.gig.id === gig.id));
 			})
-			.catch((err: unknown) => {
-				console.error("Failed to check for an existing match:", err);
+			.catch(() => {
+				// Worst case hasMatch stays false and the page treats this gig as
+				// not yet matched — an acceptable fallback for a background check.
 			});
 		return () => {
 			cancelled = true;

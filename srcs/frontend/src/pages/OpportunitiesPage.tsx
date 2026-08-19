@@ -120,8 +120,9 @@ export default function OpportunitiesPage() {
 				setDisciplines(new Set(profile.categories.map((category) => category.slug)));
 				setLocationQuery(profile.location ?? "");
 			})
-			.catch((err: unknown) => {
-				console.error("Failed to load your profile for filter defaults:", err);
+			.catch(() => {
+				// Filters just stay at their defaults (empty) — the gig feed
+				// itself still loads fine without them.
 			});
 		return () => {
 			cancelled = true;
@@ -182,12 +183,11 @@ export default function OpportunitiesPage() {
 				setGigs((prev) => [...prev, gig]);
 			}
 			if (!cancelled) setStatus("ready");
-		})().catch((err: unknown) => {
+		})().catch(() => {
 			if (cancelled) return;
 			// The backend message (e.g. "artist profile not found") is an
-			// internal detail, not something to surface as-is — show a neutral
-			// state instead and keep the real reason in the console.
-			console.error("Failed to load gigs:", err);
+			// internal detail, not something to surface as-is — a neutral
+			// error state is enough here.
 			setStatus("error");
 		});
 		return () => {
@@ -208,15 +208,15 @@ export default function OpportunitiesPage() {
 
 	function handleSwipe(gig: GigListing, liked: boolean) {
 		swipedIds.current.add(gig.id);
-		postSwipe({ gigId: gig.id, liked }).catch((err: unknown) => {
-			console.error("Failed to record swipe:", err);
-		});
+		// The swipe itself is fire-and-forget from the card's perspective — the
+		// deck has already moved on by the time a failure could come back.
+		postSwipe({ gigId: gig.id, liked }).catch(() => {});
 		fetchMatchingGig(generationRef.current, disciplines, locationQuery, appliedMinRateInput)
 			.then((next) => {
 				if (next) setGigs((prev) => [...prev, next]);
 			})
-			.catch((err: unknown) => {
-				console.error("Failed to load next gig:", err);
+			.catch(() => {
+				// Deck just stays one card short — the next swipe tries again.
 			});
 	}
 
