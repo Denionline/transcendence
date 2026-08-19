@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
+import { deleteLocations, locationsOwnedBy } from "../files/files.service.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -121,6 +122,12 @@ export async function updateUser(targetId: string, input: UpdateUserInput) {
 }
 
 export async function deleteUser(targetId: string) {
+	//	`onDelete: Cascade` removes this user's File rows but leaves their bytes
+	//	on disk forever, so read the locations while the rows still exist. Same
+	//	order as deleting one file: rows first, bytes after — a failed unlink
+	//	leaves an invisible orphan rather than a row pointing at nothing.
+	const locations = await locationsOwnedBy(targetId);
+
 	try {
 		await prisma.user.delete({ where: { id: targetId } });
 	} catch (error) {
@@ -128,4 +135,6 @@ export async function deleteUser(targetId: string) {
 			throwError(404, "USER_NOT_FOUND", "user not found");
 		throw error;
 	}
+
+	await deleteLocations(locations);
 }
