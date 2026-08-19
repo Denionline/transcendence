@@ -104,10 +104,7 @@ export function initWebsocket(httpServer: HttpServer) {
 				return;
 			}
 			const room = `chat:${data.matchId}`;
-			if (!socket.rooms.has(room)) {
-				socket.emit("message_error", { reason: "failed_to_send" });
-				return;
-			}
+			if (!socket.rooms.has(room)) return;
 			const result = await createMessage({
 				matchId: data.matchId,
 				senderId: socket.userId,
