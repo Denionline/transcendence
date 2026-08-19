@@ -88,6 +88,15 @@ chosen anyway, for the reason recorded below.
   order's worst case is an orphaned file on a volume that `make fclean` wipes anyway.
   Account deletion follows the same order: read the owned locations, delete the user
   (cascading the rows), then unlink.
+* Demo data ships as **tracked fixture files** under `srcs/backend/prisma/seed-assets/`,
+  which `make seed` copies into the volume before writing the matching `File` rows. A1
+  makes this necessary: seeding writes rows, and rows are not bytes. On a machine that has
+  just cloned the repository the bytes can come from exactly three places — the volume
+  (empty by definition), the network (excluded by the driver above), or the repository —
+  so the repository is the only one left. Their ids are hardcoded in `seed-data.json`,
+  which supplies the stable key a `File` otherwise lacks and is what makes re-seeding
+  idempotent. Because the seed must reach `/app/uploads`, it runs **inside the backend
+  container**: a host process cannot write into a named volume by path.
 
 ### Rejected, and why
 
@@ -110,6 +119,16 @@ chosen anyway, for the reason recorded below.
 * **B5 (site-wide cookie auth) — rejected on scope.** A cross-cutting refactor of
   `modules/auth` and `apiClient.ts` that invalidates the documented token model and the
   existing auth tests. That is a different issue than #35.
+* **Seeding by download, or by generating placeholder bytes — rejected.** Fetching demo
+  media at seed time reintroduces exactly the network dependency the storage decision was
+  made to avoid. Generating bytes programmatically keeps the repository small but yields a
+  demo of blank rectangles, which cannot demonstrate preview, seeking or the portfolio
+  query — the three things the demo exists to show. Committing a small set of real files
+  costs permanent repository weight and buys a demo that can actually be inspected.
+* **Bind-mounting the upload directory onto the host — rejected.** It would let the seed
+  keep running host-side, but it puts container-owned files in the working tree and
+  replaces the named volume the rest of this decision rests on. Running the seed inside
+  the container instead costs one `Makefile` line.
 
 ### Consequences
 
@@ -123,8 +142,13 @@ chosen anyway, for the reason recorded below.
 * Good, because memory use is flat regardless of file size — nothing is buffered whole.
 * Good, because nothing here is throwaway: if Nginx lands for the HTTPS the subject
   requires, A1 becomes A3 by changing one response line to `X-Accel-Redirect`.
+* Good, because `make seed` now produces a demo that renders with the network off. It also
+  retires the 311 `https://i.pravatar.cc` avatar URLs the seed carried, which had made the
+  demo quietly dependent on outbound internet long before uploads existed.
 * Neutral, because uploads are wiped by `make fclean` (`docker compose down -v`). Correct
   for a school project, but the app must treat a missing file as `404`, never `500`.
+* Neutral, because `make seed` now requires `make up` first, having moved inside the
+  container. It no longer needs the database port published, which is a small gain.
 * Bad, because **a disclosed URL is permanent and unrevocable** — via `Referer`, proxy
   logs, browser history or a pasted link. Deleting the file is the only revocation.
 * Bad, because a single listing endpoint that forgets its `visibility` filter publishes a
@@ -138,6 +162,12 @@ chosen anyway, for the reason recorded below.
   ordering.
 * Bad, because it does not survive horizontal scaling. Irrelevant here: compose runs
   exactly one backend.
+* Bad, because the fixture files are permanent repository weight — git keeps every blob it
+  has ever seen, so an oversized demo video cannot be un-committed. Held under 1 MB total.
+* Bad, because **seeded ids are public**: they are hardcoded in a file in this repository,
+  so the entropy argument above describes uploaded files and not the demo rows. That is
+  the right trade for content whose only purpose is to be looked at, but nobody should
+  read "holding the URL is the permission" as covering every row in the table.
 
 ## Pros and Cons of the Options
 
@@ -191,6 +221,10 @@ request returning `206` with a correct `Content-Range`.
 Manually, on a fresh machine: `git clone` → `.env` → `make up` → upload, preview and
 delete an image, an audio file and a video **with the network disabled**, then
 `make fclean && make up` and confirm the app still starts and 404s cleanly.
+
+The seed has its own check, on that same offline machine: `make seed` must leave every
+avatar and every portfolio item rendering rather than broken, and running it a second time
+must change no row count and no file count.
 
 ## More Information
 
