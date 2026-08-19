@@ -34,6 +34,9 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 	// already holding some overlap.
 	const knownIds = useRef<Set<string>>(new Set());
 	const isNearBottomRef = useRef(true);
+	// Whether new messages have arrived via socket since the last mark-as-read —
+	// avoids re-hitting the read endpoint on every input focus.
+	const hasUnreadRef = useRef(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -83,6 +86,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			if (payload.matchId !== match.matchId) return;
 			if (knownIds.current.has(payload.chatMessageId)) return;
 			knownIds.current.add(payload.chatMessageId);
+			hasUnreadRef.current = true;
 			setMessages((prev) => [
 				...prev,
 				{
@@ -102,8 +106,11 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 	}, [match.matchId, status]);
 
 	function handleFocus() {
+		if (!hasUnreadRef.current) return;
+		hasUnreadRef.current = false;
 		markMessagesRead(match.matchId).catch((err: unknown) => {
 			console.error("Failed to mark messages as read:", err);
+			hasUnreadRef.current = true;
 		});
 	}
 
