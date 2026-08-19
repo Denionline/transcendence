@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { FILE_RULES, formatBytes, typeForMime } from "./constants";
 
-// Fast feedback, not a security boundary — see constants.ts. The point is
-// that a user who picks a 200 MB file learns so immediately, instead of
-// watching a progress bar crawl to a 413.
+// Fast feedback, not a security boundary — see constants.ts.
 export const uploadCandidateSchema = z
 	.custom<File>((value) => value instanceof File, "Choose a file")
 	.superRefine((file, ctx) => {

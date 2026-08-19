@@ -122,10 +122,8 @@ export async function updateUser(targetId: string, input: UpdateUserInput) {
 }
 
 export async function deleteUser(targetId: string) {
-	//	`onDelete: Cascade` removes this user's File rows but leaves their bytes
-	//	on disk forever, so read the locations while the rows still exist. Same
-	//	order as deleting one file: rows first, bytes after — a failed unlink
-	//	leaves an invisible orphan rather than a row pointing at nothing.
+	//	`onDelete: Cascade` removes the File rows but leaves the bytes on disk,
+	//	so read the locations while the rows still exist.
 	const locations = await locationsOwnedBy(targetId);
 
 	try {

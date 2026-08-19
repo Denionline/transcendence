@@ -7,10 +7,9 @@ import { resolveKey } from "../src/lib/storage.js";
 import { UPLOAD_DIR } from "../src/lib/env.js";
 import { HttpError } from "../src/lib/http-error.js";
 
-//	resolveKey is a security control — the one thing standing between a `File`
-//	row and an arbitrary path on disk — and it had no test. It is called with a
-//	value out of the database, which is only ever as trustworthy as whatever
-//	wrote it, so "location is always a UUID today" is not a reason to skip this.
+//	resolveKey is what stands between a `File` row and an arbitrary path on
+//	disk. It is called with a value out of the database, which is only ever
+//	as trustworthy as whatever wrote it.
 const ROOT = path.resolve(UPLOAD_DIR);
 
 function refusal(error: unknown): boolean {
@@ -25,9 +24,9 @@ test("resolveKey accepts a normal stored location", () => {
 	assert.equal(resolveKey(location), path.join(ROOT, location));
 });
 
-//	The traversal guard proper. Each of these resolves outside the upload
-//	directory, which is the whole point of resolving before comparing: a
-//	prefix check on the *raw* string would wave every one of them through.
+//	Each of these resolves outside the upload directory, which is why the
+//	guard resolves before comparing: a check on the raw string would wave
+//	every one of them through.
 test("resolveKey refuses anything that escapes the upload directory", () => {
 	for (const location of [
 		"../secret.png",
@@ -39,17 +38,17 @@ test("resolveKey refuses anything that escapes the upload directory", () => {
 		assert.throws(() => resolveKey(location), refusal, `${location} should be refused`);
 });
 
-//	Why the guard compares against `ROOT + path.sep` and not `ROOT`. A sibling
-//	directory whose name merely starts with the root's is a different
+//	Why the guard compares against `ROOT + path.sep` and not `ROOT`: a
+//	sibling whose name merely starts with the root's is a different
 //	directory, and a bare startsWith(ROOT) would consider it contained.
 test("resolveKey refuses a sibling directory sharing the root's name prefix", () => {
 	const sibling = path.join("..", `${path.basename(ROOT)}-evil`, "file.png");
 	assert.throws(() => resolveKey(sibling), refusal);
 });
 
-//	L3. These resolve to the upload directory itself, which is not a file: the
-//	old guard allowed it explicitly, so an empty `location` would have reached
-//	fs and come back EISDIR — a 500 for what is really a malformed row.
+//	These resolve to the upload directory itself, which is not a file, so an
+//	empty `location` would reach fs and come back EISDIR — a 500 for what is
+//	really a malformed row.
 test("resolveKey refuses a location naming the upload directory itself", () => {
 	for (const location of ["", ".", "./", "/", ".."])
 		assert.throws(

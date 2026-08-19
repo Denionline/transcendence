@@ -8,11 +8,9 @@ interface UploadOptions {
 	signal?: AbortSignal;
 }
 
-//	Deliberately narrow: the two fields every caller dereferences, not a
-//	full-schema validation. The rest of this client casts its responses too —
-//	`apiRequest` included — and validating one endpoint thoroughly while the
-//	others stay unchecked would buy less than it costs. This exists to close
-//	the one hole XHR opens that fetch does not.
+//	Narrow on purpose: the two fields every caller dereferences, not a
+//	full-schema validation. It closes the one hole XHR opens that fetch
+//	does not.
 function isFileDto(body: unknown): body is FileDto {
 	if (typeof body !== "object" || body === null) return false;
 	const candidate = body as Partial<FileDto>;
@@ -20,14 +18,10 @@ function isFileDto(body: unknown): body is FileDto {
 }
 
 /**
- * Deliberately not routed through `apiRequest`.
- *
- * Two reasons, and both are structural rather than stylistic: `apiRequest`
- * hardcodes `Content-Type: application/json`, which a multipart body must not
- * carry — the browser has to set it itself, because the boundary is part of
- * the header and only the browser knows the boundary it generated. And
- * `fetch()` cannot report upload progress at all, so a progress bar needs
- * XMLHttpRequest whether we like it or not.
+ * Not routed through `apiRequest`: that hardcodes `Content-Type:
+ * application/json`, which a multipart body must not carry — the browser
+ * sets it itself, because the boundary is part of the header. And `fetch()`
+ * cannot report upload progress at all.
  */
 export function uploadFile(file: File, options: UploadOptions = {}): Promise<FileDto> {
 	return new Promise((resolve, reject) => {
@@ -41,7 +35,7 @@ export function uploadFile(file: File, options: UploadOptions = {}): Promise<Fil
 
 		const token = getAccessToken();
 		if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-		//	No setRequestHeader("Content-Type", ...) here. On purpose.
+		//	No Content-Type header here, on purpose: the browser sets it.
 
 		xhr.upload.onprogress = (event) => {
 			if (!event.lengthComputable) return;
@@ -68,12 +62,8 @@ export function uploadFile(file: File, options: UploadOptions = {}): Promise<Fil
 				);
 			}
 
-			//	`apiRequest` gets this for free: fetch's `res.json()` rejects on a
-			//	body that will not parse. The catch above swallows exactly that,
-			//	so without this check a 2xx carrying HTML — a proxy error page,
-			//	say — resolves as `{}` cast to a FileDto, and the caller pushes a
-			//	gallery entry whose id and url are undefined. The upload reports
-			//	success and the failure surfaces later, as a broken <img>.
+			//	Without this, a 2xx carrying HTML — a proxy error page, say —
+			//	resolves as `{}` cast to a FileDto and the upload reports success.
 			if (!isFileDto(body))
 				return reject(
 					new ApiError(xhr.status, "Upload succeeded but the server's reply was unreadable"),
@@ -89,7 +79,6 @@ export function uploadFile(file: File, options: UploadOptions = {}): Promise<Fil
 	});
 }
 
-/** The caller's own files, both visibilities. Nobody else's are ever listed. */
 export async function listMyFiles(): Promise<FileDto[]> {
 	const res = await apiRequest<FileListResponse>("/files?pageSize=100");
 	return res.items;

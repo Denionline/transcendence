@@ -12,10 +12,9 @@ import { prisma } from "../src/lib/prisma.js";
 import { RAW_MAX_PER_MINUTE } from "../src/modules/files/files.routes.js";
 import { UserRole } from "../generated/prisma/client.js";
 
-//	Deliberately its own file. The limiter's bucket Map lives at module scope,
-//	so a test that exhausts it poisons every later /raw request in the same
-//	process — and node:test gives each *file* a fresh process, not each test.
-//	Same reasoning as test/auth.login-attempts.test.ts.
+//	Its own file: the limiter's bucket Map lives at module scope, and
+//	node:test gives each file a fresh process, not each test. Same reasoning
+//	as test/auth.login-attempts.test.ts.
 
 const PNG = Buffer.from(
 	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
@@ -60,9 +59,8 @@ test("GET /api/files/:id/raw is rate limited", async () => {
 		const { id } = (await created.json()) as { id: string };
 		const rawUrl = `${baseUrl}/api/files/${id}/raw`;
 
-		//	The upload itself does not touch this bucket — only /raw does — so
-		//	the whole budget is still available. Batched rather than fired all
-		//	at once so the runtime is not holding 600 open sockets.
+		//	The upload does not touch this bucket, only /raw does. Batched so the
+		//	runtime is not holding 600 open sockets.
 		let served = 0;
 		for (let sent = 0; sent < RAW_MAX_PER_MINUTE; sent += 50) {
 			const batch = await Promise.all(
@@ -72,7 +70,6 @@ test("GET /api/files/:id/raw is rate limited", async () => {
 		}
 		assert.equal(served, RAW_MAX_PER_MINUTE, "every request inside the budget should be served");
 
-		//	One past the budget.
 		const refused = await fetch(rawUrl);
 		assert.equal(refused.status, 429);
 		assert.equal(((await refused.json()) as { error: string }).error, "TOO_MANY_REQUESTS");

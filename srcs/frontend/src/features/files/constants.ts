@@ -2,11 +2,8 @@ import type { FileType } from "./types";
 
 const MB = 1024 * 1024;
 
-// Mirrors FILE_RULES in srcs/backend/src/lib/file-limits.ts. This copy exists
-// to fail fast in the browser — to fill the `accept` attribute and to reject a
-// 200 MB video before it is uploaded. It is **not** security: the server
-// re-checks everything, and the server's answer is the one that counts. If the
-// two ever disagree, the backend wins and the user sees a 413 or a 415.
+// Mirrors FILE_RULES in srcs/backend/src/lib/file-limits.ts. This copy fails
+// fast in the browser and is not security: the server re-checks everything.
 export const FILE_RULES: Record<
 	Exclude<FileType, "document">,
 	{ maxBytes: number; mimeTypes: string[] }
@@ -16,7 +13,6 @@ export const FILE_RULES: Record<
 	video: { maxBytes: 50 * MB, mimeTypes: ["video/mp4"] },
 };
 
-/** What <input type="file" accept="..."> gets. */
 export const ACCEPTED_MIME_TYPES = Object.values(FILE_RULES).flatMap((rule) => rule.mimeTypes);
 
 export function typeForMime(mimeType: string): Exclude<FileType, "document"> | null {

@@ -5,13 +5,10 @@ import { FileVisibility, Prisma } from "../../../generated/prisma/client.js";
 import { maxBytesFor, typeForMime } from "../../lib/file-limits.js";
 import { buildLocation, deleteFile, ensureUploadDir, resolveKey } from "../../lib/storage.js";
 
-//	There is no signing code to go looking for. A file's URL is derivable from
-//	its id, permanent, and identical for every viewer — the id *is* the
-//	capability, because it is a UUIDv4 (122 bits). `visibility` decides who is
-//	told the id; it does not decide who may fetch it.
+//	There is no signing code to go looking for: a file's URL is derivable
+//	from its id and identical for every viewer. The id is the capability —
+//	`visibility` decides who is told the id, not who may fetch it.
 //	See docs/mad/20260819-file-uploads.md.
-//
-//	This exists only so the path is written once, for the day A3/Nginx moves it.
 export function fileUrl(id: string): string {
 	return `/api/files/${id}/raw`;
 }
@@ -33,10 +30,8 @@ export function withUrl<T extends { id: string }>(file: T) {
 }
 
 //	`value in FileVisibility` would be wrong: Prisma generates the enum as a
-//	plain object literal, so `in` walks Object.prototype and waves through
-//	"constructor", "toString", "__proto__" and friends. Those then reach Prisma
-//	as a column value and come back a 500. `Object.values().includes()` is the
-//	idiom the rest of the codebase already uses for exactly this (users, gigs).
+//	plain object, so `in` walks Object.prototype and waves through
+//	"constructor", "__proto__" and friends.
 export function parseVisibility(value: unknown): FileVisibility {
 	if (value === undefined || value === null) return FileVisibility.private;
 	if (typeof value !== "string" || !(Object.values(FileVisibility) as string[]).includes(value))
@@ -53,9 +48,8 @@ export interface CreateFileInput {
 }
 
 export async function createFile(input: CreateFileInput) {
-	//	Input validation only, and deliberately so: nothing here inspects what
-	//	the bytes actually are. The response headers in files.routes.ts are
-	//	what contain the risk — see docs/mad/20260819-file-uploads.md.
+	//	Input validation only: nothing here inspects what the bytes actually
+	//	are. See docs/mad/20260819-file-uploads.md.
 	const type = typeForMime(input.declaredMime);
 	if (type === null)
 		throwError(415, "UNSUPPORTED_FILE_TYPE", `${input.declaredMime} is not an accepted file type`);
@@ -72,17 +66,13 @@ export async function createFile(input: CreateFileInput) {
 	const location = buildLocation(input.declaredMime);
 	await writeFile(resolveKey(location), input.buffer);
 
-	//	Bytes first, row second — the reverse of delete. If the insert throws,
-	//	take the bytes back out: an orphaned file is invisible, whereas a row
-	//	pointing at nothing is what users actually see.
+	//	Bytes first, row second — the reverse of delete. An orphaned file is
+	//	invisible, whereas a row pointing at nothing is what users see.
 	try {
 		const file = await prisma.file.create({
 			data: {
 				ownerId: input.ownerId,
 				type,
-				//	The declared value that passed the allow-list, stored verbatim.
-				//	It is what /raw serves back, and it is never re-derived from
-				//	the extension later.
 				mimeType: input.declaredMime,
 				sizeBytes: input.buffer.byteLength,
 				originalName: input.originalName,
@@ -118,8 +108,8 @@ export async function listOwnFiles(
 	return { items: rows.map(withUrl), page, pageSize, total };
 }
 
-//	`ownerId` and `location` are the two fields the API never returns but the
-//	server always needs — one to authorise, one to reach the bytes.
+//	The two fields the API never returns but the server always needs: one to
+//	authorise, one to reach the bytes.
 const internalFileSelect = {
 	...publicFileSelect,
 	ownerId: true,
@@ -128,9 +118,8 @@ const internalFileSelect = {
 
 type InternalFile = Prisma.FileGetPayload<{ select: typeof internalFileSelect }>;
 
-//	Named field by field rather than by spreading and deleting: `ownerId` and
-//	`location` must never reach a response body, and an explicit list is the
-//	version of that rule a reviewer can check at a glance.
+//	Named field by field rather than spread-and-delete: `ownerId` and
+//	`location` must never reach a response body.
 export function toPublic(file: InternalFile): PublicFile & { url: string } {
 	return withUrl({
 		id: file.id,
@@ -149,8 +138,8 @@ export async function getFileOrThrow(fileId: string): Promise<InternalFile> {
 	return file;
 }
 
-//	404 rather than 403 for someone else's private file: the id is the secret,
-//	so a 403 would confirm that the id names something real.
+//	404 rather than 403: the id is the secret, so a 403 would confirm that
+//	the id names something real.
 export async function getFileForViewer(fileId: string, viewerId: string): Promise<InternalFile> {
 	const file = await getFileOrThrow(fileId);
 	if (file.visibility !== FileVisibility.public && file.ownerId !== viewerId)
@@ -158,10 +147,8 @@ export async function getFileForViewer(fileId: string, viewerId: string): Promis
 	return file;
 }
 
-//	D1 order: the row first, then the bytes. Never the reverse — unlinking
-//	first leaves a row pointing at nothing, which is the failure users actually
-//	see. If the process dies between the two, the bytes are orphaned but
-//	invisible, and `make fclean` reclaims them.
+//	Row first, then the bytes. Unlinking first would leave a row pointing at
+//	nothing, which is the failure users actually see.
 export async function deleteFileById(file: InternalFile): Promise<void> {
 	try {
 		await prisma.file.delete({ where: { id: file.id } });
@@ -174,7 +161,7 @@ export async function deleteFileById(file: InternalFile): Promise<void> {
 }
 
 //	`onDelete: Cascade` from User drops the rows but never the bytes, so the
-//	locations have to be read *before* the user goes. Exported for
+//	locations have to be read before the user goes. Exported for
 //	users.service.ts, which owns the delete itself.
 export async function locationsOwnedBy(ownerId: string): Promise<string[]> {
 	const rows = await prisma.file.findMany({ where: { ownerId }, select: { location: true } });
@@ -186,17 +173,8 @@ export async function deleteLocations(locations: string[]): Promise<void> {
 }
 
 //	The portfolio query, and the reason for @@index([ownerId, visibility]).
-//	It lives here rather than in profile.service.ts so that the `visibility`
-//	filter — the only control actually protecting a private file — sits in the
-//	module that owns the rule. A caller who never learns a private id can never
-//	fetch it, so forgetting this filter somewhere else is the whole threat.
-//
-//	Yes, this is a second round trip on every GET /api/profile/:id, including
-//	for a profile with no files at all. Folding it into the profile query as a
-//	nested relation was measured rather than assumed, and changes nothing:
-//	Prisma's default load strategy issues one statement per relation, so both
-//	shapes put the same five statements on the wire. The fold would only move
-//	the `visibility` filter out of this module, in exchange for nothing.
+//	It lives here rather than in profile.service.ts so the `visibility`
+//	filter sits in the module that owns the rule.
 export async function listPublicFilesFor(ownerId: string) {
 	const rows = await prisma.file.findMany({
 		where: { ownerId, visibility: FileVisibility.public },

@@ -7,9 +7,8 @@ import { FileType } from "../generated/prisma/enums.js";
 
 const MB = 1024 * 1024;
 
-//	A table test rather than one case per MIME: the point is that every
-//	accepted type resolves through *both* functions, so adding a row to
-//	FILE_RULES without adding it here is the only way to get a gap.
+//	A table test: every accepted type has to resolve through both functions,
+//	so adding a row to FILE_RULES without adding it here leaves a gap.
 const accepted: { mimeType: string; type: FileType; extension: string }[] = [
 	{ mimeType: "image/jpeg", type: FileType.image, extension: "jpg" },
 	{ mimeType: "image/png", type: FileType.image, extension: "png" },
@@ -30,10 +29,9 @@ test("the accepted list and the rules table describe the same set", () => {
 	assert.deepEqual([...ACCEPTED_MIME_TYPES].sort(), accepted.map((row) => row.mimeType).sort());
 });
 
-//	SVG and PDF are the two that matter: SVG is excluded deliberately (it is
-//	executable XML), and `document` is a FileType with no rules entry, so a
-//	PDF has no way in. If either starts returning a FileType, an upload path
-//	opened that nobody decided to open.
+//	SVG is excluded deliberately (executable XML) and `document` has no rules
+//	entry, so a PDF has no way in. Either returning a FileType means an
+//	upload path opened that nobody decided to open.
 test("unknown and deliberately excluded MIME types resolve to null", () => {
 	for (const mimeType of [
 		"image/svg+xml",

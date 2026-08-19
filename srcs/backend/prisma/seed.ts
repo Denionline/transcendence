@@ -35,11 +35,9 @@ async function seedCategories() {
 	console.log(`OK      ${seedData.categories.length} categories`);
 }
 
-//	The avatar pool: the File rows seedFiles() plants further down. Their ids
-//	are hardcoded in seed-data.json, so the URL is knowable *here* — before the
-//	rows or the bytes exist — which is what lets people be seeded first and
-//	their files after. Nothing reaches the network: every avatar is served by
-//	this app from its own upload volume.
+//	The File ids are hardcoded in seed-data.json, so an avatar's URL is
+//	knowable before the rows or the bytes exist — which is what lets people
+//	be seeded first and their files after.
 const avatarFiles = seedData.files.filter((file) => file.use === "avatar");
 let avatarCursor = 0;
 
@@ -53,8 +51,8 @@ async function seedUser(
 	input: { email: string; username: string; role: UserRole },
 	passwordHash: string,
 ) {
-	//	Round-robin, and the cursor restarts every run, so re-seeding hands
-	//	each account the same avatar it had before.
+	//	The cursor restarts every run, so re-seeding hands each account the
+	//	same avatar it had before.
 	const avatarUrl = nextAvatarUrl();
 	return await prisma.user.upsert({
 		where: { email: input.email },
@@ -66,11 +64,8 @@ async function seedUser(
 async function seedPeople(passwordHash: string) {
 	const admin = await seedUser({ ...seedData.admin, role: UserRole.admin }, passwordHash);
 
-	//	The admin is in `actors` only so that seedFiles() can own the shared
-	//	avatar files: they belong to everyone and to no artist in particular.
-	//	Which means deleting the admin cascades to all six and every seeded
-	//	avatar falls back to initials until the next `make seed`. Accepted, and
-	//	written down in docs/db_seeding.md rather than left to be discovered.
+	//	The admin owns the shared avatar files, so deleting the admin cascades
+	//	to all six. See docs/db_seeding.md.
 	const actors: Record<string, SeedActor> = {
 		[seedData.admin.email]: { id: admin.id, role: UserRole.admin },
 	};
@@ -106,20 +101,16 @@ async function seedPeople(passwordHash: string) {
 }
 
 //	Resolved from this module's own URL, never process.cwd(): the seed runs
-//	from srcs/backend on the host (CI) and from /app inside the container.
+//	from srcs/backend on the host and from /app inside the container.
 const ASSETS_DIR = fileURLToPath(new URL("./seed-assets/", import.meta.url));
 
-//	`make seed` writes rows, and rows are not bytes. On a machine that has just
-//	cloned the repository the bytes can come from the volume (empty by
-//	definition), the network (excluded — the demo must work offline) or the
-//	repository. Only the last one is left, so the fixtures are tracked in git
-//	and this function plants them. See docs/mad/20260819-file-uploads.md.
+//	Rows are not bytes. The demo must work offline from a bare clone, so the
+//	fixtures are tracked in git and this function plants them.
 async function seedFiles(actors: Record<string, SeedActor>) {
 	await ensureUploadDir();
 
 	for (const entry of seedData.files) {
-		//	Derived, never hardcoded: a fixture whose MIME is not in FILE_RULES
-		//	fails the seed loudly. Nothing can be seeded that the API would
+		//	Derived, never hardcoded: nothing can be seeded that the API would
 		//	have refused to accept.
 		const type = typeForMime(entry.mimeType);
 		const extension = extFor(entry.mimeType);
@@ -133,14 +124,11 @@ async function seedFiles(actors: Record<string, SeedActor>) {
 		const location = `${entry.id}.${extension}`;
 		const { size } = await stat(source);
 
-		//	Bytes first, row second — the same order as createFile(), so an
-		//	interrupted seed leaves an orphaned file rather than a row
-		//	pointing at nothing.
+		//	Bytes first, row second — the same order as createFile().
 		await copyFile(source, join(UPLOAD_DIR, location));
 
-		//	The hardcoded id *is* the idempotency mechanism. A File has no
-		//	natural key, so a fixed one supplies it: re-seeding overwrites the
-		//	same bytes and upserts the same row instead of accumulating
+		//	The hardcoded id is the idempotency mechanism: a File has no natural
+		//	key, so re-seeding upserts the same row instead of accumulating
 		//	duplicates. CI runs the seed twice to catch a regression here.
 		await prisma.file.upsert({
 			where: { id: entry.id },

@@ -6,11 +6,8 @@ import FileGallery from "../../files/components/FileGallery";
 import FileUpload from "../../files/components/FileUpload";
 import type { FileDto } from "../../files/types";
 
-/**
- * The owner's view of their own files: everything they have uploaded, public
- * or not. The portfolio other people see is the `public` subset — there is no
- * second flag and no relation, a public file simply *is* a portfolio file.
- */
+//	The owner's view of their own files, public or not. What other people see
+//	is the `public` subset — a public file simply is a portfolio file.
 export default function PortfolioSection() {
 	const [files, setFiles] = useState<FileDto[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -40,13 +37,10 @@ export default function PortfolioSection() {
 		try {
 			await deleteFile(file.id);
 		} catch (err) {
-			//	404 is the one failure worth treating as success: the server does
-			//	not have the file either, so this list was the stale party and
-			//	dropping the row is the honest thing to do.
+			//	404 is worth treating as success: the server does not have the file
+			//	either, so this list was the stale party.
 			if (!(err instanceof ApiError && err.status === 404)) {
-				//	Anything else, the file is still there. Keep the row — removing
-				//	it would be a lie — but say so, rather than letting a failed
-				//	delete look exactly like a successful one.
+				//	Anything else, the file is still there. Keep the row, but say so.
 				setDeleteError(
 					`Couldn't delete ${file.originalName}. ` +
 						(err instanceof Error ? err.message : "Please try again."),

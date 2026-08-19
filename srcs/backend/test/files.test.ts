@@ -12,8 +12,8 @@ import { SECRET, UPLOAD_DIR } from "../src/lib/env.js";
 import { prisma } from "../src/lib/prisma.js";
 import { UserRole } from "../generated/prisma/client.js";
 
-//	A real 1x1 PNG. Nothing in the backend inspects the bytes, but a test that
-//	uploads plausible input is a better regression net than one that does not.
+//	A real 1x1 PNG. Nothing in the backend inspects the bytes, but uploading
+//	plausible input is a better regression net than not.
 const PNG = Buffer.from(
 	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
 	"base64",
@@ -41,7 +41,6 @@ const createdUserIds: string[] = [];
 after(async () => {
 	await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
 	await prisma.$disconnect();
-	//	setup.ts points UPLOAD_DIR at a per-pid temp directory; take it with us.
 	await rm(UPLOAD_DIR, { recursive: true, force: true });
 });
 
@@ -64,8 +63,8 @@ interface UploadOptions {
 	visibility?: string;
 }
 
-//	Never set Content-Type by hand on a FormData body: the boundary is part of
-//	it, and only the runtime knows the boundary it generated.
+//	Never set Content-Type by hand on a FormData body: the boundary is part
+//	of it, and only the runtime knows the boundary it generated.
 async function upload(baseUrl: string, token: string, options: UploadOptions = {}) {
 	const bytes = options.bytes ?? PNG;
 	const form = new FormData();
@@ -85,8 +84,8 @@ async function upload(baseUrl: string, token: string, options: UploadOptions = {
 	return { status: res.status, body: text ? (JSON.parse(text) as Record<string, unknown>) : null };
 }
 
-//	`location` is deliberately not in any response body, so the tests that
-//	assert on disk state read it straight from the row.
+//	`location` is not in any response body, so tests that assert on disk
+//	state read it straight from the row.
 async function locationOf(fileId: string): Promise<string> {
 	const file = await prisma.file.findUnique({ where: { id: fileId }, select: { location: true } });
 	assert.ok(file, `no File row for ${fileId}`);
@@ -118,15 +117,11 @@ test("POST /api/files stores an image and returns its metadata (201)", async () 
 		assert.equal(body?.mimeType, "image/png");
 		assert.equal(body?.sizeBytes, PNG.byteLength);
 		assert.equal(body?.originalName, "cat.png");
-		//	Default visibility is private: a file becomes portfolio material
-		//	only by being asked for.
 		assert.equal(body?.visibility, "private");
 		assert.equal(body?.url, `/api/files/${body?.id}/raw`);
 
-		//	The stored name is a fresh uuid with the extension the allow-list
-		//	chose — never the client's filename, which is why a filename of
-		//	"../../etc/passwd" has nowhere to go. It is also independent of the
-		//	row id, so a leaked path discloses nothing about the id.
+		//	A fresh uuid with the extension the allow-list chose, never the
+		//	client's filename — which is why "../../etc/passwd" has nowhere to go.
 		const location = await locationOf(body?.id as string);
 		assert.match(location, /^[0-9a-f-]{36}\.png$/);
 		assert.notEqual(location, "cat.png");
@@ -137,8 +132,8 @@ test("POST /api/files stores an image and returns its metadata (201)", async () 
 
 test("POST /api/files rejects a file over its per-type cap (413)", async () => {
 	const artist = await makeUser();
-	//	6 MB as image/png: past the 5 MB image cap but well under the 50 MB
-	//	global multer limit, so this exercises files.service.ts, not multer.
+	//	6 MB as image/png: past the 5 MB image cap but under the 50 MB global
+	//	multer limit, so this exercises files.service.ts, not multer.
 	const oversize = Buffer.alloc(6 * 1024 * 1024, 1);
 
 	await withServer(async (baseUrl) => {
@@ -161,9 +156,8 @@ test("POST /api/files rejects types outside the allow-list (415)", async () => {
 });
 
 //	Regression: `visibility in FileVisibility` walked the prototype chain, so
-//	every Object.prototype member passed validation, reached Prisma as a column
-//	value and came back a 500. "nonsense" was always rejected correctly — it is
-//	the inherited keys that got through, which is why this test lists both.
+//	every Object.prototype member passed validation, reached Prisma as a
+//	column value and came back a 500.
 test("POST /api/files rejects a bogus visibility with 400, prototype keys included", async () => {
 	const artist = await makeUser();
 
@@ -180,15 +174,13 @@ test("POST /api/files rejects a bogus visibility with 400, prototype keys includ
 			assert.equal(status, 400, `visibility=${visibility} should be refused`);
 			assert.equal(body?.error, "VALIDATION_ERROR");
 		}
-		//	Rejected before createFile runs, so not one of them wrote bytes.
 		assert.equal((await readdir(UPLOAD_DIR)).length, before);
 	});
 });
 
-//	The documented hole, asserted on purpose. Validation is input validation:
-//	nothing checks that the bytes are really a PNG. What contains the risk is
-//	the response — the stored MIME plus nosniff. If someone later drops the
-//	nosniff header, this test is what breaks.
+//	The documented hole, asserted on purpose: nothing checks that the bytes
+//	are really a PNG. What contains the risk is the response — the stored
+//	MIME plus nosniff. Drop the nosniff header and this test breaks.
 test("mislabelled bytes are stored, and served with the declared type and nosniff", async () => {
 	const artist = await makeUser();
 	const html = Buffer.from("<script>alert(1)</script>", "utf8");
@@ -217,9 +209,8 @@ test("GET /api/files/:id/raw is 404 for an unknown id", async () => {
 	});
 });
 
-//	B1, stated as a test rather than left implicit: holding the id *is* the
-//	permission. A test expecting 403 here would encode a security property
-//	this design deliberately does not have.
+//	Holding the id is the permission. A test expecting 403 here would encode
+//	a security property this design deliberately does not have.
 test("GET /api/files/:id/raw serves another user's private file (200)", async () => {
 	const owner = await makeUser();
 	const stranger = await makeUser();
@@ -237,8 +228,8 @@ test("GET /api/files/:id/raw serves another user's private file (200)", async ()
 	});
 });
 
-//	…and this is the test that actually protects private files: the listing
-//	never discloses an id the caller has no business holding.
+//	The listing never discloses an id the caller has no business holding,
+//	which is what actually protects a private file.
 test("GET /api/files lists only the caller's own files", async () => {
 	const owner = await makeUser();
 	const stranger = await makeUser();
@@ -297,7 +288,6 @@ test("a public file appears on its owner's profile with a url", async () => {
 			[shown?.id],
 		);
 		assert.equal(portfolio[0].url, `/api/files/${shown?.id}/raw`);
-		//	The private one is absent, which is the whole access control.
 		assert.ok(!portfolio.some((file) => file.id === hidden?.id));
 	});
 });
@@ -337,8 +327,8 @@ test("DELETE /api/files/:id removes the row and the bytes", async () => {
 	});
 });
 
-//	Range is the reason A1 beat A2 and the reason /raw uses res.sendFile: no
-//	Range means <video> cannot seek and Safari refuses to play at all.
+//	Why /raw uses res.sendFile: no Range means <video> cannot seek and Safari
+//	refuses to play at all.
 test("GET /api/files/:id/raw answers a Range request with 206", async () => {
 	const owner = await makeUser();
 
@@ -356,10 +346,9 @@ test("GET /api/files/:id/raw answers a Range request with 206", async () => {
 	});
 });
 
-//	L1. sendFile reports four unrelated failures through one callback, and the
-//	route used to answer 404 to all of them. The three tests below pin the three
-//	that are distinguishable, because "no file with that id" is a plausible
-//	enough answer that a broken volume could hide behind it for a whole deploy.
+//	sendFile reports four unrelated failures through one callback, and the
+//	route used to answer 404 to all of them. "No file with that id" is a
+//	plausible enough answer that a broken volume could hide behind it.
 
 test("GET /api/files/:id/raw answers an unsatisfiable Range with 416", async () => {
 	const owner = await makeUser();
@@ -370,13 +359,13 @@ test("GET /api/files/:id/raw answers an unsatisfiable Range with 416", async () 
 		const res = await fetch(`${baseUrl}/api/files/${body?.id}/raw`, {
 			headers: { Range: `bytes=${PNG.byteLength + 1000}-${PNG.byteLength + 2000}` },
 		});
-		//	Used to be 404 — the caller asked for a range this file cannot
-		//	satisfy, which says nothing about whether the file exists.
+		//	Used to be 404, but asking for an unsatisfiable range says nothing
+		//	about whether the file exists.
 		assert.equal(res.status, 416);
 		assert.equal(((await res.json()) as { error: string }).error, "RANGE_NOT_SATISFIABLE");
-		//	RFC 9110 §14.4: a 416 carries the unsatisfied-range form so the
-		//	client learns the real length and can retry. send() sets it on the
-		//	response before erroring, and it has to survive our error handler.
+		//	RFC 9110 §14.4: a 416 carries the unsatisfied-range form so the client
+		//	learns the real length. send() sets it before erroring, and it has to
+		//	survive our error handler.
 		assert.equal(res.headers.get("content-range"), `bytes */${PNG.byteLength}`);
 	});
 });
@@ -387,7 +376,7 @@ test("GET /api/files/:id/raw is 404 when the row outlives its bytes", async () =
 	await withServer(async (baseUrl) => {
 		const { body } = await upload(baseUrl, tokenFor(owner));
 		//	The state after a `make fclean` that spared the database: the row is
-		//	fine, so getFileOrThrow passes, and only sendFile finds out.
+		//	fine, so getFileOrThrow passes and only sendFile finds out.
 		await unlink(path.join(UPLOAD_DIR, await locationOf(body?.id as string)));
 
 		const res = await fetch(`${baseUrl}/api/files/${body?.id}/raw`);
@@ -402,17 +391,15 @@ test("GET /api/files/:id/raw reports an unreadable file as 500, not 404", async 
 	await withServer(async (baseUrl) => {
 		const { body } = await upload(baseUrl, tokenFor(owner));
 		//	A directory where the bytes should be: EISDIR rather than ENOENT.
-		//	Chosen over chmod 000 because root ignores permission bits, and a
-		//	test that quietly passes for one user and not another is worse than
-		//	no test. The contrast with the case above is the whole point — the
-		//	file is equally unservable, but this one is *our* fault.
+		//	Chosen over chmod 000 because root ignores permission bits. The
+		//	contrast with the case above is the point — equally unservable, but
+		//	this one is our fault.
 		const stored = path.join(UPLOAD_DIR, await locationOf(body?.id as string));
 		await unlink(stored);
 		await mkdir(stored);
 
-		//	The error handler logs "Unhandled error:" here on purpose. Noise in
-		//	the test output, but that log line is the point of the finding: a
-		//	404 would have produced no log at all.
+		//	The error handler logs "Unhandled error:" here on purpose: a 404 would
+		//	have produced no log at all.
 		const res = await fetch(`${baseUrl}/api/files/${body?.id}/raw`);
 		assert.equal(res.status, 500, "a broken volume must not masquerade as a missing file");
 		assert.equal(((await res.json()) as { error: string }).error, "INTERNAL_ERROR");
@@ -433,7 +420,6 @@ test("deleting an account takes its uploaded bytes with it", async () => {
 		});
 		assert.equal(status, 204);
 
-		//	The cascade drops the row; the hook is what drops the bytes.
 		assert.equal(await prisma.file.count({ where: { id: fileId } }), 0);
 		assert.ok(!(await readdir(UPLOAD_DIR)).includes(location));
 	});

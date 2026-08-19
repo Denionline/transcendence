@@ -1,11 +1,8 @@
-/** Mirrors the backend's FileType enum. `document` cannot be uploaded today. */
+//	Mirrors the backend's FileType enum. `document` cannot be uploaded today.
 export type FileType = "image" | "audio" | "video" | "document";
 
-/**
- * `public` means the file is *listed* on the owner's profile. It does not
- * gate retrieval: anyone holding a file's URL can fetch it, because the id in
- * that URL is the permission. See docs/mad/20260819-file-uploads.md.
- */
+//	`public` means the file is listed on the owner's profile. It does not gate
+//	retrieval: the id in a file's URL is the permission.
 export type FileVisibility = "private" | "public";
 
 export interface FileDto {
@@ -16,7 +13,6 @@ export interface FileDto {
 	originalName: string;
 	visibility: FileVisibility;
 	createdAt: string;
-	/** Permanent and viewer-independent — safe to drop straight into an <img src>. */
 	url: string;
 }
 

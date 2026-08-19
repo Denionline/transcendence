@@ -167,9 +167,8 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 	return await getHirerProfile(userId);
 }
 
-//	The portfolio is not a relation and not a flag: an owner's public files
-//	*are* their portfolio, which is why this needed no migration and no PATCH
-//	payload. The consequence to know about: a file cannot be public and off the
+//	An owner's public files are their portfolio — no relation, no flag, which
+//	is why this needed no migration. A file cannot be public and off the
 //	portfolio. See docs/mad/20260819-file-uploads.md.
 async function getArtistProfile(userId: string) {
 	const profile = await prisma.artistProfile.findUnique({
