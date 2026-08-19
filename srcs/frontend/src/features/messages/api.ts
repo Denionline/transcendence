@@ -12,6 +12,12 @@ export function listMessages(matchId: string, page = 1, pageSize = 30): Promise<
 	);
 }
 
+export function markMessagesRead(matchId: string): Promise<void> {
+	return apiRequest<void>(`/matches/${matchId}/messages/read`, {
+		method: "PATCH",
+	});
+}
+
 export function sendMessage(
 	matchId: string,
 	content: string,

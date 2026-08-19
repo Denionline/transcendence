@@ -65,15 +65,30 @@ export default function MessagesPage() {
 		function handleUserOffline({ userId }: { userId: string }) {
 			setOnline(userId, false);
 		}
+		function handleNewMatch() {
+			listMatches()
+				.then((items) => setMatches(items))
+				.catch((err: unknown) => console.error("Failed to refresh matches:", err));
+		}
 
 		socket.on("user_online", handleUserOnline);
 		socket.on("user_offline", handleUserOffline);
+		socket.on("new_match", handleNewMatch);
 
 		return () => {
 			socket.off("user_online", handleUserOnline);
 			socket.off("user_offline", handleUserOffline);
+			socket.off("new_match", handleNewMatch);
 		};
 	}, []);
+
+	// Keep the selected conversation in sync with the URL after the page is
+	// already mounted — e.g. clicking a match notification while already on
+	// this page only changes the query string, it doesn't remount us.
+	useEffect(() => {
+		const matchId = searchParams.get("matchId");
+		if (matchId) setSelectedMatchId(matchId);
+	}, [searchParams]);
 
 	function selectMatch(matchId: string | null) {
 		setSelectedMatchId(matchId);

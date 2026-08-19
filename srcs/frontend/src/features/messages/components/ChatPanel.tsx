@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeftIcon, SendIcon } from "lucide-react";
 import Avatar from "../../../components/Avatar";
-import { listMessages, sendMessage, toOptimisticMessage } from "../api";
+import { listMessages, markMessagesRead, sendMessage, toOptimisticMessage } from "../api";
 import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
 import { formatTime } from "../../../lib/format";
@@ -100,6 +100,12 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			socket.off("new_message", handleNewMessage);
 		};
 	}, [match.matchId, status]);
+
+	function handleFocus() {
+		markMessagesRead(match.matchId).catch((err: unknown) => {
+			console.error("Failed to mark messages as read:", err);
+		});
+	}
 
 	function handleScroll() {
 		const el = listRef.current;
@@ -252,6 +258,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 					type="text"
 					value={draft}
 					onChange={(e) => setDraft(e.target.value)}
+					onFocus={handleFocus}
 					maxLength={2000}
 					disabled={sending}
 					placeholder={`Message ${match.otherUser.displayName}`}
