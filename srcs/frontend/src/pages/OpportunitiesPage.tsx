@@ -243,7 +243,7 @@ export default function OpportunitiesPage() {
 					</h3>
 					<p className="mb-2 text-xs text-base-content/40">
 						Your own categories — every gig here matches at least one already. Add more from
-							Settings to widen this list.
+						Settings to widen this list.
 					</p>
 					<div className="flex flex-wrap gap-1.5">
 						{myCategories.map((category) => (
