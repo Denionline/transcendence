@@ -52,7 +52,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 	}, [retryToken, isLoading, user?.id]);
 
 	useEffect(() => {
+		// Mirrors the gate on the data-loading effect above: this provider
+		// mounts before AuthProvider's session check resolves, so on first
+		// render connectSocket() hasn't run yet and getSocket() is still null.
+		// Re-running once `user` settles picks it up instead of the listener
+		// silently never attaching.
+		if (isLoading || !user) return;
+
 		const socket = getSocket();
+		if (!socket) return;
 
 		function handleNotificationEvent() {
 			setRetryToken((t) => t + 1);
@@ -63,7 +71,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 		return () => {
 			socket.off("new_notification", handleNotificationEvent);
 		};
-	}, []);
+	}, [isLoading, user]);
 
 	function refresh() {
 		setRetryToken((t) => t + 1);

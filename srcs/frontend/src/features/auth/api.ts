@@ -52,11 +52,19 @@ export function hasSessionMarker(): boolean {
 	return document.cookie.split("; ").some((c) => c.startsWith("hasSession="));
 }
 
+// Mints a fresh access token from the HttpOnly refreshToken cookie. Shared by
+// fetchMe (once, on load) and apiClient's transparent 401 retry (any time an
+// in-memory access token has since expired — see apiClient.ts).
+export async function refreshAccessToken(): Promise<string> {
+	const { token } = await request("/auth/refresh", { method: "POST" });
+	setAccessToken(token);
+	return token;
+}
+
 export async function fetchMe(): Promise<User | null> {
 	if (!hasSessionMarker()) return null;
 	try {
-		const { token } = await request("/auth/refresh", { method: "POST" });
-		setAccessToken(token);
+		await refreshAccessToken();
 	} catch {
 		setAccessToken(null);
 		return null;

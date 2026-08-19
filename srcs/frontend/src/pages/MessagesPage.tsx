@@ -4,6 +4,7 @@ import ConversationList from "../features/messages/components/ConversationList";
 import ChatPanel from "../features/messages/components/ChatPanel";
 import { listMatches } from "../features/matches/api";
 import type { MatchDto } from "../features/matches/types";
+import { useOnlineStatusUpdates } from "../features/matches/useOnlineStatus";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
@@ -48,36 +49,20 @@ export default function MessagesPage() {
 		};
 	}, []);
 
+	useOnlineStatusUpdates(setMatches);
+
 	useEffect(() => {
 		const socket = getSocket();
+		if (!socket) return;
 
-		function setOnline(userId: string, online: boolean) {
-			setMatches((prev) =>
-				prev.map((m) =>
-					m.otherUser.id === userId ? { ...m, otherUser: { ...m.otherUser, online } } : m,
-				),
-			);
-		}
-
-		function handleUserOnline({ userId }: { userId: string }) {
-			setOnline(userId, true);
-		}
-		function handleUserOffline({ userId }: { userId: string }) {
-			setOnline(userId, false);
-		}
 		function handleNewMatch() {
 			listMatches()
 				.then((items) => setMatches(items))
 				.catch((err: unknown) => console.error("Failed to refresh matches:", err));
 		}
 
-		socket.on("user_online", handleUserOnline);
-		socket.on("user_offline", handleUserOffline);
 		socket.on("new_match", handleNewMatch);
-
 		return () => {
-			socket.off("user_online", handleUserOnline);
-			socket.off("user_offline", handleUserOffline);
 			socket.off("new_match", handleNewMatch);
 		};
 	}, []);

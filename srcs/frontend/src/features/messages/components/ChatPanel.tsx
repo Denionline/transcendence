@@ -30,8 +30,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 
 	const listRef = useRef<HTMLDivElement>(null);
 	// Every message id currently rendered — de-dupes the just-sent message
-	// against the next poll tick, and older pages against `messages` already
-	// holding some overlap.
+	// against the socket's own echo of it, and older pages against `messages`
+	// already holding some overlap.
 	const knownIds = useRef<Set<string>>(new Set());
 	const isNearBottomRef = useRef(true);
 
@@ -50,9 +50,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			setMessages(ordered);
 			setHasMore(res.hasMore);
 			setStatus("ready");
-		})().catch((err: unknown) => {
+		})().catch(() => {
 			if (cancelled) return;
-			console.error("Failed to load messages:", err);
 			setStatus("error");
 		});
 		return () => {
@@ -70,6 +69,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		if (status !== "ready") return;
 
 		const socket = getSocket();
+		if (!socket) return;
 
 		function handleNewMessage(payload: {
 			matchId: string;
@@ -133,8 +133,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 				const target = listRef.current;
 				if (target) target.scrollTop = target.scrollHeight - prevScrollHeight;
 			});
-		} catch (err: unknown) {
-			console.error("Failed to load earlier messages:", err);
+		} catch {
+			// Left where it was — "Load earlier messages" stays clickable to retry.
 		} finally {
 			setLoadingMore(false);
 		}

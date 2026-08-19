@@ -25,6 +25,10 @@ export function sendMessage(
 ): Promise<SendMessageResult> {
 	return new Promise((resolve, reject) => {
 		const socket = getSocket();
+		if (!socket) {
+			reject(new Error("Not connected"));
+			return;
+		}
 
 		function handleMessageError(payload: { reason: string }) {
 			socket.off("message_error", handleMessageError);
