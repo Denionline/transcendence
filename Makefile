@@ -127,17 +127,34 @@ oblivion:
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
 
-# See docs/db_seeding.md
-seed: srcs/backend/node_modules/.package-lock.json
+# `docker compose exec` against a stopped stack fails with `service "backend"
+# is not running` — true, and unhelpful, since it never mentions `make up`.
+# The test is on the *output*, not the exit status: `compose ps -q` exits 0
+# and prints nothing when the service has no running container, so a bare
+# `||` would never fire.
+define require_running
+	@$(COMPOSE) ps -q $(1) | grep -q . || { \
+		echo "ERROR   the $(1) container is not running — run 'make up' first" ; \
+		exit 1 ; \
+	}
+endef
+
+# Runs inside the backend container, not on the host: the demo files have to
+# land in the uploads volume, and a host process cannot write into a named
+# volume by path. Needs `make up` first. See docs/db_seeding.md.
+seed:
+	$(call require_running,backend)
 	@echo "SEED    Apply migrations"
-	@cd $(BACKEND_PATH) && DATABASE_URL="$(DBURL)" npx prisma migrate deploy
+	$(COMPOSE) exec -T backend npx prisma migrate deploy
 	@echo "SEED    Populate demo data"
-	npm run seed --prefix $(BACKEND_PATH)
+	$(COMPOSE) exec -T backend npm run seed
 
 dbstats:
+	$(call require_running,database)
 	@$(COMPOSE) exec -T database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories, (SELECT count(*) FROM \"User\" WHERE role = 'artist') artists, (SELECT count(*) FROM \"User\" WHERE role = 'hirer') hirers, (SELECT count(*) FROM \"User\" WHERE role = 'admin') admins;"
 
 dbaccess:
+	$(call require_running,database)
 	@echo "INFO    type '\\q' to quit"
 	$(COMPOSE) exec database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
@@ -166,6 +183,6 @@ help:
 	@echo "  report      list all docker containers, images, volumes and networks"
 	@echo ""
 	@echo "Database:"
-	@echo "  seed        apply migrations and load demo data"
+	@echo "  seed        apply migrations and load demo data (needs 'make up' first)"
 	@echo "  dbstats     print row counts per table"
 	@echo "  dbaccess    open a psql shell"
