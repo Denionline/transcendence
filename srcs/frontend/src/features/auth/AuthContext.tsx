@@ -8,10 +8,17 @@ import {
 	updateProfileRequest,
 	updatePasswordRequest,
 } from "./api";
+import { connectSocket, disconnectSocket } from "../../lib/socket";
+import { onSessionExpired } from "./sessionEvents";
 
 interface AuthContextValue {
 	user: User | null;
 	isLoading: boolean;
+	// Set once the access token expired *and* the silent refresh behind it
+	// also failed (see apiClient.ts / notifySessionExpired) — the login page
+	// reads this to explain why the user landed back there unprompted,
+	// instead of that just looking like a random logout.
+	sessionExpired: boolean;
 	login: (credentials: Credentials) => Promise<User>;
 	register: (data: RegisterData) => Promise<User>;
 	logout: () => Promise<void>;
@@ -28,6 +35,7 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [sessionExpired, setSessionExpired] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -35,7 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		async function checkSession() {
 			try {
 				const me = await fetchMe();
-				if (!cancelled) setUser(me);
+				if (!cancelled) {
+					setUser(me);
+					if (me) connectSocket();
+				}
 			} catch {
 				if (!cancelled) setUser(null); // no session, that's fine
 			} finally {
@@ -50,11 +61,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		};
 	}, []);
 
+	// The one and only place a session ends without the user asking for it —
+	// every apiRequest call across the app shares this, so it fires no matter
+	// which page (or background poll) happened to be the one that noticed.
+	useEffect(
+		() =>
+			onSessionExpired(() => {
+				setUser(null);
+				disconnectSocket();
+				setSessionExpired(true);
+			}),
+		[],
+	);
+
 	async function login(credentials: Credentials) {
 		setIsLoading(true);
 		try {
 			const user = await loginRequest(credentials);
 			setUser(user);
+			setSessionExpired(false);
+			connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -66,7 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			const user = await registerRequest(data);
 			setUser(user);
-			console.log("Registered as:", user);
+			setSessionExpired(false);
+			connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -78,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		try {
 			await logoutRequest();
 			setUser(null);
+			disconnectSocket();
 		} finally {
 			setIsLoading(false);
 		}
@@ -101,7 +129,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<AuthContext.Provider
-			value={{ user, isLoading, login, register, logout, updateProfile, updatePassword }}
+			value={{
+				user,
+				isLoading,
+				sessionExpired,
+				login,
+				register,
+				logout,
+				updateProfile,
+				updatePassword,
+			}}
 		>
 			{children}
 		</AuthContext.Provider>

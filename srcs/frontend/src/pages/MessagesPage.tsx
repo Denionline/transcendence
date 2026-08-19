@@ -4,6 +4,7 @@ import ConversationList from "../features/messages/components/ConversationList";
 import ChatPanel from "../features/messages/components/ChatPanel";
 import { listMatches } from "../features/matches/api";
 import type { MatchDto } from "../features/matches/types";
+import { useOnlineStatusUpdates } from "../features/matches/useOnlineStatus";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
@@ -46,6 +47,8 @@ export default function MessagesPage() {
 			cancelled = true;
 		};
 	}, []);
+
+	useOnlineStatusUpdates(setMatches);
 
 	function selectMatch(matchId: string | null) {
 		setSelectedMatchId(matchId);

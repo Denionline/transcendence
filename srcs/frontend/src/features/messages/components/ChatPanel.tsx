@@ -8,10 +8,11 @@ import type { MatchDto } from "../../matches/types";
 import { ApiError } from "../../../lib/apiClient";
 import { formatTime } from "../../../lib/format";
 
-// No websocket wiring on the frontend yet (the backend already pushes
-// "new_message" over a socket.io room per match — see websocket.gateway.ts —
-// but nothing here connects to it), so new messages from the other side are
-// picked up by polling the latest page instead of a live push.
+// The frontend socket (see lib/socket.ts) is only wired up for live
+// "user_online" / "user_offline" updates so far — the "new_message" event the
+// backend pushes over the same per-match room (see websocket.gateway.ts)
+// still isn't consumed here, so new messages from the other side are picked
+// up by polling the latest page instead of a live push.
 const POLL_MS = 4000;
 // Close enough to the bottom that an incoming message should still autoscroll
 // — past this, assume the user scrolled up to read history and leave them be.
@@ -55,9 +56,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			setMessages(ordered);
 			setHasMore(res.hasMore);
 			setStatus("ready");
-		})().catch((err: unknown) => {
+		})().catch(() => {
 			if (cancelled) return;
-			console.error("Failed to load messages:", err);
 			setStatus("error");
 		});
 		return () => {
@@ -81,8 +81,9 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 					fresh.forEach((m) => knownIds.current.add(m.id));
 					setMessages((prev) => [...prev, ...fresh]);
 				})
-				.catch((err: unknown) => {
-					console.error("Failed to poll for new messages:", err);
+				.catch(() => {
+					// A single missed poll tick isn't worth surfacing — the next
+					// one 4s later picks up wherever this one left off.
 				});
 		}, POLL_MS);
 		return () => window.clearInterval(interval);
@@ -114,8 +115,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 				const target = listRef.current;
 				if (target) target.scrollTop = target.scrollHeight - prevScrollHeight;
 			});
-		} catch (err: unknown) {
-			console.error("Failed to load earlier messages:", err);
+		} catch {
+			// Left where it was — "Load earlier messages" stays clickable to retry.
 		} finally {
 			setLoadingMore(false);
 		}

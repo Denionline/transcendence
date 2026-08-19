@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { ChevronDownIcon } from "lucide-react";
 import DesktopArtistDeck from "../features/artists/components/DesktopArtistDeck";
 import MobileArtistStack from "../features/artists/components/MobileArtistStack";
 import { getNextArtistCandidate, postSwipe } from "../features/swipes/api";
-import {
-	matchesAvailabilityFilter,
-	matchesDisciplineFilter,
-	matchesLocationFilter,
-} from "../features/swipes/filters";
+import { matchesAvailabilityFilter, matchesLocationFilter } from "../features/swipes/filters";
 import { mapArtistCandidateToArtist } from "../features/artists/mapCandidate";
 import { listMyGigs } from "../features/gigs/api";
 import { ApiError } from "../lib/apiClient";
@@ -17,9 +14,14 @@ import type { GigDto } from "../features/gigs/types";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
 
-// The discipline facet used to be a fourth hardcoded vocabulary that matched
-// no real data. It now lists real categories, sourced from useCategories(),
-// and does narrow the deck client-side (see matchesDisciplineFilter).
+// The discipline facet is a real, live multi-select: checking a category
+// sends it straight to GET /swipes/next (see getNextCandidateForHirer on the
+// backend), which widens the candidate pool to any artist sharing at least
+// one of the checked categories — for this browse only, nothing is written
+// back to the gig itself. Liking a candidate outside the gig's *actual*
+// category still fails CATEGORY_MISMATCH at swipe time (see
+// verifyCategoryMatch) — broadening the browse doesn't broaden eligibility,
+// it just lets the hirer look. handleSwipe surfaces that failure below.
 const AVAILABILITY_OPTIONS: { value: "available" | "soon" | null; label: string }[] = [
 	{ value: null, label: "Any" },
 	{ value: "available", label: "Available now" },
@@ -42,7 +44,11 @@ export default function DiscoverPage() {
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
-	const [filtersOpen, setFiltersOpen] = useState(true);
+	const [filtersOpen, setFiltersOpen] = useState(false);
+	// Set when a like fails because the candidate's category doesn't actually
+	// match the gig's (see the comment above) — a real possibility once the
+	// hirer has broadened discipline past the gig's own category.
+	const [swipeNotice, setSwipeNotice] = useState<string | null>(null);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	// GET /swipes/next requires a gigId for hirers — candidates are always
@@ -79,10 +85,11 @@ export default function DiscoverPage() {
 	// generation is still current.
 	const generationRef = useRef(0);
 
-	// A candidate never comes back for any category but the gig's own, so that
-	// category is always a safe default selection; location is the field the
-	// hirer is most likely to care about matching too. Both are just a
-	// starting point — the hirer can broaden discipline further afterward.
+	// The gig's own category is always a safe default selection — every
+	// candidate for it already matches — and location is the field the hirer
+	// is most likely to care about matching too. Both are just a starting
+	// point; the hirer can broaden discipline further afterward (see the
+	// comment above), though location stays locked to the gig.
 	function markFiltersFromGig(gig: GigDto) {
 		setDisciplines(new Set([gig.category.slug]));
 		setLocationQuery(gig.location ?? "");
@@ -131,16 +138,26 @@ export default function DiscoverPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	async function fetchCandidate(gigId: string, generation: number): Promise<Artist | null> {
+	async function fetchCandidate(
+		gigId: string,
+		generation: number,
+		categorySlugs: string[],
+	): Promise<Artist | null> {
 		const excludeIds = new Set([...seenIds.current, ...swipedIds.current]);
-		const dto = await getNextArtistCandidate(gigId, Array.from(excludeIds));
+		const dto = await getNextArtistCandidate(gigId, Array.from(excludeIds), categorySlugs);
 		if (generation !== generationRef.current) return null;
 		if (!dto || excludeIds.has(dto.id)) return null;
 		seenIds.current.add(dto.id);
 		return mapArtistCandidateToArtist(dto);
 	}
 
-	/** Keeps pulling candidates until one clears the active filters, or the pool runs out. */
+	/**
+	 * Keeps pulling candidates until one clears the active filters, or the pool
+	 * runs out. Discipline itself is already applied server-side (see
+	 * fetchCandidate); location and availability are the two GET /swipes/next
+	 * has no params for, so they're still checked here against whatever the
+	 * backend streams back.
+	 */
 	async function fetchMatchingCandidate(
 		gigId: string,
 		generation: number,
@@ -148,11 +165,11 @@ export default function DiscoverPage() {
 		location: string,
 		selectedAvailability: "available" | "soon" | null,
 	): Promise<Artist | null> {
+		const categorySlugs = Array.from(selectedDisciplines);
 		for (let attempt = 0; attempt < MAX_FETCH_ATTEMPTS; attempt++) {
-			const artist = await fetchCandidate(gigId, generation);
+			const artist = await fetchCandidate(gigId, generation, categorySlugs);
 			if (!artist) return null;
 			if (
-				matchesDisciplineFilter(artist.categorySlugs, selectedDisciplines) &&
 				matchesLocationFilter(artist.location, location) &&
 				matchesAvailabilityFilter(artist.availabilityTone, selectedAvailability)
 			) {
@@ -222,6 +239,8 @@ export default function DiscoverPage() {
 		);
 	}
 
+	const activeGig = myOpenGigs.find((g) => g.id === activeGigId) ?? null;
+
 	async function handleSwipe(artist: Artist, liked: boolean) {
 		if (!activeGigId) return;
 		const gigId = activeGigId;
@@ -231,7 +250,16 @@ export default function DiscoverPage() {
 			const result = await postSwipe({ gigId, liked, targetUserId: artist.userId });
 			matched = Boolean(result.matchId);
 		} catch (err: unknown) {
-			console.error("Failed to record swipe:", err);
+			// A broadened discipline selection can surface a candidate outside the
+			// gig's real category — liking them is always rejected server-side
+			// (see verifyCategoryMatch). Worth telling the hirer why nothing
+			// happened instead of just swallowing it like other swipe failures.
+			if (err instanceof ApiError && err.code === "CATEGORY_MISMATCH") {
+				setSwipeNotice(`${artist.name} isn't eligible for this opportunity's category.`);
+				window.setTimeout(() => setSwipeNotice(null), 4000);
+			}
+			// Any other failure just leaves `matched` false below — the deck
+			// moves on the same as a normal, unmatched swipe.
 		}
 
 		if (matched) {
@@ -254,18 +282,22 @@ export default function DiscoverPage() {
 			.then((next) => {
 				if (next) setArtists((prev) => [...prev, next]);
 			})
-			.catch((err: unknown) => {
-				console.error("Failed to load next artist:", err);
+			.catch(() => {
+				// Deck just stays one card short — the next swipe tries again.
 			});
 	}
 
 	return (
 		<div className="flex flex-col lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
-			<FiltersPanel open={filtersOpen}>
+			<FiltersPanel open={filtersOpen} onClose={() => setFiltersOpen(false)}>
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 						Discipline
 					</h3>
+					<p className="mb-2 text-xs text-base-content/40">
+						Starts on this opportunity&rsquo;s own category — check more to browse other disciplines
+						too. A like still only counts within the gig&rsquo;s real category.
+					</p>
 					<div className="flex flex-wrap gap-1.5">
 						{categories.map((category) => (
 							<button
@@ -332,21 +364,52 @@ export default function DiscoverPage() {
 					<div className="flex items-center gap-2">
 						<FiltersToggle open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)} />
 						{myOpenGigs.length > 0 && (
-							<select
-								value={activeGigId ?? ""}
-								onChange={(e) => handleGigChange(e.target.value)}
-								aria-label="Reviewing for opportunity"
-								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
-							>
-								{myOpenGigs.map((gig) => (
-									<option key={gig.id} value={gig.id}>
-										{gig.title}
-									</option>
-								))}
-							</select>
+							<div className="dropdown dropdown-end">
+								<div
+									tabIndex={0}
+									role="button"
+									aria-label="Reviewing for opportunity"
+									className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
+								>
+									<span className="max-w-40 truncate sm:max-w-48">
+										{activeGig?.title ?? "Select opportunity"}
+									</span>
+									<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
+								</div>
+								<ul
+									tabIndex={0}
+									className="menu dropdown-content z-20 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg menu-sm"
+								>
+									<li className="menu-title">Reviewing for</li>
+									{myOpenGigs.map((gig) => (
+										<li key={gig.id}>
+											<button
+												type="button"
+												aria-current={gig.id === activeGigId}
+												className={gig.id === activeGigId ? "active" : ""}
+												onClick={(e) => {
+													handleGigChange(gig.id);
+													e.currentTarget.blur();
+												}}
+											>
+												<span className="min-w-0 flex-1 truncate">{gig.title}</span>
+												<span className="badge badge-ghost badge-sm shrink-0">
+													{gig.category.label}
+												</span>
+											</button>
+										</li>
+									))}
+								</ul>
+							</div>
 						)}
 					</div>
 				</div>
+
+				{swipeNotice && (
+					<div className="alert alert-warning mb-4 py-2 text-sm">
+						<span>{swipeNotice}</span>
+					</div>
+				)}
 
 				{status === "no-gigs" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">

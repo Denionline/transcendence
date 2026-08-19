@@ -25,6 +25,18 @@ function parseExcludeIds(value: unknown): string[] {
 		.filter((id) => id.length > 0);
 }
 
+// Comma-separated category slugs — hirer only. Lets the Discover sidebar
+// widen candidate browsing beyond the gig's own category for this browse
+// (see getNextCandidateForHirer); unknown slugs are dropped, not rejected,
+// same tolerant style as parseExcludeIds.
+function parseCategorySlugs(value: unknown): string[] {
+	if (typeof value !== "string" || value.trim() === "") return [];
+	return value
+		.split(",")
+		.map((slug) => slug.trim())
+		.filter((slug) => slug.length > 0);
+}
+
 router.post("/", requireAuth, async (req, res) => {
 	const swiper = req.user!;
 	const { gigId, liked, targetUserId } = req.body;
@@ -42,8 +54,9 @@ router.get("/next", requireAuth, async (req, res) => {
 	const user = req.user!;
 	const gigId = user.role === UserRole.hirer ? parseId(req.query.gigId) : undefined;
 	const excludeIds = parseExcludeIds(req.query.excludeIds);
+	const categorySlugs = parseCategorySlugs(req.query.categories);
 
-	const result = await handleNext(user, gigId, excludeIds);
+	const result = await handleNext(user, gigId, excludeIds, categorySlugs);
 	res.status(200).json(result);
 });
 

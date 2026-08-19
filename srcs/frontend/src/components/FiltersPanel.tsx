@@ -1,15 +1,47 @@
 import { SlidersHorizontalIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import Modal from "./Modal";
+import { useMediaQuery } from "../lib/useMediaQuery";
 
 const PANEL_ID = "filters-panel";
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 interface FiltersPanelProps {
 	open: boolean;
+	/**
+	 * Only used on mobile, where the panel is a dismissible modal instead of
+	 * an in-flow sidebar — Escape/backdrop-click/the modal's own close button
+	 * all need somewhere to send "closed" back to.
+	 */
+	onClose: () => void;
 	actions?: ReactNode;
 	children: ReactNode;
 }
 
-export default function FiltersPanel({ open, actions, children }: FiltersPanelProps) {
+/**
+ * Same filters, two different presentations depending on viewport: a
+ * collapsible in-flow sidebar on desktop (there's room for it beside the
+ * deck), and a dismissible modal on mobile (there isn't — a permanent
+ * sidebar would eat the whole screen). Both share the same `open` state and
+ * the same {@link FiltersToggle} button to drive it.
+ */
+export default function FiltersPanel({ open, onClose, actions, children }: FiltersPanelProps) {
+	const isDesktop = useMediaQuery(DESKTOP_QUERY);
+
+	if (!isDesktop) {
+		return (
+			<Modal open={open} onClose={onClose} labelledBy="filters-panel-title">
+				<div className="flex flex-col gap-6 p-6 text-sm">
+					<h2 id="filters-panel-title" className="text-base font-semibold">
+						Filters
+					</h2>
+					{children}
+					{actions && <div className="flex justify-end">{actions}</div>}
+				</div>
+			</Modal>
+		);
+	}
+
 	return (
 		<aside
 			id={PANEL_ID}
@@ -35,8 +67,10 @@ interface FiltersToggleProps {
 }
 
 /**
- * Button that expands/collapses {@link FiltersPanel}. Lives in the page header
- * rather than inside the panel, so it stays reachable once the panel is gone.
+ * Button that opens/closes {@link FiltersPanel} — expand/collapse on
+ * desktop, show/hide the modal on mobile. Lives in the page header rather
+ * than inside the panel, so it stays reachable once the panel is gone
+ * (that's every mobile render, and desktop whenever it's collapsed).
  */
 export function FiltersToggle({ open, onToggle }: FiltersToggleProps) {
 	return (
@@ -45,7 +79,7 @@ export function FiltersToggle({ open, onToggle }: FiltersToggleProps) {
 			onClick={onToggle}
 			aria-expanded={open}
 			aria-controls={PANEL_ID}
-			className={`btn btn-sm hidden rounded-full font-normal lg:inline-flex ${
+			className={`btn btn-sm rounded-full font-normal ${
 				open ? "btn-primary" : "btn-outline border-base-content/15 text-base-content/60"
 			}`}
 		>

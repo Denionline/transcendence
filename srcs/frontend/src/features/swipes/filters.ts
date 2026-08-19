@@ -4,13 +4,6 @@
 // location, or rate — so the "real" filtering promised by the left-side
 // sidebar happens here, on whatever the backend streams back.
 
-// A gig only ever has one category, so matching it against a single
-// selection is exhaustive. A `null` selection means "no restriction" — every
-// category passes.
-export function matchesCategoryFilter(itemCategory: string, selected: string | null): boolean {
-	return selected === null || selected === itemCategory;
-}
-
 // An artist can carry several categories (see the multi-category migration),
 // so the Discover sidebar's discipline facet is a real multi-select: a
 // candidate passes if *any* of their categories is checked. An empty

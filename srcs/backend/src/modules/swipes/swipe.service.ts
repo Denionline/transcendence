@@ -5,7 +5,7 @@ import { UserRole } from "../../../generated/prisma/enums.js";
 import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
 import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.service.js";
 import { flattenCategories, publicArtistSelect } from "../profile/profile.service.js";
-import { publicCategorySelect } from "../categories/categories.service.js";
+import { publicCategorySelect, findCategoryIdsBySlug } from "../categories/categories.service.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { authEvents } from "../../lib/auth-events.js";
 
@@ -273,16 +273,29 @@ async function getNextGigForArtist(user: AuthenticatedUser, excludeIds: string[]
 	return gig;
 }
 
+//	The Discover sidebar lets a hirer widen browsing beyond the gig's own
+//	category, for this browse only — nothing here is written back to the gig.
+//	`categorySlugs` unresolved or empty falls back to just the gig's own
+//	category, same as before this existed. Liking a candidate outside the
+//	gig's real category still fails CATEGORY_MISMATCH at swipe time (see
+//	verifyCategoryMatch) — broadening the browse doesn't broaden eligibility.
 async function getNextCandidateForHirer(
 	user: AuthenticatedUser,
 	gigId: string,
 	excludeIds: string[],
+	categorySlugs: string[],
 ) {
 	const gig = await getOpenGig(gigId);
 	if (gig.hirerId !== user.id) throwError(403, "FORBIDDEN", "this gig doesn't belong to you");
+
+	const requestedCategoryIds =
+		categorySlugs.length > 0 ? await findCategoryIdsBySlug(categorySlugs) : [];
+	const eligibleCategoryIds =
+		requestedCategoryIds.length > 0 ? requestedCategoryIds : [gig.categoryId];
+
 	const artist = await prisma.artistProfile.findFirst({
 		where: {
-			categories: { some: { categoryId: gig.categoryId } },
+			categories: { some: { categoryId: { in: eligibleCategoryIds } } },
 			availability: true,
 			user: {
 				swipesReceived: { none: { swiperId: user.id, gigId } },
@@ -300,13 +313,14 @@ export async function handleNext(
 	user: AuthenticatedUser,
 	gigId: string | undefined,
 	excludeIds: string[] = [],
+	categorySlugs: string[] = [],
 ) {
 	if (user.role !== UserRole.artist && user.role !== UserRole.hirer) {
 		throwError(403, "FORBIDDEN", "only artists and hirers can browse swipe candidates");
 	}
 	if (user.role === UserRole.artist) return await getNextGigForArtist(user, excludeIds);
 	if (!gigId) throwError(400, "VALIDATION_ERROR", "gigId is required");
-	return await getNextCandidateForHirer(user, gigId, excludeIds);
+	return await getNextCandidateForHirer(user, gigId, excludeIds, categorySlugs);
 }
 
 async function getArtistSwipeHistory(userId: string, data: SwipeHistoryOptions) {
