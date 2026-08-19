@@ -7,6 +7,7 @@ import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
 import { formatTime } from "../../../lib/format";
 import { getSocket } from "../../../lib/socket";
+import { useUnreadMessages } from "../hooks/useUnreadMessages";
 
 // Close enough to the bottom that an incoming message should still autoscroll
 // — past this, assume the user scrolled up to read history and leave them be.
@@ -19,6 +20,7 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelProps) {
+	const { refresh: refreshUnreadCount } = useUnreadMessages();
 	const [messages, setMessages] = useState<ChatMessageDto[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [page, setPage] = useState(1);
@@ -53,6 +55,10 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			setMessages(ordered);
 			setHasMore(res.hasMore);
 			setStatus("ready");
+			// Fetching a conversation's messages already marks the other side's
+			// as read server-side (see messages.service.ts) — sync the navbar
+			// badge down to match.
+			refreshUnreadCount();
 		})().catch(() => {
 			if (cancelled) return;
 			setStatus("error");
@@ -60,7 +66,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		return () => {
 			cancelled = true;
 		};
-	}, [match.matchId]);
+	}, [match.matchId, refreshUnreadCount]);
 
 	useEffect(() => {
 		if (status !== "ready") return;
@@ -108,10 +114,12 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 	function handleFocus() {
 		if (!hasUnreadRef.current) return;
 		hasUnreadRef.current = false;
-		markMessagesRead(match.matchId).catch((err: unknown) => {
-			console.error("Failed to mark messages as read:", err);
-			hasUnreadRef.current = true;
-		});
+		markMessagesRead(match.matchId)
+			.then(() => refreshUnreadCount())
+			.catch((err: unknown) => {
+				console.error("Failed to mark messages as read:", err);
+				hasUnreadRef.current = true;
+			});
 	}
 
 	function handleScroll() {
