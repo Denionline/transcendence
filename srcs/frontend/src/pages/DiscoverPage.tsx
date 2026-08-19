@@ -12,6 +12,7 @@ import { useMediaQuery } from "../lib/useMediaQuery";
 import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
 import { useCategories } from "../features/categories/hooks/useCategories";
+import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
 
 // The discipline facet is a real, live multi-select: checking a category
 // sends it straight to GET /swipes/next (see getNextCandidateForHirer on the
@@ -43,6 +44,7 @@ export default function DiscoverPage() {
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
+	const [filtersOpen, setFiltersOpen] = useState(true);
 	// Set when a like fails because the candidate's category doesn't actually
 	// match the gig's (see the comment above) — a real possibility once the
 	// hirer has broadened discipline past the gig's own category.
@@ -286,76 +288,72 @@ export default function DiscoverPage() {
 	}
 
 	return (
-		<div className="flex flex-col gap-8 lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
-			<aside className="hidden w-56 shrink-0 lg:block">
-				<h2 className="mb-4 text-sm font-semibold">Filters</h2>
-
-				<div className="flex flex-col gap-6 text-sm">
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Discipline
-						</h3>
+		<div className="flex flex-col lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
+			<FiltersPanel open={filtersOpen}>
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Discipline
+					</h3>
 						<p className="mb-2 text-xs text-base-content/40">
 							Starts on this opportunity&rsquo;s own category — check more to browse other
 							disciplines too. A like still only counts within the gig&rsquo;s real category.
 						</p>
-						<div className="flex flex-wrap gap-1.5">
-							{categories.map((category) => (
-								<button
-									key={category.slug}
-									type="button"
-									onClick={() => toggleDiscipline(category.slug)}
-									aria-pressed={disciplines.has(category.slug)}
-									className={`btn btn-xs rounded-full font-normal ${
-										disciplines.has(category.slug)
-											? "btn-primary"
-											: "btn-outline border-base-content/15 text-base-content/30"
-									}`}
-								>
-									{category.label}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Availability
-						</h3>
-						<div className="flex flex-wrap gap-1.5">
-							{AVAILABILITY_OPTIONS.map((option) => (
-								<button
-									key={option.label}
-									type="button"
-									onClick={() => setAvailability(option.value)}
-									aria-pressed={availability === option.value}
-									className={`btn btn-xs rounded-full font-normal ${
-										availability === option.value
-											? "btn-primary"
-											: "btn-outline border-base-content/15 text-base-content/30"
-									}`}
-								>
-									{option.label}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<div>
-						<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-							Location
-						</h3>
-						<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
-						<input
-							type="text"
-							value={locationQuery}
-							disabled
-							placeholder="Not specified"
-							className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
-						/>
+					<div className="flex flex-wrap gap-1.5">
+						{categories.map((category) => (
+							<button
+								key={category.slug}
+								type="button"
+								onClick={() => toggleDiscipline(category.slug)}
+								aria-pressed={disciplines.has(category.slug)}
+								className={`btn btn-xs rounded-full font-normal ${
+									disciplines.has(category.slug)
+										? "btn-primary"
+										: "btn-outline border-base-content/15 text-base-content/30"
+								}`}
+							>
+								{category.label}
+							</button>
+						))}
 					</div>
 				</div>
-			</aside>
+
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Availability
+					</h3>
+					<div className="flex flex-wrap gap-1.5">
+						{AVAILABILITY_OPTIONS.map((option) => (
+							<button
+								key={option.label}
+								type="button"
+								onClick={() => setAvailability(option.value)}
+								aria-pressed={availability === option.value}
+								className={`btn btn-xs rounded-full font-normal ${
+									availability === option.value
+										? "btn-primary"
+										: "btn-outline border-base-content/15 text-base-content/30"
+								}`}
+							>
+								{option.label}
+							</button>
+						))}
+					</div>
+				</div>
+
+				<div>
+					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
+						Location
+					</h3>
+					<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
+					<input
+						type="text"
+						value={locationQuery}
+						disabled
+						placeholder="Not specified"
+						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
+					/>
+				</div>
+			</FiltersPanel>
 
 			<div className="min-w-0 flex-1">
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -363,45 +361,23 @@ export default function DiscoverPage() {
 						<h1 className="text-2xl font-semibold">Discover artists</h1>
 					</div>
 
-					{myOpenGigs.length > 0 && (
-						<div className="dropdown dropdown-end">
-							<div
-								tabIndex={0}
-								role="button"
+					<div className="flex items-center gap-2">
+						<FiltersToggle open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)} />
+						{myOpenGigs.length > 0 && (
+							<select
+								value={activeGigId ?? ""}
+								onChange={(e) => handleGigChange(e.target.value)}
 								aria-label="Reviewing for opportunity"
-								className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
+								className="select select-sm rounded-full border-base-content/15 bg-transparent font-normal"
 							>
-								<span className="max-w-48 truncate">
-									{activeGig?.title ?? "Select opportunity"}
-								</span>
-								<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
-							</div>
-							<ul
-								tabIndex={0}
-								className="menu dropdown-content menu-sm z-1 mt-2 w-72 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg"
-							>
-								<li className="menu-title">Reviewing for</li>
 								{myOpenGigs.map((gig) => (
-									<li key={gig.id}>
-										<button
-											type="button"
-											aria-current={gig.id === activeGigId}
-											className={gig.id === activeGigId ? "active" : ""}
-											onClick={(e) => {
-												handleGigChange(gig.id);
-												e.currentTarget.blur();
-											}}
-										>
-											<span className="min-w-0 flex-1 truncate">{gig.title}</span>
-											<span className="badge badge-ghost badge-sm shrink-0">
-												{gig.category.label}
-											</span>
-										</button>
-									</li>
+									<option key={gig.id} value={gig.id}>
+										{gig.title}
+									</option>
 								))}
-							</ul>
-						</div>
-					)}
+							</select>
+						)}
+					</div>
 				</div>
 
 				{swipeNotice && (
