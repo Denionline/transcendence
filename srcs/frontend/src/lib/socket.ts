@@ -1,5 +1,5 @@
 import { io, type Socket } from "socket.io-client";
-import { getAccessToken } from "../features/auth/api";
+import { getAccessToken, refreshAccessToken } from "../features/auth/api";
 
 let socket: Socket | null = null;
 
@@ -17,6 +17,20 @@ export function connectSocket(): Socket {
 	if (socket) return socket;
 	socket = io({
 		auth: (cb) => cb({ token: getAccessToken() }),
+	});
+	// The backend gives a socket a ~2s grace window before force-disconnecting
+	// it once its access token expires (see websocket.gateway.ts). Racing a
+	// refresh in that window means the automatic reconnection socket.io does
+	// next — which re-reads getAccessToken() via the `auth` callback above —
+	// picks up the fresh token and rejoins silently, instead of "user_online"
+	// updates just quietly going stale until something else (a REST call)
+	// happens to trigger a refresh first.
+	socket.on("token_expired", () => {
+		refreshAccessToken().catch(() => {
+			// Refresh failed too — apiClient's own 401 handling already routes
+			// that into notifySessionExpired for the rest of the app; nothing
+			// more for the socket to do here.
+		});
 	});
 	return socket;
 }
