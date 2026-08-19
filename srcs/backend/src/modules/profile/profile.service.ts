@@ -2,6 +2,7 @@ import { prisma } from "../../lib/prisma.js";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { publicCategorySelect, resolveCategoryIds } from "../categories/categories.service.js";
+import { listPublicFilesFor } from "../files/files.service.js";
 
 export interface ArtistProfileInput {
 	categories?: unknown;
@@ -166,13 +167,18 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 	return await getHirerProfile(userId);
 }
 
+//	The portfolio is not a relation and not a flag: an owner's public files
+//	*are* their portfolio, which is why this needed no migration and no PATCH
+//	payload. The consequence to know about: a file cannot be public and off the
+//	portfolio. See docs/mad/20260819-file-uploads.md.
 async function getArtistProfile(userId: string) {
 	const profile = await prisma.artistProfile.findUnique({
 		where: { userId },
 		select: publicArtistSelect,
 	});
 	if (!profile) throwError(404, "PROFILE_NOT_FOUND", "artist profile not found");
-	return flattenCategories(profile);
+	const portfolio = await listPublicFilesFor(userId);
+	return { ...flattenCategories(profile), portfolio };
 }
 
 async function getHirerProfile(userId: string) {
@@ -181,7 +187,8 @@ async function getHirerProfile(userId: string) {
 		select: publicHirerSelect,
 	});
 	if (!profile) throwError(404, "PROFILE_NOT_FOUND", "hirer profile not found");
-	return flattenCategories(profile);
+	const portfolio = await listPublicFilesFor(userId);
+	return { ...flattenCategories(profile), portfolio };
 }
 
 export async function getCallerProfile(targetId: string) {
