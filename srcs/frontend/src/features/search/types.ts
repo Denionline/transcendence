@@ -1,3 +1,5 @@
+import type { FileDto } from "../files/types";
+
 export interface SearchProfileResult {
 	userId: string;
 	username: string;
@@ -12,6 +14,8 @@ interface PublicProfileUser {
 
 export interface PublicArtistProfileDto {
 	role: "artist";
+	/** The owner's `public` files — GET /api/profile/:id never lists a private one. */
+	portfolio?: FileDto[];
 	category: string;
 	bio: string | null;
 	location: string | null;
@@ -21,6 +25,7 @@ export interface PublicArtistProfileDto {
 
 export interface PublicHirerProfileDto {
 	role: "hirer";
+	portfolio?: FileDto[];
 	category: string;
 	organizationName: string;
 	bio: string | null;
