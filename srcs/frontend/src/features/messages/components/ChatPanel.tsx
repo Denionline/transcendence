@@ -56,9 +56,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			setMessages(ordered);
 			setHasMore(res.hasMore);
 			setStatus("ready");
-		})().catch((err: unknown) => {
+		})().catch(() => {
 			if (cancelled) return;
-			console.error("Failed to load messages:", err);
 			setStatus("error");
 		});
 		return () => {
@@ -82,8 +81,9 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 					fresh.forEach((m) => knownIds.current.add(m.id));
 					setMessages((prev) => [...prev, ...fresh]);
 				})
-				.catch((err: unknown) => {
-					console.error("Failed to poll for new messages:", err);
+				.catch(() => {
+					// A single missed poll tick isn't worth surfacing — the next
+					// one 4s later picks up wherever this one left off.
 				});
 		}, POLL_MS);
 		return () => window.clearInterval(interval);
@@ -115,8 +115,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 				const target = listRef.current;
 				if (target) target.scrollTop = target.scrollHeight - prevScrollHeight;
 			});
-		} catch (err: unknown) {
-			console.error("Failed to load earlier messages:", err);
+		} catch {
+			// Left where it was — "Load earlier messages" stays clickable to retry.
 		} finally {
 			setLoadingMore(false);
 		}
