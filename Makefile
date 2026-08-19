@@ -127,11 +127,6 @@ oblivion:
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
 
-# `docker compose exec` against a stopped stack fails with `service "backend"
-# is not running` — true, and unhelpful, since it never mentions `make up`.
-# The test is on the *output*, not the exit status: `compose ps -q` exits 0
-# and prints nothing when the service has no running container, so a bare
-# `||` would never fire.
 define require_running
 	@$(COMPOSE) ps -q $(1) | grep -q . || { \
 		echo "ERROR   the $(1) container is not running — run 'make up' first" ; \
@@ -139,9 +134,7 @@ define require_running
 	}
 endef
 
-# Runs inside the backend container, not on the host: the demo files have to
-# land in the uploads volume, and a host process cannot write into a named
-# volume by path. Needs `make up` first. See docs/db_seeding.md.
+#  See docs/db_seeding.md.
 seed:
 	$(call require_running,backend)
 	@echo "SEED    Apply migrations"
