@@ -10,6 +10,7 @@ import profileRoutes from "./modules/profile/profile.routes.js";
 import searchRoutes from "./modules/search/search.routes.js";
 import categoriesRoutes from "./modules/categories/categories.routes.js";
 import messagesRoutes from "./modules/messages/messages.routes.js";
+import notificationsRoutes from "./modules/notifications/notifications.route.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
@@ -43,6 +44,7 @@ apiRouter.use("/search", searchRoutes);
 apiRouter.use("/categories", categoriesRoutes);
 apiRouter.use("/matches/:matchId/messages", messagesRoutes);
 apiRouter.use("/matches", matchesRoutes);
+apiRouter.use("/notifications", notificationsRoutes);
 
 app.use(errorHandler);
 

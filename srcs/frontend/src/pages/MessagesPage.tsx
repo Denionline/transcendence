@@ -8,6 +8,7 @@ import { useOnlineStatusUpdates } from "../features/matches/useOnlineStatus";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
+import { getSocket } from "../lib/socket";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
@@ -49,6 +50,34 @@ export default function MessagesPage() {
 	}, []);
 
 	useOnlineStatusUpdates(setMatches);
+
+	useEffect(() => {
+		const socket = getSocket();
+		if (!socket) return;
+
+		function handleNewMatch() {
+			listMatches()
+				.then((items) => setMatches(items))
+				.catch((err: unknown) => console.error("Failed to refresh matches:", err));
+		}
+
+		socket.on("new_match", handleNewMatch);
+		return () => {
+			socket.off("new_match", handleNewMatch);
+		};
+	}, []);
+
+	// Keep the selected conversation in sync with the URL after the page is
+	// already mounted — e.g. clicking a match notification while already on
+	// this page only changes the query string, it doesn't remount us. Adjusted
+	// directly during render (not in a useEffect) so it lands in the same pass
+	// instead of costing an extra render.
+	const [prevMatchIdParam, setPrevMatchIdParam] = useState(searchParams.get("matchId"));
+	const matchIdParam = searchParams.get("matchId");
+	if (matchIdParam !== prevMatchIdParam) {
+		setPrevMatchIdParam(matchIdParam);
+		if (matchIdParam) setSelectedMatchId(matchIdParam);
+	}
 
 	function selectMatch(matchId: string | null) {
 		setSelectedMatchId(matchId);

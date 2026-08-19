@@ -357,7 +357,7 @@ test("GET /api/swipes/next serves gigs from every category an artist holds", asy
 	});
 });
 
-test("GET /api/swipes/next skips gigs the artist already swiped (404 NO_MORE_CANDIDATES)", async () => {
+test("GET /api/swipes/next skips gigs the artist already swiped (200 + null, empty feed is not an error)", async () => {
 	const category = uniqueCategory();
 	const artist = await makeArtist([category]);
 	const hirer = await makeHirer();
@@ -373,8 +373,8 @@ test("GET /api/swipes/next skips gigs the artist already swiped (404 NO_MORE_CAN
 		const { status, body } = await api(baseUrl, "GET", "/api/swipes/next", {
 			token: tokenFor(artist),
 		});
-		assert.equal(status, 404);
-		assert.equal(body?.error, "NO_MORE_CANDIDATES");
+		assert.equal(status, 200);
+		assert.equal(body, null);
 	});
 });
 
@@ -394,7 +394,7 @@ test("GET /api/swipes/next hands a hirer an available artist matching their gig"
 	});
 });
 
-test("GET /api/swipes/next never offers a hirer an unavailable artist (404 NO_MORE_CANDIDATES)", async () => {
+test("GET /api/swipes/next never offers a hirer an unavailable artist (200 + null, empty feed is not an error)", async () => {
 	const category = uniqueCategory();
 	await makeArtist([category], false);
 	const hirer = await makeHirer();
@@ -405,8 +405,8 @@ test("GET /api/swipes/next never offers a hirer an unavailable artist (404 NO_MO
 			token: tokenFor(hirer),
 		});
 
-		assert.equal(status, 404);
-		assert.equal(body?.error, "NO_MORE_CANDIDATES");
+		assert.equal(status, 200);
+		assert.equal(body, null);
 	});
 });
 

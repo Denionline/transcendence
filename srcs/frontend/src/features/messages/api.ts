@@ -1,5 +1,6 @@
 import { apiRequest } from "../../lib/apiClient";
 import type { ChatMessageDto, MessagesPageDto, SendMessageResult } from "./types";
+import { getSocket } from "../../lib/socket";
 
 /**
  * One page of a match's chat history — newest first (see messages.service.ts),
@@ -11,10 +12,44 @@ export function listMessages(matchId: string, page = 1, pageSize = 30): Promise<
 	);
 }
 
-export function sendMessage(matchId: string, content: string): Promise<SendMessageResult> {
-	return apiRequest<SendMessageResult>(`/matches/${matchId}/messages`, {
-		method: "POST",
-		body: JSON.stringify({ content }),
+export function markMessagesRead(matchId: string): Promise<void> {
+	return apiRequest<void>(`/matches/${matchId}/messages/read`, {
+		method: "PATCH",
+	});
+}
+
+export function sendMessage(
+	matchId: string,
+	content: string,
+	senderId: string,
+): Promise<SendMessageResult> {
+	return new Promise((resolve, reject) => {
+		const socket = getSocket();
+		if (!socket) {
+			reject(new Error("Not connected"));
+			return;
+		}
+
+		const handleMessageError = (payload: { reason: string }) => {
+			socket.off("message_error", handleMessageError);
+			reject(new Error(payload.reason));
+		};
+		socket.once("message_error", handleMessageError);
+
+		socket
+			.timeout(5000)
+			.emit(
+				"send_message",
+				{ matchId, content },
+				(err: Error | null, response?: { chatMessageId: string }) => {
+					socket.off("message_error", handleMessageError);
+					if (err || !response) {
+						reject(err ?? new Error("No response from server"));
+						return;
+					}
+					resolve({ chatMessageId: response.chatMessageId, content, matchId, senderId });
+				},
+			);
 	});
 }
 
