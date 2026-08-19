@@ -54,8 +54,9 @@ export default function ProfileSearchBox({
 					setResults(matches.slice(0, MAX_RESULTS));
 					setIsOpen(true);
 				})
-				.catch((err: unknown) => {
-					console.error("Failed to search profiles:", err);
+				.catch(() => {
+					// A failed search just leaves the dropdown closed — nothing to
+					// recover here, the next keystroke fires a fresh attempt.
 				});
 		}, DEBOUNCE_MS);
 		return () => {
