@@ -6,12 +6,6 @@ consulted: {carlaugu, dximenes, leoaguia}
 informed: {carlaugu, dximenes, leoaguia}
 ---
 
-<!--
-  SKELETON — finish before committing.
-  Every `TODO:` below needs a real answer, and this comment block must be deleted.
-  Source material: STRATEGIES_TO_CHOOSE.md (deleted once this MAD is accepted).
--->
-
 # File uploads on local disk, read access via short-lived signed URLs
 
 ## Context and Problem Statement
@@ -85,14 +79,17 @@ support and authorising reads with a real, verifiable secret.
   proof, so the unauthenticated `/raw` route needs no header:
 
   ```
-  url = /api/files/:id/raw?exp=<unix>&sig=<hex>&v=<viewerId>
-  sig = HMAC-SHA256(`${fileId}.${exp}.${viewerId}`, FILE_URL_SECRET)
+  url = /api/files/:id/raw?exp=<unix>&sig=<hex>
+  sig = HMAC-SHA256(`${fileId}.${exp}`, FILE_URL_SECRET)
   ```
 
-  Authorisation happens when the URL is minted, not when it is used. The signature is
-  bound to the viewer, so a leaked link is useless to a third party, and it expires
-  after `FILE_URL_TTL_SECONDS` (**TODO: confirm 900**), bounding the leak window.
-  This is the same mechanism as an S3 presigned URL, implemented with `node:crypto`
+  Authorisation happens when the URL is minted, not when it is used. Because the `/raw`
+  route is deliberately unauthenticated, this is a **TTL-bounded bearer URL** rather
+  than true viewer-binding: the signature proves only *when* the link was minted, not
+  *who* uses it. A leaked URL is therefore usable only within a bounded window —
+  `FILE_URL_TTL_SECONDS` is fixed at **1800** (30 minutes) — which keeps the leak
+  window short while still leaving long enough for a media element to render. This is
+  the same mechanism as an S3 presigned URL, implemented with `node:crypto`
   alongside the existing `src/lib/jwt.ts`.
 * Validation is four layers, only the last of which is real security: a `zod` check and
   an `accept` attribute client-side (fast feedback), multer's `limits.fileSize` enforced
@@ -105,19 +102,29 @@ support and authorising reads with a real, verifiable secret.
   `<uuid>.<ext-from-sniffed-mime>` with `originalName` kept in the database for display,
   and the resolved path is asserted to remain inside `UPLOAD_DIR`.
 * Responses always carry `X-Content-Type-Options: nosniff` and the **stored** MIME, and
-  anything not previewable is sent `Content-Disposition: attachment`.
+  anything not previewable is sent `Content-Disposition: attachment`. The stored MIME is
+  returned explicitly (via `Content-Type`) rather than trusting `res.sendFile`'s
+  extension-derived guess, so the sniffed database value stays authoritative.
 * Files reach a profile through an explicit `ArtistProfile.files File[]` relation rather
   than parsed markers in the bio text, so `GET /api/profile/:id` can embed ready-signed
   URLs and deletion is a clean cascade. `User.avatarUrl` deliberately stays a permissive
   `String?` so the seed's external `pravatar.cc` URLs keep rendering.
+* The existing `File` model (`schema.prisma`, currently just `id`/`ownerId`/`type`/
+  `location`/`createdAt`) is extended to record what it uploads: a `mimeType`, a `size`,
+  an `originalName`, and an `ArtistProfile.files File[]` back-relation is added. This is
+  a forward reference to a migration that does not exist yet — the model must be migrated
+  before the module ships.
 * Delete removes the database row first and unlinks afterwards, swallowing `ENOENT`.
   The reverse order leaves a row pointing at nothing — the failure a user actually sees —
   whereas this order's worst case is an orphaned file on disk that `make files-gc` sweeps.
 
-**TODO: record the account-deletion decision.** `onDelete: Cascade` from `User` removes
-`File` rows but never touches the bytes on disk. Either `DELETE /api/users/:id` unlinks
-them, or `make files-gc` is declared the cleanup path. Phase 5 of the plan implements
-whichever is written here.
+Account deletion cleans up bytes in `DELETE /api/users/:id` (self or admin, per
+`docs/api_endpoints.md`). `onDelete: Cascade` from `User` removes the `File` rows but
+never the bytes, so the delete handler first reads each owned `File.location`, then
+deletes the user (cascading the rows), then unlinks the bytes, swallowing `ENOENT`.
+This reuses the delete-then-unlink ordering chosen for the files route, so a crash
+mid-delete leaves at most an orphaned file for `make files-gc` to sweep, never a row
+pointing at nothing.
 
 ### Rejected, and why
 
@@ -138,8 +145,8 @@ project's constraints rule out:
   would have been the right answer for images alone, but Prisma cannot stream `Bytes`:
   every read materialises the whole file in Node's heap, and Range would have to be
   hand-implemented in SQL.
-* **B5 (site-wide cookie auth) — rejected on scope.** It is a cross-cutting refactor of
-  `features/auth` and `apiClient.ts` that invalidates the documented token model and the
+* **B5 (site-wide cookie auth) — rejected on scope.** It is a cross-cutting   refactor of
+  `modules/auth` and `apiClient.ts` that invalidates the documented token model and the
   existing auth tests. That is a different issue than #35.
 * **B1 (obscurity) — rejected as a sole mechanism.** A leaked URL would be permanent,
   unrevocable public access.
@@ -169,9 +176,8 @@ project's constraints rule out:
 
 ## Pros and Cons of the Options
 
-Scored for *this* project, 5 = best. **TODO: keep or trim these tables — they are
-carried over from STRATEGIES_TO_CHOOSE.md so the comparison survives that file's
-deletion.**
+Scored for *this* project, 5 = best. The comparison tables are retained in full as the
+decision record, so the rationale behind each score survives.
 
 | Criterion | A1 disk+volume | A2 in Postgres | A3 disk+Nginx | A4 S3 | A5 MinIO | A6 base64 |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|
@@ -242,4 +248,3 @@ delete an image, an audio file and a video **with the network disabled**, then
   connections, which compose does not do today. A reverse proxy is the natural place for
   it, and once one exists, A3 becomes nearly free: the `/raw` route stops calling
   `sendFile` and returns an `X-Accel-Redirect` header instead.
-* **TODO: link the PR** once opened, and flip `status` to `accepted` when it merges.
