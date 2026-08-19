@@ -30,10 +30,10 @@ export function sendMessage(
 			return;
 		}
 
-		function handleMessageError(payload: { reason: string }) {
+		const handleMessageError = (payload: { reason: string }) => {
 			socket.off("message_error", handleMessageError);
 			reject(new Error(payload.reason));
-		}
+		};
 		socket.once("message_error", handleMessageError);
 
 		socket

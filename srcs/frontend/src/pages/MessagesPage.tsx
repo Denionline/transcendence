@@ -69,11 +69,15 @@ export default function MessagesPage() {
 
 	// Keep the selected conversation in sync with the URL after the page is
 	// already mounted — e.g. clicking a match notification while already on
-	// this page only changes the query string, it doesn't remount us.
-	useEffect(() => {
-		const matchId = searchParams.get("matchId");
-		if (matchId) setSelectedMatchId(matchId);
-	}, [searchParams]);
+	// this page only changes the query string, it doesn't remount us. Adjusted
+	// directly during render (not in a useEffect) so it lands in the same pass
+	// instead of costing an extra render.
+	const [prevMatchIdParam, setPrevMatchIdParam] = useState(searchParams.get("matchId"));
+	const matchIdParam = searchParams.get("matchId");
+	if (matchIdParam !== prevMatchIdParam) {
+		setPrevMatchIdParam(matchIdParam);
+		if (matchIdParam) setSelectedMatchId(matchIdParam);
+	}
 
 	function selectMatch(matchId: string | null) {
 		setSelectedMatchId(matchId);
