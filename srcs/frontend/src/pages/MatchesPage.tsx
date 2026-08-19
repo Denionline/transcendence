@@ -105,12 +105,12 @@ export default function MatchesPage() {
 							aria-label="Filter by opportunity"
 							className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
 						>
-							<span className="max-w-48 truncate">{activeGigLabel}</span>
+							<span className="max-w-40 truncate sm:max-w-48">{activeGigLabel}</span>
 							<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
 						</div>
 						<ul
 							tabIndex={0}
-							className="menu dropdown-content menu-sm z-1 mt-2 w-64 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg"
+							className="menu dropdown-content z-20 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg menu-sm"
 						>
 							<li>
 								<button

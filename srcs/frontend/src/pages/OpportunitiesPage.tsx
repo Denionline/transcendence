@@ -53,7 +53,7 @@ export default function OpportunitiesPage() {
 	const [locationQuery, setLocationQuery] = useState("");
 	const [minRateInput, setMinRateInput] = useState("");
 	const [appliedMinRateInput, setAppliedMinRateInput] = useState("");
-	const [filtersOpen, setFiltersOpen] = useState(true);
+	const [filtersOpen, setFiltersOpen] = useState(false);
 
 	const [gigs, setGigs] = useState<GigListing[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -226,6 +226,7 @@ export default function OpportunitiesPage() {
 		<div className="flex flex-col lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
 			<FiltersPanel
 				open={filtersOpen}
+				onClose={() => setFiltersOpen(false)}
 				actions={
 					<button
 						type="button"

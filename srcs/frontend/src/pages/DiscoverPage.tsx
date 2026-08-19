@@ -44,7 +44,7 @@ export default function DiscoverPage() {
 	const [disciplines, setDisciplines] = useState<Set<string>>(new Set());
 	const [availability, setAvailability] = useState<"available" | "soon" | null>(null);
 	const [locationQuery, setLocationQuery] = useState("");
-	const [filtersOpen, setFiltersOpen] = useState(true);
+	const [filtersOpen, setFiltersOpen] = useState(false);
 	// Set when a like fails because the candidate's category doesn't actually
 	// match the gig's (see the comment above) — a real possibility once the
 	// hirer has broadened discipline past the gig's own category.
@@ -289,7 +289,7 @@ export default function DiscoverPage() {
 
 	return (
 		<div className="flex flex-col lg:mx-[calc(50%-50vw)] lg:flex-row lg:items-start lg:px-10">
-			<FiltersPanel open={filtersOpen}>
+			<FiltersPanel open={filtersOpen} onClose={() => setFiltersOpen(false)}>
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 						Discipline
@@ -371,14 +371,14 @@ export default function DiscoverPage() {
 									aria-label="Reviewing for opportunity"
 									className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
 								>
-									<span className="max-w-48 truncate">
+									<span className="max-w-40 truncate sm:max-w-48">
 										{activeGig?.title ?? "Select opportunity"}
 									</span>
 									<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
 								</div>
 								<ul
 									tabIndex={0}
-									className="menu dropdown-content menu-sm z-1 mt-2 w-72 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg"
+									className="menu dropdown-content z-20 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg menu-sm"
 								>
 									<li className="menu-title">Reviewing for</li>
 									{myOpenGigs.map((gig) => (
