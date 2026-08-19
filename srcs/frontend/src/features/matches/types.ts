@@ -7,4 +7,5 @@ export interface MatchDto {
 		online: boolean;
 	};
 	gig: { id: string; title: string };
+	unreadCount: number;
 }
