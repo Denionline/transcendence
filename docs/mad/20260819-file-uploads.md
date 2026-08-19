@@ -1,5 +1,5 @@
 ---
-status: "proposed"
+status: "accepted"
 date: 2026-08-19
 decision-makers: abessa-m
 consulted: {carlaugu, dximenes, leoaguia}
@@ -119,12 +119,21 @@ chosen anyway, for the reason recorded below.
 * **B5 (site-wide cookie auth) — rejected on scope.** A cross-cutting refactor of
   `modules/auth` and `apiClient.ts` that invalidates the documented token model and the
   existing auth tests. That is a different issue than #35.
-* **Seeding by download, or by generating placeholder bytes — rejected.** Fetching demo
-  media at seed time reintroduces exactly the network dependency the storage decision was
-  made to avoid. Generating bytes programmatically keeps the repository small but yields a
-  demo of blank rectangles, which cannot demonstrate preview, seeking or the portfolio
-  query — the three things the demo exists to show. Committing a small set of real files
-  costs permanent repository weight and buys a demo that can actually be inspected.
+* **Seeding by download, or by generating bytes at seed time — rejected.** Fetching demo
+  media while seeding reintroduces exactly the network dependency the storage decision was
+  made to avoid. Generating bytes inside `seedFiles()` keeps the repository small but puts
+  an image encoder in the seed path and produces something nobody has looked at — and a
+  demo of blank rectangles cannot demonstrate preview, seeking or the portfolio query, the
+  three things the demo exists to show. Committing a small set of real files costs
+  permanent repository weight and buys a demo that can actually be inspected.
+
+  *What shipped splits that difference, and the distinction is worth being precise about:*
+  the fixtures are **generated once at authoring time by a committed script**
+  (`prisma/seed-assets/generate.py`, Pillow + ffmpeg) and the **output** is what is
+  tracked. The seed itself only copies bytes. So the repository still carries real,
+  inspectable files — 124 KB of them, well inside the 1 MB budget — while nothing in this
+  project depends on a third party's media, licence or continued existence. Neither the
+  seed nor the app ever runs the generator.
 * **Bind-mounting the upload directory onto the host — rejected.** It would let the seed
   keep running host-side, but it puts container-owned files in the working tree and
   replaces the named volume the rest of this decision rests on. Running the seed inside
@@ -144,9 +153,16 @@ chosen anyway, for the reason recorded below.
   requires, A1 becomes A3 by changing one response line to `X-Accel-Redirect`.
 * Good, because `make seed` now produces a demo that renders with the network off. It also
   retires the 311 `https://i.pravatar.cc` avatar URLs the seed carried, which had made the
-  demo quietly dependent on outbound internet long before uploads existed.
+  demo quietly dependent on outbound internet long before uploads existed. Those URLs are
+  gone from `seed-data.json` entirely rather than replaced: `avatarUrl` is now *derived* —
+  `seedUser()` assigns one of six seeded avatar files round-robin and builds the path with
+  `fileUrl()` — so the URL shape lives in code and cannot rot in the data the day A3/Nginx
+  moves it.
 * Neutral, because uploads are wiped by `make fclean` (`docker compose down -v`). Correct
-  for a school project, but the app must treat a missing file as `404`, never `500`.
+  for a school project, but the app must treat a missing file as `404`, never `500`. Only
+  a *missing* one: `sendFile` reports an unsatisfiable Range, `EACCES` and `EISDIR` through
+  the same callback, and answering `404` to those would let a broken volume pass for an
+  unknown id. The route branches on the error rather than flattening it.
 * Neutral, because `make seed` now requires `make up` first, having moved inside the
   container. It no longer needs the database port published, which is a small gain.
 * Bad, because **a disclosed URL is permanent and unrevocable** — via `Referer`, proxy
@@ -164,6 +180,16 @@ chosen anyway, for the reason recorded below.
   exactly one backend.
 * Bad, because the fixture files are permanent repository weight — git keeps every blob it
   has ever seen, so an oversized demo video cannot be un-committed. Held under 1 MB total.
+* Bad, because **nothing bounds total disk use**. There is no per-user or global quota:
+  the only brake on uploads is a per-user rate limit of 20 per 15 minutes, which at the
+  50 MB ceiling still permits roughly 1 GB per account per 15 minutes, indefinitely, and
+  nothing reclaims space short of `make fclean`. This is an accepted trade rather than an
+  oversight — a quota needs a policy (what happens at the limit, who raises it, whether
+  deleting frees allowance) that a school project does not have, and `SUM(sizeBytes)
+  WHERE ownerId` is one query in `createFile` whenever it does. `GET /:id/raw` carries a
+  generous per-address rate limit so the unauthenticated read path is at least bounded,
+  but that limits request *rate*, not stored bytes. The exposure is availability and
+  disk, never confidentiality.
 * Bad, because **seeded ids are public**: they are hardcoded in a file in this repository,
   so the entropy argument above describes uploaded files and not the demo rows. That is
   the right trade for content whose only purpose is to be looked at, but nobody should
@@ -215,8 +241,10 @@ text sent as `image/png` accepted, then served with `Content-Type: image/png` **
 `nosniff` — the documented hole, asserted so nobody silently drops the header;
 `GET /api/files/:id` for another user's private file → `404`, not `403`; **`GET
 /api/files` as another user omits that file's id** — the single control protecting private
-files; delete by a non-owner (`403`) and by the owner (`204`, then `404`); and a Range
-request returning `206` with a correct `Content-Range`.
+files; delete by a non-owner (`403`) and by the owner (`204`, then `404`); a Range
+request returning `206` with a correct `Content-Range`; and the three ways reading the
+bytes can fail — an out-of-bounds Range (`416`), a row whose file was deleted (`404`)
+and a file present but unreadable (`500`), which must not collapse into one another.
 
 Manually, on a fresh machine: `git clone` → `.env` → `make up` → upload, preview and
 delete an image, an audio file and a video **with the network disabled**, then
