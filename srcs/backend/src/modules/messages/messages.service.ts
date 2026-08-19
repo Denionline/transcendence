@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma.js";
 
 interface MessagesQuery {
+	callerId: string;
 	matchId: string;
 	page: number;
 	pageSize: number;
@@ -44,5 +45,23 @@ export async function getMatchMessages(data: MessagesQuery) {
 			where: { matchId: data.matchId },
 		}),
 	]);
+	const idsToMarkRead = items.filter((val) => val.senderId !== data.callerId).map((val) => val.id);
+	if (idsToMarkRead.length > 0) {
+		await prisma.chatMessage.updateMany({
+			where: { id: { in: idsToMarkRead }, isRead: false },
+			data: { isRead: true },
+		});
+	}
 	return { items, total };
+}
+
+export async function markMessagesAsRead(callerId: string, matchId: string) {
+	await prisma.chatMessage.updateMany({
+		where: {
+			matchId: matchId,
+			senderId: { not: callerId },
+			isRead: false,
+		},
+		data: { isRead: true },
+	});
 }

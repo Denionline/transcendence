@@ -20,13 +20,10 @@ function buildNextQuery(params: {
 	return qs ? `?${qs}` : "";
 }
 
-async function fetchNext<T>(query: string): Promise<T | null> {
-	try {
-		return await apiRequest<T>(`/swipes/next${query}`);
-	} catch (err) {
-		if (err instanceof ApiError && err.code === "NO_MORE_CANDIDATES") return null;
-		throw err;
-	}
+// The backend answers "nothing left" with 200 + null, not a 404 — an empty
+// feed is a valid result, not a failure, so there's no error path to catch.
+function fetchNext<T>(query: string): Promise<T | null> {
+	return apiRequest<T | null>(`/swipes/next${query}`);
 }
 
 /**

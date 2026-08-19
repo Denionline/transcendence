@@ -108,6 +108,10 @@ instead of requiring them to be hand-built on raw `ws`.
 * Bad, because a client that is offline when a match partner sends a message only learns
   about it the next time it fetches matches over HTTP — there is no unread/missed-message
   tracking yet.
+  *(Superseded 2026-08-18: `GET /api/matches` now returns a per-match `unreadCount`,
+  computed from `ChatMessage.isRead` rather than cached — so a client that missed the live
+  `new_message` broadcast still sees which matches have unread messages, and how many, on
+  its next fetch. See `docs/api_endpoints.md` § Matches.)*
 
 ## Pros and Cons of the Options
 

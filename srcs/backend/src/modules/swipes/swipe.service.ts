@@ -8,12 +8,15 @@ import { flattenCategories, publicArtistSelect } from "../profile/profile.servic
 import { publicCategorySelect, findCategoryIdsBySlug } from "../categories/categories.service.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { authEvents } from "../../lib/auth-events.js";
+import { createNotification } from "../notifications/notifications.service.js";
+import { NotificationType } from "../../../generated/prisma/enums.js";
 
 interface SwipeData {
 	swiperId: string;
 	swipedId: string;
 	artistId: string;
 	gigId: string;
+	gigTitle: string;
 	liked: boolean;
 }
 
@@ -40,6 +43,29 @@ async function createSwipeRow(tx: Prisma.TransactionClient, data: SwipeData) {
 				liked: data.liked,
 			},
 		});
+		const existing = await prisma.swipe.findUnique({
+			where: {
+				gigId_swipedId_swiperId: {
+					swiperId: data.swipedId,
+					swipedId: data.swiperId,
+					gigId: data.gigId,
+				},
+			},
+		});
+		if (data.liked && !existing) {
+			await createNotification(
+				{
+					userId: data.swipedId,
+					actorId: data.swiperId,
+					type: NotificationType.swipe_liked,
+					data: {
+						gigId: data.gigId,
+						gigTitle: data.gigTitle,
+					},
+				},
+				tx,
+			);
+		}
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
 			throwError(409, "SWIPE_EXISTS", "you already swiped this gig");
@@ -79,11 +105,30 @@ async function validateMatch(
 		const created = await tx.match.create({
 			data: { gigId: data.gigId, artistId: data.artistId },
 		});
-		await tx.gig.update({
+		const closedGig = await tx.gig.update({
 			where: { id: data.gigId },
 			data: { status: "closed" },
 		});
-		authEvents.emit("new_match", { matchId: created.id, userIds: [data.swiperId, data.swipedId] });
+		await createNotification(
+			{
+				userId: closedGig.hirerId,
+				type: NotificationType.gig_closed,
+				data: {
+					gigId: data.gigId,
+					gigTitle: closedGig.title,
+				},
+			},
+			tx,
+		);
+		await createNotification(
+			{
+				userId: data.swipedId,
+				actorId: data.swiperId,
+				type: NotificationType.new_match,
+				data: { matchId: created.id },
+			},
+			tx,
+		);
 		return created.id;
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -228,6 +273,7 @@ export async function handleSwipe(
 	data.gigId = gigId;
 	data.liked = liked;
 	const gig = await getOpenGig(gigId);
+	data.gigTitle = gig.title;
 	if (swiper.role === UserRole.artist) {
 		data.swipedId = gig.hirerId;
 		data.artistId = swiper.id;
@@ -247,6 +293,8 @@ export async function handleSwipe(
 		if (data.liked !== true) return undefined;
 		return validateMatch(tx, data as SwipeData);
 	});
+	if (data.liked || matchId) authEvents.emit("new_notification", { targetId: data.swipedId });
+	if (matchId) authEvents.emit("new_match", { matchId, userIds: [data.swiperId, data.swipedId] });
 	return { matchId };
 }
 
@@ -269,7 +317,7 @@ async function getNextGigForArtist(user: AuthenticatedUser, excludeIds: string[]
 		orderBy: { createdAt: "asc" },
 		select: publicGigSelect,
 	});
-	if (!gig) throwError(404, "NO_MORE_CANDIDATES", "no more gigs to show");
+	if (!gig) return null;
 	return gig;
 }
 
@@ -305,7 +353,7 @@ async function getNextCandidateForHirer(
 		orderBy: { createdAt: "asc" },
 		select: publicArtistSelect,
 	});
-	if (!artist) throwError(404, "NO_MORE_CANDIDATES", "no more candidates to show");
+	if (!artist) return null;
 	return flattenCategories(artist);
 }
 

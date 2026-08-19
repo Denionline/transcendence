@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Avatar from "../../../components/Avatar";
 import { formatRelativeTime } from "../../../lib/format";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { NOTIFICATION_META } from "../utils";
 import type { NotificationDto } from "../types";
 
@@ -13,6 +14,8 @@ export default function NotificationListItem({
 	notification,
 	onMarkRead,
 }: NotificationListItemProps) {
+	const { user } = useAuth();
+	const isHirer = user?.role === "hirer";
 	const meta = NOTIFICATION_META[notification.type];
 	const Icon = meta.icon;
 
@@ -44,7 +47,7 @@ export default function NotificationListItem({
 				<div className="min-w-0 flex-1">
 					<p className="flex items-center gap-1.5 truncate text-sm">
 						<Icon className={`size-3.5 shrink-0 ${meta.iconClass}`} aria-hidden="true" />
-						<span className="truncate">{meta.message(notification)}</span>
+						<span className="truncate">{meta.message(notification, isHirer)}</span>
 					</p>
 					<p className="text-xs text-base-content/50">
 						{formatRelativeTime(notification.createdAt)}

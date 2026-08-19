@@ -4,7 +4,6 @@ import { AuthenticatedUser } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { Prisma } from "../../../generated/prisma/client.js";
 import { buildMeta } from "../../lib/pagination.js";
-
 import { isUserOnline } from "../websocket/websocket.gateway.js";
 
 export interface MatchListOptions {
@@ -13,7 +12,7 @@ export interface MatchListOptions {
 	gigId?: string;
 }
 
-export interface MatchSummary {
+export interface MatchDetail {
 	matchId: string;
 	otherUser: { id: string; displayName: string; avatarUrl: string | null; online: boolean };
 	gig: { id: string; title: string };
@@ -44,10 +43,23 @@ const matchSelect = {
 
 type MatchRow = Prisma.MatchGetPayload<{ select: typeof matchSelect }>;
 
+//	One query for however many matches are on the page, instead of one COUNT
+//	per match — groupBy hands back a row per matchId with unread messages, and
+//	matches with none simply don't appear (hence the `?? 0` at the call site).
+async function getUnreadCounts(userId: string, matchIds: string[]): Promise<Map<string, number>> {
+	if (matchIds.length === 0) return new Map();
+	const rows = await prisma.chatMessage.groupBy({
+		by: ["matchId"],
+		where: { matchId: { in: matchIds }, senderId: { not: userId }, isRead: false },
+		_count: true,
+	});
+	return new Map(rows.map((row) => [row.matchId, row._count]));
+}
+
 //	Neither side of a match ever sees "itself" in the response — an artist gets
 //	the hirer's identity (their org name doubles as a display name) and vice
 //	versa. This is what the chat sidebar needs and nothing more.
-function toSummary(user: AuthenticatedUser, match: MatchRow): MatchSummary {
+function toDetail(user: AuthenticatedUser, match: MatchRow): MatchDetail {
 	const otherUser =
 		user.role === UserRole.artist
 			? {
@@ -63,7 +75,11 @@ function toSummary(user: AuthenticatedUser, match: MatchRow): MatchSummary {
 					online: isUserOnline(match.artist.id, match.id),
 				};
 
-	return { matchId: match.id, otherUser, gig: { id: match.gig.id, title: match.gig.title } };
+	return {
+		matchId: match.id,
+		otherUser,
+		gig: { id: match.gig.id, title: match.gig.title },
+	};
 }
 
 function requireParticipant(user: AuthenticatedUser) {
@@ -102,8 +118,15 @@ export async function listMatches(user: AuthenticatedUser, options: MatchListOpt
 		prisma.match.count({ where }),
 	]);
 
+	const unreadCounts = await getUnreadCounts(
+		user.id,
+		items.map((match) => match.id),
+	);
 	return {
-		items: items.map((match) => toSummary(user, match)),
+		items: items.map((match) => ({
+			...toDetail(user, match),
+			unreadCount: unreadCounts.get(match.id) ?? 0,
+		})),
 		...buildMeta(options.page, options.pageSize, total),
 	};
 }
@@ -116,7 +139,7 @@ export async function getMatchById(user: AuthenticatedUser, id: string) {
 	if (ownsMatch(user, match) === false)
 		throwError(403, "FORBIDDEN", "this match doesn't belong to you");
 
-	return toSummary(user, match);
+	return toDetail(user, match);
 }
 
 export async function deleteMatch(user: AuthenticatedUser, id: string) {
@@ -135,12 +158,12 @@ export async function deleteMatch(user: AuthenticatedUser, id: string) {
 	await prisma.match.delete({ where: { id } });
 }
 
-//	The WebSocket gateway needs every match a user belongs to, unpaginated, to
-//	join all of their chat rooms on connect — listMatches only ever returns
-//	one page, which would silently drop rooms past the first page's worth.
-export async function getMatchesForUser(user: AuthenticatedUser): Promise<MatchSummary[]> {
+//	The WebSocket gateway needs every match id a user belongs to, unpaginated, to
+//	join all of their chat rooms on connect — it only needs the ids, not the
+//	full summary (unread counts, other-user info) the UI-facing endpoints return.
+export async function getMatchIdsForUser(user: AuthenticatedUser): Promise<string[]> {
 	requireParticipant(user);
 	const where = whereForCaller(user);
-	const matches = await prisma.match.findMany({ where, select: matchSelect });
-	return matches.map((match) => toSummary(user, match));
+	const matches = await prisma.match.findMany({ where, select: { id: true } });
+	return matches.map((match) => match.id);
 }

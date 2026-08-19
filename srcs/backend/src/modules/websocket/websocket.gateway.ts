@@ -1,7 +1,7 @@
 import { Server, Socket, DisconnectReason } from "socket.io";
 import type { Server as HttpServer } from "node:http";
 import { verifyAccessToken } from "../../lib/jwt.js";
-import { getMatchesForUser } from "../matches/matches.service.js";
+import { getMatchIdsForUser } from "../matches/matches.service.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { styleText } from "node:util";
 import { authEvents } from "../../lib/auth-events.js";
@@ -86,7 +86,10 @@ export function initWebsocket(httpServer: HttpServer) {
 			});
 		}, socket.tokenExp - Date.now());
 
-		const matchesPromised = getMatchesForUser({ id: socket.userId, role: socket.role as UserRole });
+		const matchesPromised = getMatchIdsForUser({
+			id: socket.userId,
+			role: socket.role as UserRole,
+		});
 
 		socket.on("disconnecting", (reason) => handleDisconnect(reason, io, socket, expiryTimer));
 
@@ -101,7 +104,6 @@ export function initWebsocket(httpServer: HttpServer) {
 				return;
 			}
 			const room = `chat:${data.matchId}`;
-			await matchesPromised;
 			if (!socket.rooms.has(room)) return;
 			const result = await createMessage({
 				matchId: data.matchId,
@@ -121,10 +123,10 @@ export function initWebsocket(httpServer: HttpServer) {
 			});
 		});
 
-		const matches = await matchesPromised;
-		matches.forEach((match) => {
-			socket.join(`chat:${match.matchId}`);
-			socket.to(`chat:${match.matchId}`).emit("user_online", { userId: socket.userId });
+		const matchIds = await matchesPromised;
+		matchIds.forEach((matchId) => {
+			socket.join(`chat:${matchId}`);
+			socket.to(`chat:${matchId}`).emit("user_online", { userId: socket.userId });
 		});
 	});
 
@@ -137,10 +139,17 @@ export function initWebsocket(httpServer: HttpServer) {
 			io.in(`user:${userId}`).socketsJoin(`chat:${matchId}`);
 		});
 		io.to(`chat:${matchId}`).emit("new_match", { matchId });
+		userIds.forEach((userId) => {
+			io.to(`chat:${matchId}`).except(`user:${userId}`).emit("user_online", { userId });
+		});
 	});
 
-	authEvents.on("send_message", async ({ senderId, content, matchId, chatMessageId }) => {
+	authEvents.on("send_message", ({ senderId, content, matchId, chatMessageId }) => {
 		io.to(`chat:${matchId}`).emit("new_message", { senderId, content, matchId, chatMessageId });
+	});
+
+	authEvents.on("new_notification", ({ targetId }) => {
+		io.to(`user:${targetId}`).emit("new_notification");
 	});
 	return io;
 }
