@@ -104,7 +104,7 @@ export default function ProfileSearchBox({
 			</label>
 
 			{isOpen && results.length > 0 && (
-				<ul className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-box border border-base-content/10 bg-base-100 py-1 shadow-lg">
+				<ul className="absolute inset-x-0 top-full z-40 mt-2 overflow-hidden rounded-box border border-base-content/10 bg-base-100 py-1 shadow-lg">
 					{results.map((result) => (
 						<li key={result.userId}>
 							<button
