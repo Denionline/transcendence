@@ -25,17 +25,19 @@ export const FILE_RULES: Record<string, FileRule> = {
 	},
 };
 
+//	`Object.hasOwn`, never `in` or a bare bracket lookup: both walk
+//	Object.prototype, so `extensions` would answer yes to "constructor",
+//	"__proto__" and friends, handing back a Function as the extension.
 export function typeForMime(mimeType: string): FileType | null {
 	for (const [type, rule] of Object.entries(FILE_RULES)) {
-		if (mimeType in rule.extensions) return type as FileType;
+		if (Object.hasOwn(rule.extensions, mimeType)) return type as FileType;
 	}
 	return null;
 }
 
 export function extFor(mimeType: string): string | null {
 	for (const rule of Object.values(FILE_RULES)) {
-		const extension = rule.extensions[mimeType];
-		if (extension !== undefined) return extension;
+		if (Object.hasOwn(rule.extensions, mimeType)) return rule.extensions[mimeType];
 	}
 	return null;
 }

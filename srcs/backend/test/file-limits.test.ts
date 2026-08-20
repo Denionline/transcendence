@@ -42,6 +42,13 @@ test("unknown and deliberately excluded MIME types resolve to null", () => {
 		"text/html",
 		"nonsense/x",
 		"",
+		//	Prototype keys, not MIME types: a lookup that does not say hasOwn
+		//	answers yes to every one of these.
+		"constructor",
+		"__proto__",
+		"toString",
+		"valueOf",
+		"hasOwnProperty",
 	]) {
 		assert.equal(typeForMime(mimeType), null, `type for "${mimeType}"`);
 		assert.equal(extFor(mimeType), null, `extension for "${mimeType}"`);
