@@ -42,8 +42,7 @@ test("unknown and deliberately excluded MIME types resolve to null", () => {
 		"text/html",
 		"nonsense/x",
 		"",
-		//	Prototype keys, not MIME types: a lookup that does not say hasOwn
-		//	answers yes to every one of these.
+		//	Prototype keys, not MIME types: a lookup without hasOwn says yes.
 		"constructor",
 		"__proto__",
 		"toString",

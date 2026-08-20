@@ -17,10 +17,8 @@ export class ApiError extends Error {
 // shares this same in-flight promise instead of racing /auth/refresh.
 let refreshPromise: Promise<string> | null = null;
 
-// Exported for features/files/api.ts, the one caller that cannot go through
-// apiRequest: multipart uploads need XHR for progress events. It has to share
-// *this* promise rather than call refreshAccessToken itself, or an upload 401
-// landing alongside any other 401 would fire two refreshes.
+// Exported for features/files/api.ts, which needs XHR for progress events and
+// so cannot go through apiRequest.
 export function refreshOnce(): Promise<string> {
 	if (!refreshPromise) {
 		refreshPromise = refreshAccessToken().finally(() => {
