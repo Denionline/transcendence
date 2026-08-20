@@ -13,6 +13,9 @@ interface NotificationsContextValue {
 	refresh: () => void;
 	markRead: (id: string) => Promise<void>;
 	markAllRead: () => Promise<void>;
+	/** Increments on every live "new_notification" push — a cue for
+	 *  NotificationBell to play its bump animation. */
+	bumpToken: number;
 }
 
 export const NotificationsContext = createContext<NotificationsContextValue | null>(null);
@@ -22,6 +25,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 	const [notifications, setNotifications] = useState<NotificationDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
+	const [bumpToken, setBumpToken] = useState(0);
 
 	useEffect(() => {
 		// AuthProvider's own session check (fetchMe) hasn't set the access
@@ -64,6 +68,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
 		function handleNotificationEvent() {
 			setRetryToken((t) => t + 1);
+			setBumpToken((t) => t + 1);
 		}
 
 		socket.on("new_notification", handleNotificationEvent);
@@ -91,7 +96,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<NotificationsContext.Provider
-			value={{ notifications, unreadCount, status, refresh, markRead, markAllRead }}
+			value={{ notifications, unreadCount, status, refresh, markRead, markAllRead, bumpToken }}
 		>
 			{children}
 		</NotificationsContext.Provider>

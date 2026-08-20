@@ -6,6 +6,7 @@ import Avatar from "./Avatar";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import ProfileSearchBox from "../features/search/components/ProfileSearchBox";
 import NotificationBell from "../features/notifications/components/NotificationBell";
+import MessagesIcon from "../features/messages/components/MessagesIcon";
 
 export interface NavbarItem {
 	to: string;
@@ -99,6 +100,8 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 							<span className="hidden sm:inline">{action.label}</span>
 						</Link>
 					)}
+
+					{user && <MessagesIcon />}
 
 					{user && <NotificationBell />}
 

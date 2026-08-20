@@ -7,4 +7,6 @@ export interface MatchDto {
 		online: boolean;
 	};
 	gig: { id: string; title: string };
+	unreadCount: number;
+	lastMessage: { content: string; createdAt: string; senderId: string } | null;
 }
