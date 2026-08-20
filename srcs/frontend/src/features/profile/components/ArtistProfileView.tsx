@@ -1,0 +1,348 @@
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import {
+	CheckIcon,
+	CircleCheckIcon,
+	CircleDashedIcon,
+	DollarSignIcon,
+	EyeIcon,
+	MapPinIcon,
+	PencilLineIcon,
+	WalletIcon,
+} from "lucide-react";
+import { useAuth } from "../../auth/hooks/useAuth";
+import { useCategories } from "../../categories/hooks/useCategories";
+import Avatar from "../../../components/Avatar";
+import ProfileMediaGallery from "../../artists/components/ProfileMediaGallery";
+import { buildMockProfileMedia } from "../../artists/mockProfileMedia";
+import type { ProfileMediaItem } from "../../artists/types";
+import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
+import { notifyProfileUpdated } from "../profileEvents";
+import PortfolioManager from "./PortfolioManager";
+import LabeledField from "./LabeledField";
+
+// Mirrors MAX_PROFILE_CATEGORIES in the backend's categories service.
+const MAX_CATEGORIES = 10;
+const MAX_BIO_LENGTH = 280;
+
+type Status = { type: "success" | "error"; text: string } | null;
+
+/**
+ * The artist's own profile: a live preview built from the same
+ * ProfileMediaGallery a hirer swipes through, sitting above an editable form.
+ * Every field — including the portfolio itself — updates the preview
+ * immediately, no separate "how others see me" step needed.
+ */
+export default function ArtistProfileView() {
+	const { user } = useAuth();
+	const { categories: vocabulary, isLoading: isLoadingCategories } = useCategories();
+
+	const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
+	const [bio, setBio] = useState("");
+	const [location, setLocation] = useState("");
+	const [rate, setRate] = useState("");
+	const [availability, setAvailability] = useState(true);
+	const [status, setStatus] = useState<Status>(null);
+	const [isSaving, setIsSaving] = useState(false);
+
+	// Seeded once from the same synthesized gallery the swipe deck shows
+	// hirers (see mockProfileMedia.ts), then curated freely from here —
+	// there's no upload endpoint yet, so this list only ever lives in memory.
+	const [media, setMedia] = useState<ProfileMediaItem[]>(() =>
+		user ? buildMockProfileMedia(user.id, user.avatarUrl) : [],
+	);
+	const mediaRef = useRef(media);
+	useEffect(() => {
+		mediaRef.current = media;
+	}, [media]);
+
+	useEffect(() => {
+		if (!user) return;
+		fetchMyProfile(user.id)
+			.then((profile) => {
+				setSelectedSlugs(profile.categories.map((category) => category.slug));
+				setBio(profile.bio ?? "");
+				setLocation(profile.location ?? "");
+				setAvailability(profile.availability);
+				if ("rate" in profile) setRate(profile.rate != null ? String(profile.rate) : "");
+			})
+			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
+			.catch(() => {});
+	}, [user]);
+
+	// Object URLs created for locally-added media are only reclaimed by the
+	// browser on reload — revoke whatever's still outstanding when this view
+	// unmounts instead of leaking them for the rest of the session.
+	useEffect(
+		() => () => {
+			for (const item of mediaRef.current) {
+				if (item.url.startsWith("blob:")) URL.revokeObjectURL(item.url);
+			}
+		},
+		[],
+	);
+
+	function addMedia(item: ProfileMediaItem) {
+		setMedia((previous) => [...previous, item]);
+	}
+
+	function removeMedia(id: string) {
+		setMedia((previous) => {
+			const target = previous.find((item) => item.id === id);
+			if (target?.url.startsWith("blob:")) URL.revokeObjectURL(target.url);
+			return previous.filter((item) => item.id !== id);
+		});
+	}
+
+	if (!user) return null;
+
+	const selectedCategories = vocabulary.filter((option) => selectedSlugs.includes(option.slug));
+
+	// The server caps a profile at MAX_PROFILE_CATEGORIES; mirroring it here
+	// turns a 400 into a disabled button.
+	function toggleCategory(slug: string) {
+		setSelectedSlugs((previous) => {
+			if (previous.includes(slug)) return previous.filter((entry) => entry !== slug);
+			if (previous.length >= MAX_CATEGORIES) return previous;
+			return [...previous, slug];
+		});
+	}
+
+	async function handleSubmit(e: FormEvent) {
+		e.preventDefault();
+		setStatus(null);
+		setIsSaving(true);
+		try {
+			const payload: ProfileUpdate = {
+				bio: bio.trim() || null,
+				location: location.trim() || null,
+				categories: selectedSlugs,
+				rate: rate.trim() === "" ? null : Number(rate),
+				availability,
+			};
+			await saveMyProfile(payload);
+			notifyProfileUpdated();
+			setStatus({ type: "success", text: "Profile updated successfully." });
+		} catch (err) {
+			setStatus({
+				type: "error",
+				text: err instanceof Error ? err.message : "Update failed.",
+			});
+		} finally {
+			setIsSaving(false);
+		}
+	}
+
+	return (
+		<div className="flex flex-col gap-6">
+			<p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-base-content/40 uppercase">
+				<EyeIcon className="size-3.5" aria-hidden="true" />
+				Your public profile
+			</p>
+
+			<section className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-shadow duration-200 hover:shadow-md">
+				<ProfileMediaGallery
+					key={user.id}
+					media={media}
+					name={user.username}
+					topLeftSlot={
+						<button
+							type="button"
+							onClick={() => setAvailability((current) => !current)}
+							aria-pressed={availability}
+							className={`badge badge-sm font-medium transition-colors ${
+								availability ? "badge-primary" : "badge-warning"
+							}`}
+						>
+							{availability ? "Available" : "Unavailable"}
+						</button>
+					}
+				/>
+
+				<div className="flex flex-col gap-4 p-5">
+					<div className="flex items-center gap-3">
+						<Avatar
+							username={user.username}
+							avatarUrl={user.avatarUrl}
+							size="lg"
+							className="ring-2 ring-base-100 shadow"
+						/>
+						<div className="min-w-0">
+							<h2 className="truncate text-lg leading-snug font-semibold">{user.username}</h2>
+							<p className="truncate text-sm text-base-content/60">
+								{selectedCategories[0]?.label ?? "No category yet"}
+								{location && ` · ${location}`}
+							</p>
+						</div>
+					</div>
+
+					<div className="flex flex-wrap gap-2">
+						{selectedCategories.length > 0 ? (
+							selectedCategories.map((category) => (
+								<span
+									key={category.slug}
+									className="badge badge-sm badge-outline border-base-content/15"
+								>
+									{category.label}
+								</span>
+							))
+						) : (
+							<span className="text-sm text-base-content/40">
+								No categories selected yet — pick some below.
+							</span>
+						)}
+					</div>
+
+					{bio && <p className="text-sm leading-relaxed text-base-content/70">{bio}</p>}
+
+					{(location || rate) && (
+						<div className="flex flex-wrap gap-4 text-sm text-base-content/60">
+							{location && (
+								<span className="inline-flex items-center gap-1.5">
+									<MapPinIcon className="size-3.5" aria-hidden="true" />
+									{location}
+								</span>
+							)}
+							{rate && (
+								<span className="inline-flex items-center gap-1.5">
+									<WalletIcon className="size-3.5" aria-hidden="true" />${rate}
+								</span>
+							)}
+						</div>
+					)}
+				</div>
+			</section>
+
+			<PortfolioManager media={media} onAdd={addMedia} onRemove={removeMedia} />
+
+			<section className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
+				<div className="flex items-center gap-2.5 border-b border-base-content/10 p-4">
+					<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-base-200 text-base-content/60">
+						<PencilLineIcon className="size-3.5" aria-hidden="true" />
+					</span>
+					<div>
+						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
+							Edit artist details
+						</h2>
+						<p className="mt-0.5 text-sm text-base-content/60">
+							Changes above update the preview instantly — hit save to publish them.
+						</p>
+					</div>
+				</div>
+
+				<form className="flex flex-col gap-5 p-4" onSubmit={handleSubmit}>
+					{status && (
+						<div
+							className={`alert alert-soft ${status.type === "success" ? "alert-success" : "alert-error"}`}
+						>
+							<span>{status.text}</span>
+						</div>
+					)}
+
+					<fieldset className="fieldset-label flex-col items-start gap-2">
+						<legend className="text-sm font-medium">
+							Categories
+							<span className="ml-1 font-normal text-base-content/60">
+								(pick at least one, up to {MAX_CATEGORIES})
+							</span>
+						</legend>
+						{isLoadingCategories ? (
+							<span className="loading loading-spinner loading-sm" />
+						) : (
+							<div className="flex flex-wrap gap-2">
+								{vocabulary.map((option) => {
+									const isSelected = selectedSlugs.includes(option.slug);
+									return (
+										<button
+											key={option.slug}
+											type="button"
+											className={`btn btn-sm gap-1.5 rounded-full transition-transform duration-150 hover:scale-105 ${
+												isSelected ? "btn-primary" : "btn-outline border-base-content/20"
+											}`}
+											aria-pressed={isSelected}
+											onClick={() => toggleCategory(option.slug)}
+										>
+											{isSelected && <CheckIcon className="size-3.5" aria-hidden="true" />}
+											{option.label}
+										</button>
+									);
+								})}
+							</div>
+						)}
+					</fieldset>
+
+					<LabeledField
+						label="Bio"
+						hint={`${bio.length}/${MAX_BIO_LENGTH}`}
+						className="sm:col-span-2"
+					>
+						<textarea
+							className="textarea w-full"
+							rows={3}
+							maxLength={MAX_BIO_LENGTH}
+							placeholder="Tell hirers what you make and how you work."
+							value={bio}
+							onChange={(e) => setBio(e.target.value)}
+						/>
+					</LabeledField>
+
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<LabeledField label="Location" icon={MapPinIcon}>
+							<input
+								type="text"
+								className="input w-full pl-9"
+								placeholder="City, country"
+								value={location}
+								onChange={(e) => setLocation(e.target.value)}
+							/>
+						</LabeledField>
+
+						<LabeledField label="Rate" icon={DollarSignIcon} hint="optional">
+							<input
+								type="number"
+								min={0}
+								step={1}
+								className="input w-full pl-9"
+								placeholder="0"
+								value={rate}
+								onChange={(e) => setRate(e.target.value)}
+							/>
+						</LabeledField>
+					</div>
+
+					<label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-200/40 p-3 transition-colors has-checked:border-primary/30 has-checked:bg-primary/5">
+						<span className="flex items-center gap-2.5">
+							{availability ? (
+								<CircleCheckIcon className="size-5 text-primary" aria-hidden="true" />
+							) : (
+								<CircleDashedIcon className="size-5 text-base-content/40" aria-hidden="true" />
+							)}
+							<span>
+								<span className="block text-sm font-medium">Available for work</span>
+								<span className="block text-xs text-base-content/50">
+									Shown as a badge on your public profile.
+								</span>
+							</span>
+						</span>
+						<input
+							type="checkbox"
+							className="toggle toggle-primary"
+							checked={availability}
+							onChange={(e) => setAvailability(e.target.checked)}
+						/>
+					</label>
+
+					<div>
+						<button
+							type="submit"
+							className="btn btn-primary btn-sm rounded-full transition-transform duration-150 hover:scale-[1.02]"
+							disabled={isSaving}
+						>
+							{isSaving && <span className="loading loading-spinner loading-xs" />}
+							Save changes
+						</button>
+					</div>
+				</form>
+			</section>
+		</div>
+	);
+}
