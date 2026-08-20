@@ -45,7 +45,6 @@ apiRouter.use("/search", searchRoutes);
 apiRouter.use("/categories", categoriesRoutes);
 apiRouter.use("/files", filesRoutes);
 apiRouter.use("/matches/:matchId/messages", messagesRoutes);
-apiRouter.use("/matches", matchesRoutes);
 apiRouter.use("/notifications", notificationsRoutes);
 
 app.use(errorHandler);
