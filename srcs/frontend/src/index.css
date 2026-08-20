@@ -45,6 +45,21 @@ body {
 	}
 }
 
+/* A slow, gentle "notice me" breathing loop — used to hint that a card is
+ * clickable without relying on hover (mobile has none) or being as jarring
+ * as icon-bump, which is a one-shot reaction to an actual event. */
+@keyframes hint-pulse {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 0.85;
+	}
+	50% {
+		transform: scale(1.12);
+		opacity: 1;
+	}
+}
+
 @keyframes icon-bump {
 	0% {
 		transform: scale(1) rotate(0deg);
