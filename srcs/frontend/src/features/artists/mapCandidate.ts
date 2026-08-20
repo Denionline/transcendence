@@ -1,6 +1,8 @@
+import { buildMockProfileMedia } from "./mockProfileMedia";
 import type { Artist, ArtistCandidateDto } from "./types";
 
 export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artist {
+	const photoUrl = candidate.user?.avatarUrl ?? null;
 	return {
 		id: candidate.id,
 		userId: candidate.userId,
@@ -12,7 +14,8 @@ export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artis
 		availabilityLabel: candidate.availability ? "Available now" : "Unavailable",
 		availabilityTone: candidate.availability ? "available" : "soon",
 		tags: candidate.categories.map((category) => category.label),
-		photoUrl: candidate.user?.avatarUrl ?? null,
+		photoUrl,
 		bio: candidate.bio ?? "",
+		media: buildMockProfileMedia(candidate.id, photoUrl),
 	};
 }

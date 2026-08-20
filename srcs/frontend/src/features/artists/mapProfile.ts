@@ -1,7 +1,9 @@
 import type { ProfileDto } from "../profiles/types";
+import { buildMockProfileMedia } from "./mockProfileMedia";
 import type { Artist } from "./types";
 
 export function mapProfileToArtist(profile: ProfileDto): Artist {
+	const photoUrl = profile.user?.avatarUrl ?? null;
 	return {
 		id: profile.id,
 		userId: profile.userId,
@@ -14,7 +16,8 @@ export function mapProfileToArtist(profile: ProfileDto): Artist {
 		availabilityTone: profile.availability ? "available" : "soon",
 		//	Every category the artist holds, not just the headline one.
 		tags: profile.categories.map((category) => category.label),
-		photoUrl: profile.user?.avatarUrl ?? null,
+		photoUrl,
 		bio: profile.bio ?? "",
+		media: buildMockProfileMedia(profile.id, photoUrl),
 	};
 }
