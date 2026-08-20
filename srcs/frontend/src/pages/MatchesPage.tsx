@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import Avatar from "../components/Avatar";
 import { listPendingInterests, respondToInterest } from "../features/interests/api";
 import type { PendingInterestDto } from "../features/interests/types";
@@ -51,8 +51,8 @@ export default function MatchesPage() {
 		try {
 			await respondToInterest(interest, liked);
 			setInterests((prev) => prev.filter((item) => interestKey(item) !== key));
-		} catch (err: unknown) {
-			console.error("Failed to respond to interest:", err);
+		} catch {
+			// Button re-enables below so the hirer can just try again.
 			setRespondingKeys((prev) => {
 				const next = new Set(prev);
 				next.delete(key);
@@ -80,6 +80,11 @@ export default function MatchesPage() {
 	const filteredInterests =
 		activeGigFilter === "all" ? interests : interests.filter((i) => i.gig.id === activeGigFilter);
 
+	const activeGigLabel =
+		activeGigFilter === "all"
+			? "All gigs"
+			: (gigOptions.find((gig) => gig.id === activeGigFilter)?.title ?? "All gigs");
+
 	return (
 		<div className="mx-auto max-w-2xl">
 			<div className="mb-6 flex items-start justify-between gap-4">
@@ -93,19 +98,50 @@ export default function MatchesPage() {
 				</div>
 
 				{status === "ready" && gigOptions.length > 0 && (
-					<select
-						value={activeGigFilter}
-						onChange={(e) => setGigFilter(e.target.value)}
-						aria-label="Filter by opportunity"
-						className="select select-sm shrink-0 rounded-full border-base-content/15 bg-transparent font-normal"
-					>
-						<option value="all">All gigs</option>
-						{gigOptions.map((gig) => (
-							<option key={gig.id} value={gig.id}>
-								{gig.title}
-							</option>
-						))}
-					</select>
+					<div className="dropdown dropdown-end shrink-0">
+						<div
+							tabIndex={0}
+							role="button"
+							aria-label="Filter by opportunity"
+							className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
+						>
+							<span className="max-w-40 truncate sm:max-w-48">{activeGigLabel}</span>
+							<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
+						</div>
+						<ul
+							tabIndex={0}
+							className="menu dropdown-content z-20 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg menu-sm"
+						>
+							<li>
+								<button
+									type="button"
+									aria-current={activeGigFilter === "all"}
+									className={activeGigFilter === "all" ? "active" : ""}
+									onClick={(e) => {
+										setGigFilter("all");
+										e.currentTarget.blur();
+									}}
+								>
+									All gigs
+								</button>
+							</li>
+							{gigOptions.map((gig) => (
+								<li key={gig.id}>
+									<button
+										type="button"
+										aria-current={gig.id === activeGigFilter}
+										className={gig.id === activeGigFilter ? "active" : ""}
+										onClick={(e) => {
+											setGigFilter(gig.id);
+											e.currentTarget.blur();
+										}}
+									>
+										<span className="truncate">{gig.title}</span>
+									</button>
+								</li>
+							))}
+						</ul>
+					</div>
 				)}
 			</div>
 

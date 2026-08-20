@@ -125,2401 +125,1801 @@
 			"email": "aria.souza@artmate.dev",
 			"username": "Aria Souza",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "leo.souza@artmate.dev",
 			"username": "Leo Souza",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "maya.souza@artmate.dev",
 			"username": "Maya Souza",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "noah.souza@artmate.dev",
 			"username": "Noah Souza",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "sofia.souza@artmate.dev",
 			"username": "Sofia Souza",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "diego.souza@artmate.dev",
 			"username": "Diego Souza",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "mia.souza@artmate.dev",
 			"username": "Mia Souza",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "lucas.souza@artmate.dev",
 			"username": "Lucas Souza",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "elena.souza@artmate.dev",
 			"username": "Elena Souza",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "marco.souza@artmate.dev",
 			"username": "Marco Souza",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "ines.souza@artmate.dev",
 			"username": "Ines Souza",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "rui.souza@artmate.dev",
 			"username": "Rui Souza",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "carla.souza@artmate.dev",
 			"username": "Carla Souza",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "tiago.souza@artmate.dev",
 			"username": "Tiago Souza",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "beatriz.souza@artmate.dev",
 			"username": "Beatriz Souza",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "andre.souza@artmate.dev",
 			"username": "Andre Souza",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "julia.souza@artmate.dev",
 			"username": "Julia Souza",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "bruno.souza@artmate.dev",
 			"username": "Bruno Souza",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "rita.souza@artmate.dev",
 			"username": "Rita Souza",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "hugo.souza@artmate.dev",
 			"username": "Hugo Souza",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "aria.tanaka@artmate.dev",
 			"username": "Aria Tanaka",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "leo.tanaka@artmate.dev",
 			"username": "Leo Tanaka",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "maya.tanaka@artmate.dev",
 			"username": "Maya Tanaka",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "noah.tanaka@artmate.dev",
 			"username": "Noah Tanaka",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "sofia.tanaka@artmate.dev",
 			"username": "Sofia Tanaka",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "diego.tanaka@artmate.dev",
 			"username": "Diego Tanaka",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "mia.tanaka@artmate.dev",
 			"username": "Mia Tanaka",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "lucas.tanaka@artmate.dev",
 			"username": "Lucas Tanaka",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "elena.tanaka@artmate.dev",
 			"username": "Elena Tanaka",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "marco.tanaka@artmate.dev",
 			"username": "Marco Tanaka",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "ines.tanaka@artmate.dev",
 			"username": "Ines Tanaka",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "rui.tanaka@artmate.dev",
 			"username": "Rui Tanaka",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "carla.tanaka@artmate.dev",
 			"username": "Carla Tanaka",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "tiago.tanaka@artmate.dev",
 			"username": "Tiago Tanaka",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "beatriz.tanaka@artmate.dev",
 			"username": "Beatriz Tanaka",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "andre.tanaka@artmate.dev",
 			"username": "Andre Tanaka",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "julia.tanaka@artmate.dev",
 			"username": "Julia Tanaka",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "bruno.tanaka@artmate.dev",
 			"username": "Bruno Tanaka",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "rita.tanaka@artmate.dev",
 			"username": "Rita Tanaka",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "hugo.tanaka@artmate.dev",
 			"username": "Hugo Tanaka",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "aria.silva@artmate.dev",
 			"username": "Aria Silva",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "leo.silva@artmate.dev",
 			"username": "Leo Silva",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "maya.silva@artmate.dev",
 			"username": "Maya Silva",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "noah.silva@artmate.dev",
 			"username": "Noah Silva",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "sofia.silva@artmate.dev",
 			"username": "Sofia Silva",
 			"location": "Braga",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "diego.silva@artmate.dev",
 			"username": "Diego Silva",
 			"location": "Coimbra",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "mia.silva@artmate.dev",
 			"username": "Mia Silva",
 			"location": "Faro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "lucas.silva@artmate.dev",
 			"username": "Lucas Silva",
 			"location": "Aveiro",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "elena.silva@artmate.dev",
 			"username": "Elena Silva",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "marco.silva@artmate.dev",
 			"username": "Marco Silva",
 			"location": "Lisbon",
-			"categories": [
-				"musician"
-			]
+			"categories": ["musician"]
 		},
 		{
 			"email": "ines.silva@artmate.dev",
 			"username": "Ines Silva",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "rui.silva@artmate.dev",
 			"username": "Rui Silva",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "carla.silva@artmate.dev",
 			"username": "Carla Silva",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "tiago.silva@artmate.dev",
 			"username": "Tiago Silva",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "beatriz.silva@artmate.dev",
 			"username": "Beatriz Silva",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "andre.silva@artmate.dev",
 			"username": "Andre Silva",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "julia.silva@artmate.dev",
 			"username": "Julia Silva",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "bruno.silva@artmate.dev",
 			"username": "Bruno Silva",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "rita.silva@artmate.dev",
 			"username": "Rita Silva",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "hugo.silva@artmate.dev",
 			"username": "Hugo Silva",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "aria.reyes@artmate.dev",
 			"username": "Aria Reyes",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "leo.reyes@artmate.dev",
 			"username": "Leo Reyes",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "maya.reyes@artmate.dev",
 			"username": "Maya Reyes",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "noah.reyes@artmate.dev",
 			"username": "Noah Reyes",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "sofia.reyes@artmate.dev",
 			"username": "Sofia Reyes",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "diego.reyes@artmate.dev",
 			"username": "Diego Reyes",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "mia.reyes@artmate.dev",
 			"username": "Mia Reyes",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "lucas.reyes@artmate.dev",
 			"username": "Lucas Reyes",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "elena.reyes@artmate.dev",
 			"username": "Elena Reyes",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "marco.reyes@artmate.dev",
 			"username": "Marco Reyes",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "ines.reyes@artmate.dev",
 			"username": "Ines Reyes",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "rui.reyes@artmate.dev",
 			"username": "Rui Reyes",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "carla.reyes@artmate.dev",
 			"username": "Carla Reyes",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "tiago.reyes@artmate.dev",
 			"username": "Tiago Reyes",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "beatriz.reyes@artmate.dev",
 			"username": "Beatriz Reyes",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "andre.reyes@artmate.dev",
 			"username": "Andre Reyes",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "julia.reyes@artmate.dev",
 			"username": "Julia Reyes",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "bruno.reyes@artmate.dev",
 			"username": "Bruno Reyes",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "rita.reyes@artmate.dev",
 			"username": "Rita Reyes",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "hugo.reyes@artmate.dev",
 			"username": "Hugo Reyes",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "aria.costa@artmate.dev",
 			"username": "Aria Costa",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "leo.costa@artmate.dev",
 			"username": "Leo Costa",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "maya.costa@artmate.dev",
 			"username": "Maya Costa",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "noah.costa@artmate.dev",
 			"username": "Noah Costa",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "sofia.costa@artmate.dev",
 			"username": "Sofia Costa",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "diego.costa@artmate.dev",
 			"username": "Diego Costa",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "mia.costa@artmate.dev",
 			"username": "Mia Costa",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "lucas.costa@artmate.dev",
 			"username": "Lucas Costa",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "elena.costa@artmate.dev",
 			"username": "Elena Costa",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "marco.costa@artmate.dev",
 			"username": "Marco Costa",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "ines.costa@artmate.dev",
 			"username": "Ines Costa",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "rui.costa@artmate.dev",
 			"username": "Rui Costa",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "carla.costa@artmate.dev",
 			"username": "Carla Costa",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "tiago.costa@artmate.dev",
 			"username": "Tiago Costa",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "beatriz.costa@artmate.dev",
 			"username": "Beatriz Costa",
 			"location": "Faro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "andre.costa@artmate.dev",
 			"username": "Andre Costa",
 			"location": "Aveiro",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "julia.costa@artmate.dev",
 			"username": "Julia Costa",
 			"location": "Porto",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "bruno.costa@artmate.dev",
 			"username": "Bruno Costa",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "rita.costa@artmate.dev",
 			"username": "Rita Costa",
 			"location": "Braga",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "hugo.costa@artmate.dev",
 			"username": "Hugo Costa",
 			"location": "Coimbra",
-			"categories": [
-				"dj"
-			]
+			"categories": ["dj"]
 		},
 		{
 			"email": "aria.ferreira@artmate.dev",
 			"username": "Aria Ferreira",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "leo.ferreira@artmate.dev",
 			"username": "Leo Ferreira",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "maya.ferreira@artmate.dev",
 			"username": "Maya Ferreira",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "noah.ferreira@artmate.dev",
 			"username": "Noah Ferreira",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "sofia.ferreira@artmate.dev",
 			"username": "Sofia Ferreira",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "diego.ferreira@artmate.dev",
 			"username": "Diego Ferreira",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "mia.ferreira@artmate.dev",
 			"username": "Mia Ferreira",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "lucas.ferreira@artmate.dev",
 			"username": "Lucas Ferreira",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "elena.ferreira@artmate.dev",
 			"username": "Elena Ferreira",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "marco.ferreira@artmate.dev",
 			"username": "Marco Ferreira",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "ines.ferreira@artmate.dev",
 			"username": "Ines Ferreira",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "rui.ferreira@artmate.dev",
 			"username": "Rui Ferreira",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "carla.ferreira@artmate.dev",
 			"username": "Carla Ferreira",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "tiago.ferreira@artmate.dev",
 			"username": "Tiago Ferreira",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "beatriz.ferreira@artmate.dev",
 			"username": "Beatriz Ferreira",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "andre.ferreira@artmate.dev",
 			"username": "Andre Ferreira",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "julia.ferreira@artmate.dev",
 			"username": "Julia Ferreira",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "bruno.ferreira@artmate.dev",
 			"username": "Bruno Ferreira",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "rita.ferreira@artmate.dev",
 			"username": "Rita Ferreira",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "hugo.ferreira@artmate.dev",
 			"username": "Hugo Ferreira",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "aria.santos@artmate.dev",
 			"username": "Aria Santos",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "leo.santos@artmate.dev",
 			"username": "Leo Santos",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "maya.santos@artmate.dev",
 			"username": "Maya Santos",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "noah.santos@artmate.dev",
 			"username": "Noah Santos",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "sofia.santos@artmate.dev",
 			"username": "Sofia Santos",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "diego.santos@artmate.dev",
 			"username": "Diego Santos",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "mia.santos@artmate.dev",
 			"username": "Mia Santos",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "lucas.santos@artmate.dev",
 			"username": "Lucas Santos",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "elena.santos@artmate.dev",
 			"username": "Elena Santos",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "marco.santos@artmate.dev",
 			"username": "Marco Santos",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "ines.santos@artmate.dev",
 			"username": "Ines Santos",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "rui.santos@artmate.dev",
 			"username": "Rui Santos",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "carla.santos@artmate.dev",
 			"username": "Carla Santos",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "tiago.santos@artmate.dev",
 			"username": "Tiago Santos",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "beatriz.santos@artmate.dev",
 			"username": "Beatriz Santos",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "andre.santos@artmate.dev",
 			"username": "Andre Santos",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "julia.santos@artmate.dev",
 			"username": "Julia Santos",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "bruno.santos@artmate.dev",
 			"username": "Bruno Santos",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "rita.santos@artmate.dev",
 			"username": "Rita Santos",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "hugo.santos@artmate.dev",
 			"username": "Hugo Santos",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "aria.almeida@artmate.dev",
 			"username": "Aria Almeida",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "leo.almeida@artmate.dev",
 			"username": "Leo Almeida",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "maya.almeida@artmate.dev",
 			"username": "Maya Almeida",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "noah.almeida@artmate.dev",
 			"username": "Noah Almeida",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "sofia.almeida@artmate.dev",
 			"username": "Sofia Almeida",
 			"location": "Porto",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "diego.almeida@artmate.dev",
 			"username": "Diego Almeida",
 			"location": "Lisbon",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "mia.almeida@artmate.dev",
 			"username": "Mia Almeida",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "lucas.almeida@artmate.dev",
 			"username": "Lucas Almeida",
 			"location": "Coimbra",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "elena.almeida@artmate.dev",
 			"username": "Elena Almeida",
 			"location": "Faro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "marco.almeida@artmate.dev",
 			"username": "Marco Almeida",
 			"location": "Aveiro",
-			"categories": [
-				"photographer"
-			]
+			"categories": ["photographer"]
 		},
 		{
 			"email": "ines.almeida@artmate.dev",
 			"username": "Ines Almeida",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "rui.almeida@artmate.dev",
 			"username": "Rui Almeida",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "carla.almeida@artmate.dev",
 			"username": "Carla Almeida",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "tiago.almeida@artmate.dev",
 			"username": "Tiago Almeida",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "beatriz.almeida@artmate.dev",
 			"username": "Beatriz Almeida",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "andre.almeida@artmate.dev",
 			"username": "Andre Almeida",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "julia.almeida@artmate.dev",
 			"username": "Julia Almeida",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "bruno.almeida@artmate.dev",
 			"username": "Bruno Almeida",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "rita.almeida@artmate.dev",
 			"username": "Rita Almeida",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "hugo.almeida@artmate.dev",
 			"username": "Hugo Almeida",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "aria.pereira@artmate.dev",
 			"username": "Aria Pereira",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "leo.pereira@artmate.dev",
 			"username": "Leo Pereira",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "maya.pereira@artmate.dev",
 			"username": "Maya Pereira",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "noah.pereira@artmate.dev",
 			"username": "Noah Pereira",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "sofia.pereira@artmate.dev",
 			"username": "Sofia Pereira",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "diego.pereira@artmate.dev",
 			"username": "Diego Pereira",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "mia.pereira@artmate.dev",
 			"username": "Mia Pereira",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "lucas.pereira@artmate.dev",
 			"username": "Lucas Pereira",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "elena.pereira@artmate.dev",
 			"username": "Elena Pereira",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "marco.pereira@artmate.dev",
 			"username": "Marco Pereira",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "ines.pereira@artmate.dev",
 			"username": "Ines Pereira",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "rui.pereira@artmate.dev",
 			"username": "Rui Pereira",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "carla.pereira@artmate.dev",
 			"username": "Carla Pereira",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "tiago.pereira@artmate.dev",
 			"username": "Tiago Pereira",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "beatriz.pereira@artmate.dev",
 			"username": "Beatriz Pereira",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "andre.pereira@artmate.dev",
 			"username": "Andre Pereira",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "julia.pereira@artmate.dev",
 			"username": "Julia Pereira",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "bruno.pereira@artmate.dev",
 			"username": "Bruno Pereira",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "rita.pereira@artmate.dev",
 			"username": "Rita Pereira",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "hugo.pereira@artmate.dev",
 			"username": "Hugo Pereira",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "aria.carvalho@artmate.dev",
 			"username": "Aria Carvalho",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "leo.carvalho@artmate.dev",
 			"username": "Leo Carvalho",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "maya.carvalho@artmate.dev",
 			"username": "Maya Carvalho",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "noah.carvalho@artmate.dev",
 			"username": "Noah Carvalho",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "sofia.carvalho@artmate.dev",
 			"username": "Sofia Carvalho",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "diego.carvalho@artmate.dev",
 			"username": "Diego Carvalho",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "mia.carvalho@artmate.dev",
 			"username": "Mia Carvalho",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "lucas.carvalho@artmate.dev",
 			"username": "Lucas Carvalho",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "elena.carvalho@artmate.dev",
 			"username": "Elena Carvalho",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "marco.carvalho@artmate.dev",
 			"username": "Marco Carvalho",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "ines.carvalho@artmate.dev",
 			"username": "Ines Carvalho",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "rui.carvalho@artmate.dev",
 			"username": "Rui Carvalho",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "carla.carvalho@artmate.dev",
 			"username": "Carla Carvalho",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "tiago.carvalho@artmate.dev",
 			"username": "Tiago Carvalho",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "beatriz.carvalho@artmate.dev",
 			"username": "Beatriz Carvalho",
 			"location": "Braga",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "andre.carvalho@artmate.dev",
 			"username": "Andre Carvalho",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "julia.carvalho@artmate.dev",
 			"username": "Julia Carvalho",
 			"location": "Faro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "bruno.carvalho@artmate.dev",
 			"username": "Bruno Carvalho",
 			"location": "Aveiro",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "rita.carvalho@artmate.dev",
 			"username": "Rita Carvalho",
 			"location": "Porto",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "hugo.carvalho@artmate.dev",
 			"username": "Hugo Carvalho",
 			"location": "Lisbon",
-			"categories": [
-				"videographer"
-			]
+			"categories": ["videographer"]
 		},
 		{
 			"email": "aria.martins@artmate.dev",
 			"username": "Aria Martins",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "leo.martins@artmate.dev",
 			"username": "Leo Martins",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "maya.martins@artmate.dev",
 			"username": "Maya Martins",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "noah.martins@artmate.dev",
 			"username": "Noah Martins",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "sofia.martins@artmate.dev",
 			"username": "Sofia Martins",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "diego.martins@artmate.dev",
 			"username": "Diego Martins",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "mia.martins@artmate.dev",
 			"username": "Mia Martins",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "lucas.martins@artmate.dev",
 			"username": "Lucas Martins",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "elena.martins@artmate.dev",
 			"username": "Elena Martins",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "marco.martins@artmate.dev",
 			"username": "Marco Martins",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "ines.martins@artmate.dev",
 			"username": "Ines Martins",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "rui.martins@artmate.dev",
 			"username": "Rui Martins",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "carla.martins@artmate.dev",
 			"username": "Carla Martins",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "tiago.martins@artmate.dev",
 			"username": "Tiago Martins",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "beatriz.martins@artmate.dev",
 			"username": "Beatriz Martins",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "andre.martins@artmate.dev",
 			"username": "Andre Martins",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "julia.martins@artmate.dev",
 			"username": "Julia Martins",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "bruno.martins@artmate.dev",
 			"username": "Bruno Martins",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "rita.martins@artmate.dev",
 			"username": "Rita Martins",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "hugo.martins@artmate.dev",
 			"username": "Hugo Martins",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "aria.gomes@artmate.dev",
 			"username": "Aria Gomes",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "leo.gomes@artmate.dev",
 			"username": "Leo Gomes",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "maya.gomes@artmate.dev",
 			"username": "Maya Gomes",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "noah.gomes@artmate.dev",
 			"username": "Noah Gomes",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "sofia.gomes@artmate.dev",
 			"username": "Sofia Gomes",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "diego.gomes@artmate.dev",
 			"username": "Diego Gomes",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "mia.gomes@artmate.dev",
 			"username": "Mia Gomes",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "lucas.gomes@artmate.dev",
 			"username": "Lucas Gomes",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "elena.gomes@artmate.dev",
 			"username": "Elena Gomes",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "marco.gomes@artmate.dev",
 			"username": "Marco Gomes",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "ines.gomes@artmate.dev",
 			"username": "Ines Gomes",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "rui.gomes@artmate.dev",
 			"username": "Rui Gomes",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "carla.gomes@artmate.dev",
 			"username": "Carla Gomes",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "tiago.gomes@artmate.dev",
 			"username": "Tiago Gomes",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "beatriz.gomes@artmate.dev",
 			"username": "Beatriz Gomes",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "andre.gomes@artmate.dev",
 			"username": "Andre Gomes",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "julia.gomes@artmate.dev",
 			"username": "Julia Gomes",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "bruno.gomes@artmate.dev",
 			"username": "Bruno Gomes",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "rita.gomes@artmate.dev",
 			"username": "Rita Gomes",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "hugo.gomes@artmate.dev",
 			"username": "Hugo Gomes",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "aria.lopes@artmate.dev",
 			"username": "Aria Lopes",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "leo.lopes@artmate.dev",
 			"username": "Leo Lopes",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "maya.lopes@artmate.dev",
 			"username": "Maya Lopes",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "noah.lopes@artmate.dev",
 			"username": "Noah Lopes",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "sofia.lopes@artmate.dev",
 			"username": "Sofia Lopes",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "diego.lopes@artmate.dev",
 			"username": "Diego Lopes",
 			"location": "Aveiro",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "mia.lopes@artmate.dev",
 			"username": "Mia Lopes",
 			"location": "Porto",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "lucas.lopes@artmate.dev",
 			"username": "Lucas Lopes",
 			"location": "Lisbon",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "elena.lopes@artmate.dev",
 			"username": "Elena Lopes",
 			"location": "Braga",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "marco.lopes@artmate.dev",
 			"username": "Marco Lopes",
 			"location": "Coimbra",
-			"categories": [
-				"painter"
-			]
+			"categories": ["painter"]
 		},
 		{
 			"email": "ines.lopes@artmate.dev",
 			"username": "Ines Lopes",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "rui.lopes@artmate.dev",
 			"username": "Rui Lopes",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "carla.lopes@artmate.dev",
 			"username": "Carla Lopes",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "tiago.lopes@artmate.dev",
 			"username": "Tiago Lopes",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "beatriz.lopes@artmate.dev",
 			"username": "Beatriz Lopes",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "andre.lopes@artmate.dev",
 			"username": "Andre Lopes",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "julia.lopes@artmate.dev",
 			"username": "Julia Lopes",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "bruno.lopes@artmate.dev",
 			"username": "Bruno Lopes",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "rita.lopes@artmate.dev",
 			"username": "Rita Lopes",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "hugo.lopes@artmate.dev",
 			"username": "Hugo Lopes",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "aria.ribeiro@artmate.dev",
 			"username": "Aria Ribeiro",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "leo.ribeiro@artmate.dev",
 			"username": "Leo Ribeiro",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "maya.ribeiro@artmate.dev",
 			"username": "Maya Ribeiro",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "noah.ribeiro@artmate.dev",
 			"username": "Noah Ribeiro",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "sofia.ribeiro@artmate.dev",
 			"username": "Sofia Ribeiro",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "diego.ribeiro@artmate.dev",
 			"username": "Diego Ribeiro",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "mia.ribeiro@artmate.dev",
 			"username": "Mia Ribeiro",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "lucas.ribeiro@artmate.dev",
 			"username": "Lucas Ribeiro",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "elena.ribeiro@artmate.dev",
 			"username": "Elena Ribeiro",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "marco.ribeiro@artmate.dev",
 			"username": "Marco Ribeiro",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "ines.ribeiro@artmate.dev",
 			"username": "Ines Ribeiro",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "rui.ribeiro@artmate.dev",
 			"username": "Rui Ribeiro",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "carla.ribeiro@artmate.dev",
 			"username": "Carla Ribeiro",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "tiago.ribeiro@artmate.dev",
 			"username": "Tiago Ribeiro",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "beatriz.ribeiro@artmate.dev",
 			"username": "Beatriz Ribeiro",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "andre.ribeiro@artmate.dev",
 			"username": "Andre Ribeiro",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "julia.ribeiro@artmate.dev",
 			"username": "Julia Ribeiro",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "bruno.ribeiro@artmate.dev",
 			"username": "Bruno Ribeiro",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "rita.ribeiro@artmate.dev",
 			"username": "Rita Ribeiro",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "hugo.ribeiro@artmate.dev",
 			"username": "Hugo Ribeiro",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "aria.cardoso@artmate.dev",
 			"username": "Aria Cardoso",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "leo.cardoso@artmate.dev",
 			"username": "Leo Cardoso",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "maya.cardoso@artmate.dev",
 			"username": "Maya Cardoso",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "noah.cardoso@artmate.dev",
 			"username": "Noah Cardoso",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "sofia.cardoso@artmate.dev",
 			"username": "Sofia Cardoso",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "diego.cardoso@artmate.dev",
 			"username": "Diego Cardoso",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "mia.cardoso@artmate.dev",
 			"username": "Mia Cardoso",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "lucas.cardoso@artmate.dev",
 			"username": "Lucas Cardoso",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "elena.cardoso@artmate.dev",
 			"username": "Elena Cardoso",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "marco.cardoso@artmate.dev",
 			"username": "Marco Cardoso",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "ines.cardoso@artmate.dev",
 			"username": "Ines Cardoso",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "rui.cardoso@artmate.dev",
 			"username": "Rui Cardoso",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "carla.cardoso@artmate.dev",
 			"username": "Carla Cardoso",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "tiago.cardoso@artmate.dev",
 			"username": "Tiago Cardoso",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "beatriz.cardoso@artmate.dev",
 			"username": "Beatriz Cardoso",
 			"location": "Porto",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "andre.cardoso@artmate.dev",
 			"username": "Andre Cardoso",
 			"location": "Lisbon",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "julia.cardoso@artmate.dev",
 			"username": "Julia Cardoso",
 			"location": "Braga",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "bruno.cardoso@artmate.dev",
 			"username": "Bruno Cardoso",
 			"location": "Coimbra",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "rita.cardoso@artmate.dev",
 			"username": "Rita Cardoso",
 			"location": "Faro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		},
 		{
 			"email": "hugo.cardoso@artmate.dev",
 			"username": "Hugo Cardoso",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			]
+			"categories": ["illustrator"]
 		}
 	],
 	"hirers": [
@@ -2528,9 +1928,7 @@
 			"username": "Porto Live Bar",
 			"organizationName": "Porto Live Bar",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			],
+			"categories": ["musician"],
 			"gigs": [
 				{
 					"title": "Porto Live Bar: live set",
@@ -2554,9 +1952,7 @@
 			"username": "Lumen Beats Club",
 			"organizationName": "Lumen Beats Club",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			],
+			"categories": ["dj"],
 			"gigs": [
 				{
 					"title": "Lumen Beats Club: resident DJ slot",
@@ -2580,9 +1976,7 @@
 			"username": "Lumen Studios",
 			"organizationName": "Lumen Studios",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			],
+			"categories": ["photographer"],
 			"gigs": [
 				{
 					"title": "Lumen Studios: product photography shoot",
@@ -2606,9 +2000,7 @@
 			"username": "Aveiro Film Collective",
 			"organizationName": "Aveiro Film Collective",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			],
+			"categories": ["videographer"],
 			"gigs": [
 				{
 					"title": "Aveiro Film Collective: promotional video shoot",
@@ -2632,9 +2024,7 @@
 			"username": "Gallery Norte",
 			"organizationName": "Gallery Norte",
 			"location": "Faro",
-			"categories": [
-				"painter"
-			],
+			"categories": ["painter"],
 			"gigs": [
 				{
 					"title": "Gallery Norte: mural commission",
@@ -2658,9 +2048,7 @@
 			"username": "Faro Print House",
 			"organizationName": "Faro Print House",
 			"location": "Aveiro",
-			"categories": [
-				"illustrator"
-			],
+			"categories": ["illustrator"],
 			"gigs": [
 				{
 					"title": "Faro Print House: exhibition poster illustration",
@@ -2684,9 +2072,7 @@
 			"username": "Coimbra Concert Hall",
 			"organizationName": "Coimbra Concert Hall",
 			"location": "Porto",
-			"categories": [
-				"musician"
-			],
+			"categories": ["musician"],
 			"gigs": [
 				{
 					"title": "Coimbra Concert Hall: live set",
@@ -2710,9 +2096,7 @@
 			"username": "Braga Night Sessions",
 			"organizationName": "Braga Night Sessions",
 			"location": "Lisbon",
-			"categories": [
-				"dj"
-			],
+			"categories": ["dj"],
 			"gigs": [
 				{
 					"title": "Braga Night Sessions: resident DJ slot",
@@ -2736,9 +2120,7 @@
 			"username": "Porto Photo Loft",
 			"organizationName": "Porto Photo Loft",
 			"location": "Braga",
-			"categories": [
-				"photographer"
-			],
+			"categories": ["photographer"],
 			"gigs": [
 				{
 					"title": "Porto Photo Loft: product photography shoot",
@@ -2762,9 +2144,7 @@
 			"username": "Lisbon Motion Works",
 			"organizationName": "Lisbon Motion Works",
 			"location": "Coimbra",
-			"categories": [
-				"videographer"
-			],
+			"categories": ["videographer"],
 			"gigs": [
 				{
 					"title": "Lisbon Motion Works: promotional video shoot",

@@ -507,7 +507,7 @@ direct artist↔hirer swipe outside of a gig's context:
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | POST | `/` | logged-in | Artist body: `{ "gigId": "...", "liked": true\|false }`. Hirer body: `{ "gigId": "...", "targetUserId": "...", "liked": true\|false }`. `gigId` must be a string, `liked` a boolean, and (hirer only) `targetUserId` a required string → `400 VALIDATION_ERROR`. Gig must be `open` → `409 GIG_CLOSED`. Hirer must own the gig → `403 FORBIDDEN`. The swiping artist (or, for a hirer, the target) must have an artist profile → `404 PROFILE_NOT_FOUND`, holding the gig's category among its own → `400 CATEGORY_MISMATCH`, and (hirer only) `availability: true` → `409 ARTIST_UNAVAILABLE`. One swipe per (swiper, swiped, gig), ever → `409 SWIPE_EXISTS`. If `liked: true` and the other side already liked back **for the same gig**, **creates the Match and closes the gig in the same transaction** and the response includes `matchId` |
-| GET | `/next` | logged-in | Returns the next eligible candidate. Artist: next `open` gig not yet swiped by the caller. Hirer: `?gigId=...` (required), next available artist holding the gig's category, not yet reviewed by this hirer. For an artist the feed spans **every** category on their profile |
+| GET | `/next` | logged-in | Returns the next eligible candidate, or `200` with a `null` body once none remain. Artist: next `open` gig not yet swiped by the caller — feed spans **every** category on their profile. Hirer: `?gigId=...` (required), next available artist holding the gig's category, not yet reviewed by this hirer. Query (both roles): `?excludeIds=` — comma-separated ids already in hand (e.g. cards already pulled into an on-screen deck), skipped so the same not-yet-swiped candidate isn't handed back every call. Query (hirer only): `?categories=` — comma-separated category slugs widening the browse beyond the gig's own category for this fetch only; liking a candidate outside the gig's real category still fails `CATEGORY_MISMATCH` at swipe time |
 | GET | `/interests` | logged-in | Likes **received** that the caller hasn't answered yet, newest first — `{ items: [{ gigId, gig: { id, title }, otherUser: { id, displayName, avatarUrl }, createdAt }] }`. Artist: hirers who liked the artist for one of their gigs. Hirer: artists who liked one of the hirer's gigs. An item drops off the moment the caller swipes back either way (via `POST /`, same endpoint as everywhere else) — "accepting" is just `{ liked: true }` (creates the Match if it doesn't exist yet) and "declining" is `{ liked: false }`; there's no separate accept/decline endpoint |
 | GET | `/` | logged-in | My swipe history — swipes the caller made (not received). `?liked=true\|false` filters for both roles; `?gigId=...` only narrows results for a **hirer** (an artist swipes once per gig, so filtering their own history by gig is a no-op) |
 
@@ -524,8 +524,8 @@ A match only ever exists because both users swiped **like** on each other **for 
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl, online }` and `gig: { id, title }` — exactly what the chat sidebar needs. `online` is computed live from the WebSocket gateway's room state (not cached), true only while the other user has a socket connected **and** joined to this specific match's room |
-| GET | `/:id` | member | Single match, with both users' info and the gig |
+| GET | `/` | member | My matches, flattened as `otherUser: { id, displayName, avatarUrl, online }` and `gig: { id, title }` — exactly what the chat sidebar needs. `online` is computed live from the WebSocket gateway's room state (not cached), true only while the other user has a socket connected **and** joined to this specific match's room. Also includes `unreadCount` (number) — messages in that match not sent by the caller and not yet marked read. **Only present here, not on `GET /:id`** — the single-match fetch has no list to badge |
+| GET | `/:id` | member | Single match, with both users' info and the gig. No `unreadCount` — see above |
 | DELETE | `/:id` | member | Unmatch — closes the chat and cascades its messages |
 
 ## Messages `/api/matches/:matchId/messages`
@@ -535,9 +535,48 @@ Chat is only reachable through a match — no match, no messages.
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | POST | `/` | match member | Body: `{ "content": "..." }` (1–2000 chars). REST path; the WebSocket gateway performs the same write, so history is identical either way |
-| GET | `/` | match member | Paginated history, newest first |
-| PUT | `/:id/read` | recipient | Mark as read — the only "edit" messages support; content is immutable |
+| GET | `/` | match member | Paginated history, newest first. Side effect: marks every message on the returned page that wasn't sent by the caller as read |
+| PATCH | `/read` | match member | Marks **every** unread message in the match not sent by the caller as read, regardless of pagination — not tied to a specific message id. Used by the frontend when the chat is already open and a message arrives live over the socket (the `GET` above only catches messages fetched via that call, not ones that arrive afterwards). Always `204`, even if there was nothing to mark |
 | DELETE | `/:id` | sender (or mod/admin) | |
+
+## Notifications `/api/notifications`
+
+Notifications are created server-side as a side effect of other actions
+(swiping, matching, messaging, a gig closing) — there is no `POST` endpoint,
+only read and mark-as-read. Every route requires a valid access token
+(`requireAuth`).
+
+| Method | Path | Who | Notes |
+|---|---|---|---|
+| GET | `/` | logged-in | The caller's own notifications, newest first. Query: `?page=1&pageSize=20`. Returns `{ items, page, pageSize, total }` |
+| PATCH | `/:id/read` | recipient | Marks one notification as read. `id` must belong to the caller → otherwise `404 NOTIFICATION_NOT_FOUND` (same response whether the id doesn't exist or belongs to someone else, so existence is never leaked) |
+| PATCH | `/read-all` | logged-in | Marks every unread notification belonging to the caller as read. Always `204`, even if there was nothing to mark |
+
+A notification item:
+
+```json
+{
+  "id": "…",
+  "type": "swipe_liked",
+  "isRead": false,
+  "createdAt": "2026-08-06T22:34:15.725Z",
+  "actor": { "id": "…", "displayName": "…", "avatarUrl": "…" },
+  "matchId": "…",
+  "gigId": "…",
+  "gigTitle": "…",
+  "preview": "…"
+}
+```
+
+`actor`, `matchId`, `gigId`, `gigTitle` and `preview` are only present when
+relevant to the `type`:
+
+| `type` | Fires when | Carries |
+|---|---|---|
+| `swipe_liked` | Someone likes the caller (or the caller's gig) | `actor`, `gigId`, `gigTitle` |
+| `new_match` | A mutual like forms a match | `actor`, `matchId` |
+| `new_message` | A chat message arrives | `actor`, `matchId`, `preview` |
+| `gig_closed` | The caller's gig auto-closes because a match formed | `gigId`, `gigTitle` (no `actor`) |
 
 ## Friends `/api/friends`
 
@@ -567,6 +606,8 @@ Chat is only reachable through a match — no match, no messages.
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
 | `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
+| `INVALID_NOTIFICATION_ID` | 400 | `:id` param on a notifications route was not a single string value |
+| `NOTIFICATION_NOT_FOUND` | 404 | No notification with that id belonging to the caller |
 | `EMAIL_EXISTS` | 409 | Email already registered |
 | `PROFILE_EXISTS` | 409 | User already has a profile |
 | `SWIPE_EXISTS` | 409 | A swipe already exists for this (swiper, swiped, gig) combination |

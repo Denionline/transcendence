@@ -31,9 +31,8 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			if (cancelled) return;
 			setProfile(result);
 			setStatus("ready");
-		})().catch((err: unknown) => {
+		})().catch(() => {
 			if (cancelled) return;
-			console.error("Failed to load profile:", err);
 			setStatus("error");
 		});
 		return () => {

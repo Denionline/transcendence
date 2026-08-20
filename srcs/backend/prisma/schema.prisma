@@ -31,8 +31,10 @@ model User {
   swipesMade      Swipe[]        @relation("SwipesMade")
   swipesReceived  Swipe[]        @relation("SwipesReceived")
   matchesAsArtist Match[]        @relation("MatchesAsArtist")
+  notificationsTriggered Notification[] @relation("NotificationActor") 
 
   chatMessages  ChatMessage[]
+  notifications Notification[]
   refreshTokens RefreshToken[]
   loginAttempts LoginAttempt[]
 }
@@ -191,7 +193,30 @@ model ChatMessage {
   senderId  String
   sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   content   String
+  isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  new_match
+  new_message
+  gig_closed
+  swipe_liked
+}
+
+model Notification {
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actorId	String?
+  actor  	User?  			   @relation("NotificationActor", fields: [actorId], references: [id])
+  type      NotificationType
+  data      Json?
+  isRead    Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model RefreshToken {

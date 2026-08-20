@@ -3,23 +3,27 @@ import type { GigDto } from "../gigs/types";
 import type { ArtistCandidateDto } from "../artists/types";
 import type { SwipeInput, SwipeResult } from "./types";
 
-function buildNextQuery(params: { gigId?: string; excludeIds?: string[] }): string {
+function buildNextQuery(params: {
+	gigId?: string;
+	excludeIds?: string[];
+	categorySlugs?: string[];
+}): string {
 	const search = new URLSearchParams();
 	if (params.gigId) search.set("gigId", params.gigId);
 	if (params.excludeIds && params.excludeIds.length > 0) {
 		search.set("excludeIds", params.excludeIds.join(","));
 	}
+	if (params.categorySlugs && params.categorySlugs.length > 0) {
+		search.set("categories", params.categorySlugs.join(","));
+	}
 	const qs = search.toString();
 	return qs ? `?${qs}` : "";
 }
 
-async function fetchNext<T>(query: string): Promise<T | null> {
-	try {
-		return await apiRequest<T>(`/swipes/next${query}`);
-	} catch (err) {
-		if (err instanceof ApiError && err.code === "NO_MORE_CANDIDATES") return null;
-		throw err;
-	}
+// The backend answers "nothing left" with 200 + null, not a 404 — an empty
+// feed is a valid result, not a failure, so there's no error path to catch.
+function fetchNext<T>(query: string): Promise<T | null> {
+	return apiRequest<T | null>(`/swipes/next${query}`);
 }
 
 /**
@@ -31,12 +35,19 @@ export function getNextGig(excludeIds?: string[]): Promise<GigDto | null> {
 	return fetchNext<GigDto>(buildNextQuery({ excludeIds }));
 }
 
-/** Hirer mode: next artist candidate for one of the caller's own gigs. */
+/**
+ * Hirer mode: next artist candidate for one of the caller's own gigs.
+ * `categorySlugs` lets the caller browse beyond the gig's own category for
+ * this fetch — see getNextCandidateForHirer on the backend. It's a browsing
+ * widener only, not persisted to the gig: liking a candidate outside the
+ * gig's real category still fails CATEGORY_MISMATCH.
+ */
 export function getNextArtistCandidate(
 	gigId: string,
 	excludeIds?: string[],
+	categorySlugs?: string[],
 ): Promise<ArtistCandidateDto | null> {
-	return fetchNext<ArtistCandidateDto>(buildNextQuery({ gigId, excludeIds }));
+	return fetchNext<ArtistCandidateDto>(buildNextQuery({ gigId, excludeIds, categorySlugs }));
 }
 
 export async function postSwipe(input: SwipeInput): Promise<SwipeResult> {

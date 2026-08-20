@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { BellIcon } from "lucide-react";
-import { useNotifications } from "../hooks/useNotifications";
-import NotificationDropdown from "./NotificationDropdown";
+import { MessageSquareIcon } from "lucide-react";
+import { useUnreadMessages } from "../hooks/useUnreadMessages";
+import MessagesDropdown from "./MessagesDropdown";
 
 const BUMP_DURATION_MS = 500;
 
-export default function NotificationBell() {
-	const { unreadCount, bumpToken } = useNotifications();
+export default function MessagesIcon() {
+	const { unreadCount, bumpToken } = useUnreadMessages();
 	const [isBumping, setIsBumping] = useState(false);
 	// Skip the animation on first mount — bumpToken starts at 0, but a
 	// provider re-render (e.g. StrictMode) shouldn't play it for "no new
-	// notification" the way an actual push should.
+	// message" the way an actual increment should.
 	const mounted = useRef(false);
 
 	useEffect(() => {
@@ -28,16 +28,16 @@ export default function NotificationBell() {
 			<div
 				tabIndex={0}
 				role="button"
-				aria-label="Notifications"
+				aria-label="Messages"
 				className="btn btn-ghost btn-circle relative"
 			>
-				<BellIcon
+				<MessageSquareIcon
 					className={`size-5 ${isBumping ? "animate-[icon-bump_500ms_ease-out]" : ""}`}
 					aria-hidden="true"
 				/>
 				{unreadCount > 0 && (
 					<span className="badge badge-sm badge-error absolute -top-1 -right-1 px-1">
-						{unreadCount > 9 ? "9+" : unreadCount}
+						{unreadCount > 99 ? "99+" : unreadCount}
 					</span>
 				)}
 			</div>
@@ -45,7 +45,7 @@ export default function NotificationBell() {
 				tabIndex={0}
 				className="dropdown-content z-1 mt-3 w-80 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg sm:w-96"
 			>
-				<NotificationDropdown />
+				<MessagesDropdown />
 			</div>
 		</div>
 	);

@@ -47,7 +47,6 @@ export default function ProfileOnboardingGate() {
 					setStep("profile");
 					return;
 				}
-				console.error("Failed to check profile for onboarding:", err);
 				setStep("none");
 			});
 		return () => {

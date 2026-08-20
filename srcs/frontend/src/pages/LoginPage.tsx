@@ -1,14 +1,22 @@
 import { GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
 import LoginForm from "../features/auth/components/LoginForm";
+import { useAuth } from "../features/auth/hooks/useAuth";
 
 export default function LoginPage() {
+	const { sessionExpired } = useAuth();
+
 	return (
 		<>
 			<span className="text-xs font-['IBM_Plex_Mono',monospace] uppercase tracking-[0.08em] text-base-content/50">
 				Welcome back
 			</span>
 			<h1 className="text-3xl font-extrabold mt-1">Log in to Artmate</h1>
+			{sessionExpired && (
+				<div className="alert alert-warning mt-4 py-2 text-sm">
+					<span>Your session expired. Log back in to keep going.</span>
+				</div>
+			)}
 			<button
 				className="btn bg-neutral mt-6 h-13 w-full rounded-2xl"
 				onClick={() => {
