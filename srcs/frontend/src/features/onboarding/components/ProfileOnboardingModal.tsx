@@ -41,10 +41,11 @@ export default function ProfileOnboardingModal({
 	const [availability, setAvailability] = useState(true);
 
 	const isHirer = role === "hirer";
-	// A hirer profile can't be created without an organization name either —
-	// the backend rejects the first save without one, so it has to be
-	// required here too, not just category.
-	const canSubmit = category !== "" && (!isHirer || organizationName.trim() !== "");
+	// Hirers don't pick a category at all — matching runs on each gig's own
+	// category (set when the gig is posted), not on the hirer's profile — so
+	// only their organization name is required. Artists still need a category:
+	// it's what swipe matching keys on for them.
+	const canSubmit = isHirer ? organizationName.trim() !== "" : category !== "";
 
 	function handleSubmit(e: FormEvent) {
 		e.preventDefault();
@@ -63,7 +64,7 @@ export default function ProfileOnboardingModal({
 				</div>
 				<p className="text-sm text-base-content/60">
 					{isHirer
-						? "Category and organization name are required to get started — everything else below is optional and can be filled in anytime from Settings."
+						? "Organization name is required to get started — everything else below is optional and can be filled in anytime from Settings."
 						: "Category is required to get started — it's how we match you with opportunities. Everything else below is optional and can be filled in anytime from Settings."}
 				</p>
 
@@ -73,26 +74,28 @@ export default function ProfileOnboardingModal({
 					</div>
 				)}
 
-				<label className="fieldset-label flex-col items-start gap-1">
-					<span className="text-sm font-medium">
-						Category<span className="text-error">*</span>
-					</span>
-					<select
-						className="select w-full"
-						value={category}
-						onChange={(e) => setCategory(e.target.value)}
-						required
-					>
-						<option value="" disabled>
-							Select category
-						</option>
-						{categories.map((option) => (
-							<option key={option.slug} value={option.slug}>
-								{option.label}
+				{!isHirer && (
+					<label className="fieldset-label flex-col items-start gap-1">
+						<span className="text-sm font-medium">
+							Category<span className="text-error">*</span>
+						</span>
+						<select
+							className="select w-full"
+							value={category}
+							onChange={(e) => setCategory(e.target.value)}
+							required
+						>
+							<option value="" disabled>
+								Select category
 							</option>
-						))}
-					</select>
-				</label>
+							{categories.map((option) => (
+								<option key={option.slug} value={option.slug}>
+									{option.label}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
 
 				{isHirer && (
 					<label className="fieldset-label flex-col items-start gap-1">

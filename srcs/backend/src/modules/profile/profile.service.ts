@@ -146,7 +146,10 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 			"VALIDATION_ERROR",
 			"organizationName is required when creating a profile for the first time",
 		);
-	requireCategoriesOnCreate(existing !== null, categoryIds);
+	// Unlike artists, a hirer's own category was never read by anything —
+	// matching runs on each gig's category (see verifyCategoryMatch), not the
+	// hirer's profile — so creating one doesn't require picking a category.
+	// `categoryIds` is still honored if a caller sends it, for any old data.
 
 	await prisma.$transaction(async (tx) => {
 		const profile = existing

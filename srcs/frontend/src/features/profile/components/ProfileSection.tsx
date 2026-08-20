@@ -83,14 +83,20 @@ export default function ProfilePage() {
 		setIsSavingDetails(true);
 		try {
 			const base: ProfileUpdate = {
-				categories: selectedSlugs,
 				bio: bio.trim() || null,
 				location: location.trim() || null,
 			};
+			// Hirers don't have a category to send — each gig carries its own
+			// (set when it's posted), not the hirer's profile.
 			const payload: ProfileUpdate =
 				user.role === "hirer"
 					? { ...base, organizationName: organizationName.trim() }
-					: { ...base, rate: rate.trim() === "" ? null : Number(rate), availability };
+					: {
+							...base,
+							categories: selectedSlugs,
+							rate: rate.trim() === "" ? null : Number(rate),
+							availability,
+						};
 			await saveMyProfile(payload);
 			setDetailsStatus({ type: "success", text: "Details updated successfully." });
 		} catch (err) {
@@ -191,34 +197,36 @@ export default function ProfilePage() {
 							</div>
 						)}
 
-						<fieldset className="fieldset-label flex-col items-start gap-1">
-							<legend className="text-sm font-medium">
-								Categories
-								<span className="ml-1 font-normal text-base-content/60">
-									(pick at least one, up to {MAX_CATEGORIES})
-								</span>
-							</legend>
-							{isLoadingCategories ? (
-								<span className="loading loading-spinner loading-sm" />
-							) : (
-								<div className="flex max-w-sm flex-wrap gap-2">
-									{vocabulary.map((option) => {
-										const isSelected = selectedSlugs.includes(option.slug);
-										return (
-											<button
-												key={option.slug}
-												type="button"
-												className={`btn btn-xs ${isSelected ? "btn-primary" : "btn-outline"}`}
-												aria-pressed={isSelected}
-												onClick={() => toggleCategory(option.slug)}
-											>
-												{option.label}
-											</button>
-										);
-									})}
-								</div>
-							)}
-						</fieldset>
+						{user.role === "artist" && (
+							<fieldset className="fieldset-label flex-col items-start gap-1">
+								<legend className="text-sm font-medium">
+									Categories
+									<span className="ml-1 font-normal text-base-content/60">
+										(pick at least one, up to {MAX_CATEGORIES})
+									</span>
+								</legend>
+								{isLoadingCategories ? (
+									<span className="loading loading-spinner loading-sm" />
+								) : (
+									<div className="flex max-w-sm flex-wrap gap-2">
+										{vocabulary.map((option) => {
+											const isSelected = selectedSlugs.includes(option.slug);
+											return (
+												<button
+													key={option.slug}
+													type="button"
+													className={`btn btn-xs ${isSelected ? "btn-primary" : "btn-outline"}`}
+													aria-pressed={isSelected}
+													onClick={() => toggleCategory(option.slug)}
+												>
+													{option.label}
+												</button>
+											);
+										})}
+									</div>
+								)}
+							</fieldset>
+						)}
 
 						{user.role === "hirer" && (
 							<label className="fieldset-label flex-col items-start gap-1">
