@@ -100,15 +100,13 @@ jobs:
       FT_API_SECRET: "test-ft-secret"
       FT_API_CALLBACK_URL: "http://localhost:9000/api/auth/42/callback"
       FRONTEND_URL: "http://localhost:5173"
-      # The seed writes real bytes for the demo media. Its default target is
-      # /app/uploads, which only exists inside the backend container, so point
-      # it somewhere this runner owns.
-      UPLOAD_DIR: "${{ runner.temp }}/uploads"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Point UPLOAD_DIR at the runner's temp directory
+        run: echo "UPLOAD_DIR=$RUNNER_TEMP/uploads" >> "$GITHUB_ENV"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Generate Prisma Client
