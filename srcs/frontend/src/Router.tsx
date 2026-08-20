@@ -21,6 +21,7 @@ import NewOpportunityPage from "./pages/NewOpportunityPage";
 import MyOpportunitiesPage from "./pages/MyOpportunitiesPage";
 import OpportunityDetailPage from "./pages/OpportunityDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import ProfilePage from "./pages/ProfilePage";
 
 export function defaultPathForRole(role: UserRole): string {
 	if (role === "admin") return "/admin";
@@ -56,7 +57,7 @@ export const router = createBrowserRouter([
 		),
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
-			{ path: "/profile", element: <Navigate to="/settings" replace /> },
+			{ path: "/profile", element: <ProfilePage /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },
 			{ path: "/opportunities/mine", element: <MyOpportunitiesPage /> },
 			{ path: "/opportunities/mine/:id", element: <OpportunityDetailPage /> },
