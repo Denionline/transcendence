@@ -3,6 +3,11 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { XIcon } from "lucide-react";
 
+const SIZE_CLASSES = {
+	md: "max-w-lg",
+	lg: "max-w-xl",
+} as const;
+
 interface ModalProps {
 	open: boolean;
 	onClose: () => void;
@@ -14,6 +19,8 @@ interface ModalProps {
 	 * a backdrop click from calling `onClose`. Defaults to true.
 	 */
 	dismissible?: boolean;
+	/** Max width of the dialog. Defaults to "md" (32rem). */
+	size?: keyof typeof SIZE_CLASSES;
 }
 
 export default function Modal({
@@ -22,6 +29,7 @@ export default function Modal({
 	labelledBy,
 	children,
 	dismissible = true,
+	size = "md",
 }: ModalProps) {
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const dialogRef = useRef<HTMLDivElement>(null);
@@ -70,7 +78,7 @@ export default function Modal({
 				aria-modal="true"
 				aria-labelledby={labelledBy}
 				tabIndex={-1}
-				className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl outline-none animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
+				className={`relative z-10 max-h-[85vh] w-full ${SIZE_CLASSES[size]} overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl outline-none animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]`}
 			>
 				{dismissible && (
 					<button
