@@ -16,6 +16,7 @@ export interface MatchDetail {
 	matchId: string;
 	otherUser: { id: string; displayName: string; avatarUrl: string | null; online: boolean };
 	gig: { id: string; title: string };
+	lastMessage: { content: string; createdAt: Date; senderId: string } | null;
 }
 
 //	One select serves every read: it carries enough of both sides (artist and
@@ -56,10 +57,41 @@ async function getUnreadCounts(userId: string, matchIds: string[]): Promise<Map<
 	return new Map(rows.map((row) => [row.matchId, row._count]));
 }
 
+type LastMessage = { content: string; createdAt: Date; senderId: string };
+
+//	Same two-query shape as getUnreadCounts: groupBy finds each match's latest
+//	timestamp, then one follow-up findMany resolves those timestamps to their
+//	messages — avoids both an N+1 and a raw "DISTINCT ON" query.
+async function getLastMessages(matchIds: string[]): Promise<Map<string, LastMessage>> {
+	if (matchIds.length === 0) return new Map();
+	const latest = await prisma.chatMessage.groupBy({
+		by: ["matchId"],
+		where: { matchId: { in: matchIds } },
+		_max: { createdAt: true },
+	});
+	const cutoffs = latest.filter(
+		(row): row is typeof row & { _max: { createdAt: Date } } => row._max.createdAt !== null,
+	);
+	if (cutoffs.length === 0) return new Map();
+	const rows = await prisma.chatMessage.findMany({
+		where: { OR: cutoffs.map((row) => ({ matchId: row.matchId, createdAt: row._max.createdAt })) },
+	});
+	return new Map(
+		rows.map((row) => [
+			row.matchId,
+			{ content: row.content, createdAt: row.createdAt, senderId: row.senderId },
+		]),
+	);
+}
+
 //	Neither side of a match ever sees "itself" in the response — an artist gets
 //	the hirer's identity (their org name doubles as a display name) and vice
 //	versa. This is what the chat sidebar needs and nothing more.
-function toDetail(user: AuthenticatedUser, match: MatchRow): MatchDetail {
+function toDetail(
+	user: AuthenticatedUser,
+	match: MatchRow,
+	lastMessage: LastMessage | null,
+): MatchDetail {
 	const otherUser =
 		user.role === UserRole.artist
 			? {
@@ -79,6 +111,7 @@ function toDetail(user: AuthenticatedUser, match: MatchRow): MatchDetail {
 		matchId: match.id,
 		otherUser,
 		gig: { id: match.gig.id, title: match.gig.title },
+		lastMessage,
 	};
 }
 
@@ -118,13 +151,14 @@ export async function listMatches(user: AuthenticatedUser, options: MatchListOpt
 		prisma.match.count({ where }),
 	]);
 
-	const unreadCounts = await getUnreadCounts(
-		user.id,
-		items.map((match) => match.id),
-	);
+	const matchIds = items.map((match) => match.id);
+	const [unreadCounts, lastMessages] = await Promise.all([
+		getUnreadCounts(user.id, matchIds),
+		getLastMessages(matchIds),
+	]);
 	return {
 		items: items.map((match) => ({
-			...toDetail(user, match),
+			...toDetail(user, match, lastMessages.get(match.id) ?? null),
 			unreadCount: unreadCounts.get(match.id) ?? 0,
 		})),
 		...buildMeta(options.page, options.pageSize, total),
@@ -139,7 +173,8 @@ export async function getMatchById(user: AuthenticatedUser, id: string) {
 	if (ownsMatch(user, match) === false)
 		throwError(403, "FORBIDDEN", "this match doesn't belong to you");
 
-	return toDetail(user, match);
+	const lastMessages = await getLastMessages([id]);
+	return toDetail(user, match, lastMessages.get(id) ?? null);
 }
 
 export async function deleteMatch(user: AuthenticatedUser, id: string) {
