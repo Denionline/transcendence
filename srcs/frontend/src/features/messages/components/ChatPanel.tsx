@@ -20,7 +20,7 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelProps) {
-	const { refresh: refreshUnreadCount } = useUnreadMessages();
+	const { refresh: refreshUnreadCount, setActiveMatchId } = useUnreadMessages();
 	const [messages, setMessages] = useState<ChatMessageDto[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [page, setPage] = useState(1);
@@ -39,6 +39,16 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 	// Whether new messages have arrived via socket since the last mark-as-read —
 	// avoids re-hitting the read endpoint on every input focus.
 	const hasUnreadRef = useRef(false);
+
+	useEffect(() => {
+		// Tells MessagesContext this conversation is the one on screen right
+		// now, so its badge doesn't count messages the user is already looking
+		// at — cleared on unmount/match switch, not just overwritten, since two
+		// ChatPanels are never mounted at once but this one still shouldn't
+		// leave a stale matchId behind after it goes away.
+		setActiveMatchId(match.matchId);
+		return () => setActiveMatchId(null);
+	}, [match.matchId, setActiveMatchId]);
 
 	useEffect(() => {
 		let cancelled = false;
