@@ -1,11 +1,13 @@
 import { type ReactNode, createContext, useCallback, useEffect, useState } from "react";
 import { listMatches } from "../matches/api";
+import type { MatchDto } from "../matches/types";
 import { getSocket } from "../../lib/socket";
 import { useAuth } from "../auth/hooks/useAuth";
 
 type Status = "loading" | "ready" | "error";
 
 interface MessagesContextValue {
+	matches: MatchDto[];
 	unreadCount: number;
 	status: Status;
 	refresh: () => void;
@@ -13,9 +15,18 @@ interface MessagesContextValue {
 
 export const MessagesContext = createContext<MessagesContextValue | null>(null);
 
+// Most recently active conversation first — what a preview dropdown wants,
+// unlike the chat sidebar's own listMatches() call which keeps matches in
+// the order they were created.
+function byRecentActivity(a: MatchDto, b: MatchDto): number {
+	const aTime = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+	const bTime = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+	return bTime - aTime;
+}
+
 export function MessagesProvider({ children }: { children: ReactNode }) {
 	const { user, isLoading } = useAuth();
-	const [unreadCount, setUnreadCount] = useState(0);
+	const [matches, setMatches] = useState<MatchDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
 
@@ -30,9 +41,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 
 		async function load() {
 			try {
-				const matches = await listMatches();
+				const items = await listMatches();
 				if (cancelled) return;
-				setUnreadCount(matches.reduce((sum, match) => sum + match.unreadCount, 0));
+				setMatches([...items].sort(byRecentActivity));
 				setStatus("ready");
 			} catch {
 				if (!cancelled) setStatus("error");
@@ -55,12 +66,29 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		const socket = getSocket();
 		if (!socket) return;
 
-		function handleNewMessage(payload: { senderId: string }) {
-			// The other side's message bumps the badge optimistically; opening
-			// that conversation later calls refresh() to reconcile against the
-			// server, which is the source of truth for what's actually unread.
+		function handleNewMessage(payload: { senderId: string; content: string; matchId: string }) {
+			// The other side's message bumps that conversation's unread count and
+			// preview optimistically, and floats it back to the top — opening the
+			// conversation later calls refresh() to reconcile against the server,
+			// which is the source of truth for what's actually unread.
 			if (payload.senderId === user!.id) return;
-			setUnreadCount((count) => count + 1);
+			setMatches((prev) =>
+				[...prev]
+					.map((match) =>
+						match.matchId === payload.matchId
+							? {
+									...match,
+									unreadCount: match.unreadCount + 1,
+									lastMessage: {
+										content: payload.content,
+										createdAt: new Date().toISOString(),
+										senderId: payload.senderId,
+									},
+								}
+							: match,
+					)
+					.sort(byRecentActivity),
+			);
 		}
 
 		socket.on("new_message", handleNewMessage);
@@ -78,8 +106,10 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		setRetryToken((t) => t + 1);
 	}, []);
 
+	const unreadCount = matches.reduce((sum, match) => sum + match.unreadCount, 0);
+
 	return (
-		<MessagesContext.Provider value={{ unreadCount, status, refresh }}>
+		<MessagesContext.Provider value={{ matches, unreadCount, status, refresh }}>
 			{children}
 		</MessagesContext.Provider>
 	);
