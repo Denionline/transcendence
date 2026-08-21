@@ -1,8 +1,9 @@
 import { BadgeCheckIcon } from "lucide-react";
-import { initials } from "../../../lib/format";
+import Avatar from "../../../components/Avatar";
 
 export interface OpportunityCardData {
 	hirerName: string;
+	hirerAvatarUrl?: string | null;
 	title: string;
 	description: string;
 	location: string;
@@ -15,6 +16,7 @@ export interface OpportunityCardData {
 
 export default function OpportunityCard({
 	hirerName,
+	hirerAvatarUrl,
 	title,
 	description,
 	location,
@@ -43,11 +45,12 @@ export default function OpportunityCard({
 
 			<div className="flex flex-col gap-3 p-4">
 				<div className="flex items-center gap-2 text-sm">
-					<div className="avatar avatar-placeholder shrink-0">
-						<div className="w-8 rounded-full bg-neutral text-neutral-content">
-							<span className="text-[10px]">{initials(hirerName || "?")}</span>
-						</div>
-					</div>
+					<Avatar
+						username={hirerName || "?"}
+						avatarUrl={hirerAvatarUrl}
+						size="sm"
+						className="shrink-0"
+					/>
 					<div className="min-w-0">
 						<div className="flex items-center gap-1 truncate font-medium">
 							<span className="truncate">{hirerName || "Your brand"}</span>
