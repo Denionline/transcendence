@@ -1,4 +1,11 @@
-import { BriefcaseIcon, HeartHandshakeIcon, MessageCircleIcon, ThumbsUpIcon } from "lucide-react";
+import {
+	BriefcaseIcon,
+	HeartHandshakeIcon,
+	MessageCircleIcon,
+	ThumbsUpIcon,
+	UserPlusIcon,
+	UserCheckIcon,
+} from "lucide-react";
 import type { NotificationDto, NotificationType } from "./types";
 
 interface NotificationMeta {
@@ -38,5 +45,19 @@ export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
 				? `${n.actor?.displayName ?? "Someone"} is interested in ${n.gigTitle || "your gig"}`
 				: `${n.actor?.displayName ?? "Someone"} is interested in you`,
 		href: () => "/matches",
+	},
+	// TODO: href just stays on /notifications for now — there's no friends
+	// page yet. Point these at it once it exists.
+	new_invite: {
+		icon: UserPlusIcon,
+		iconClass: "text-primary",
+		message: (n) => `${n.actor?.displayName ?? "Someone"} sent you a friend request`,
+		href: () => "/notifications",
+	},
+	invite_accepted: {
+		icon: UserCheckIcon,
+		iconClass: "text-success",
+		message: (n) => `${n.actor?.displayName ?? "Someone"} accepted your friend request`,
+		href: () => "/notifications",
 	},
 };

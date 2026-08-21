@@ -234,10 +234,7 @@ test("DELETE /api/friends/:id cancels a request from the sender's side", async (
 		assert.equal(status, 204);
 	});
 
-	assert.equal(
-		await prisma.friend.findFirst({ where: { userId: a.id, friendId: b.id } }),
-		null,
-	);
+	assert.equal(await prisma.friend.findFirst({ where: { userId: a.id, friendId: b.id } }), null);
 });
 
 test("DELETE /api/friends/:id unfriends from the recipient's side too", async () => {
@@ -255,10 +252,7 @@ test("DELETE /api/friends/:id unfriends from the recipient's side too", async ()
 		assert.equal(status, 204);
 	});
 
-	assert.equal(
-		await prisma.friend.findFirst({ where: { userId: a.id, friendId: b.id } }),
-		null,
-	);
+	assert.equal(await prisma.friend.findFirst({ where: { userId: a.id, friendId: b.id } }), null);
 });
 
 test("DELETE /api/friends/:id with no relation (404 FRIEND_NOT_FOUND)", async () => {

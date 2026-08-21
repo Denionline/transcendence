@@ -2,11 +2,12 @@ import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { parseId } from "../gigs/gigs.routes.js";
 import { throwError } from "../../lib/http-error.js";
-import { UserRole } from "../../../generated/prisma/enums.js";
+import { NotificationType, UserRole } from "../../../generated/prisma/enums.js";
 import { sendInvite, updateStatus, deleteFriend, getFriendsList } from "./friends.service.js";
 import { authEvents } from "../../lib/auth-events.js";
 import { prisma } from "../../lib/prisma.js";
 import { parsePagination } from "../../lib/pagination.js";
+import { createNotification } from "../notifications/notifications.service.js";
 
 const router = Router();
 
@@ -34,6 +35,12 @@ router.post("/:id", requireAuth, async (req, res) => {
 	await validateTargetId(friendId);
 
 	const invite = await sendInvite(caller.id, friendId);
+	await createNotification({
+		userId: friendId,
+		actorId: caller.id,
+		type: NotificationType.new_invite,
+		data: {},
+	});
 	authEvents.emit("new_notification", { targetId: friendId });
 	res.status(201).json(invite);
 });
@@ -47,7 +54,15 @@ router.patch("/:id", requireAuth, async (req, res) => {
 	if (typeof accepted !== "boolean")
 		throwError(400, "VALIDATION_ERROR", "accepted must be a boolean");
 	const updated = await updateStatus(caller.id, requestedId, accepted);
-	if (accepted) authEvents.emit("new_notification", { targetId: requestedId });
+	if (accepted) {
+		await createNotification({
+			userId: requestedId,
+			actorId: caller.id,
+			type: NotificationType.invite_accepted,
+			data: {},
+		});
+		authEvents.emit("new_notification", { targetId: requestedId });
+	}
 	res.status(200).json(updated);
 });
 

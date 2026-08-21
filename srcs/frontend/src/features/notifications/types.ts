@@ -1,4 +1,5 @@
-export type NotificationType = "new_match" | "new_message" | "gig_closed" | "swipe_liked";
+export type NotificationType =
+	"new_match" | "new_message" | "gig_closed" | "swipe_liked" | "new_invite" | "invite_accepted";
 
 export interface NotificationActor {
 	id: string;
