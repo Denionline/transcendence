@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { ArrowLeftIcon, SendIcon, Trash2Icon } from "lucide-react";
+import { ArrowLeftIcon, SendIcon } from "lucide-react";
 import Avatar from "../../../components/Avatar";
+import MessageBubble from "./MessageBubble";
 import {
 	deleteMessage,
 	listMessages,
@@ -11,7 +12,6 @@ import {
 } from "../api";
 import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
-import { formatTime } from "../../../lib/format";
 import { getSocket } from "../../../lib/socket";
 import { useUnreadMessages } from "../hooks/useUnreadMessages";
 
@@ -139,7 +139,6 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 	}
 
 	async function handleDeleteMessage(messageId: string) {
-		if (!window.confirm("Delete this message?")) return;
 		try {
 			await deleteMessage(match.matchId, messageId);
 			setMessages((prev) => prev.filter((m) => m.id !== messageId));
@@ -270,34 +269,14 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 							</div>
 						) : (
 							<div className="flex flex-col">
-								{messages.map((message) => {
-									const isMine = message.senderId === currentUserId;
-									return (
-										<div
-											key={message.id}
-											className={`group chat ${isMine ? "chat-end" : "chat-start"}`}
-										>
-											<div
-												className={`chat-bubble flex items-start gap-2 ${isMine ? "chat-bubble-primary" : "bg-base-200 text-base-content"}`}
-											>
-												<span>{message.content}</span>
-												{isMine && (
-													<button
-														type="button"
-														onClick={() => handleDeleteMessage(message.id)}
-														aria-label="Delete message"
-														className="btn btn-ghost btn-circle btn-xs shrink-0 opacity-0 group-hover:opacity-100"
-													>
-														<Trash2Icon className="size-3" aria-hidden="true" />
-													</button>
-												)}
-											</div>
-											<div className="chat-footer text-xs text-base-content/40">
-												{formatTime(message.createdAt)}
-											</div>
-										</div>
-									);
-								})}
+								{messages.map((message) => (
+									<MessageBubble
+										key={message.id}
+										message={message}
+										isMine={message.senderId === currentUserId}
+										onDelete={handleDeleteMessage}
+									/>
+								))}
 							</div>
 						)}
 					</>
