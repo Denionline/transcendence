@@ -34,11 +34,14 @@ export const publicArtistSelect = {
 } satisfies Prisma.ArtistProfileSelect;
 
 const publicHirerSelect = {
+	id: true,
+	userId: true,
 	organizationName: true,
 	bio: true,
 	location: true,
 	availability: true,
 	categories: categoriesSelect,
+	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.HirerProfileSelect;
 
 //	Prisma nests the join row, but nobody outside wants to see it: a profile

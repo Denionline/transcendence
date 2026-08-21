@@ -8,8 +8,10 @@ interface ArtistDetailsModalProps {
 	/** Discipline slugs currently checked in the sidebar filter — matching tags render highlighted. */
 	selectedDisciplines?: Set<string>;
 	onClose: () => void;
-	onPass: () => void;
-	onInterested: () => void;
+	/** Omit both to render a read-only profile — e.g. opened from a search
+	 *  result, which isn't a swipe candidate to act on. */
+	onPass?: () => void;
+	onInterested?: () => void;
 }
 
 export default function ArtistDetailsModal({
@@ -72,29 +74,31 @@ export default function ArtistDetailsModal({
 
 						<p className="text-sm leading-relaxed text-base-content/70">{artist.bio}</p>
 
-						<div className="flex items-center gap-2 pt-2">
-							<button
-								type="button"
-								onClick={() => {
-									onPass();
-									onClose();
-								}}
-								aria-label={`Pass on ${artist.name}`}
-								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
-							>
-								<XIcon className="size-5" aria-hidden="true" />
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									onInterested();
-									onClose();
-								}}
-								className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
-							>
-								Interested
-							</button>
-						</div>
+						{(onPass || onInterested) && (
+							<div className="flex items-center gap-2 pt-2">
+								<button
+									type="button"
+									onClick={() => {
+										onPass?.();
+										onClose();
+									}}
+									aria-label={`Pass on ${artist.name}`}
+									className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
+								>
+									<XIcon className="size-5" aria-hidden="true" />
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										onInterested?.();
+										onClose();
+									}}
+									className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
+								>
+									Interested
+								</button>
+							</div>
+						)}
 					</div>
 				</>
 			)}

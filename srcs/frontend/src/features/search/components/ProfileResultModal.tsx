@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
 import Avatar from "../../../components/Avatar";
 import FileGallery from "../../files/components/FileGallery";
+import ArtistDetailsModal from "../../artists/components/ArtistDetailsModal";
+import { mapPublicProfileToArtist } from "../../artists/mapPublicProfile";
 import { fetchPublicProfile } from "../api";
 import type { PublicProfileDto } from "../types";
 
@@ -11,9 +13,12 @@ interface ProfileResultModalProps {
 }
 
 /**
- * Read-only view of another user's artist/hirer profile, opened from a
- * search result — deliberately no swipe actions (Pass/Interested/Save), this
- * is just "who is this", not a candidate to act on.
+ * Opened from a search result. An artist hit reuses ArtistDetailsModal
+ * outright — the exact same profile a hirer sees clicking an ArtistCard on
+ * Discover, portfolio and all — just without the Pass/Interested actions,
+ * since a search hit isn't a swipe candidate. There's no equivalent "hirer
+ * card" anywhere else in the app to mirror, so a hirer hit gets a lighter,
+ * purpose-built read-only panel instead.
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
@@ -21,8 +26,8 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 
 	useEffect(() => {
 		// Nothing to fetch once the modal's closing (userId cleared) — the
-		// stale profile/status left behind doesn't matter, Modal itself already
-		// renders nothing while `open` is false.
+		// stale profile/status left behind doesn't matter, both render
+		// branches below key their "is this open" state off `userId` itself.
 		if (!userId) return;
 		let cancelled = false;
 		(async () => {
@@ -39,6 +44,23 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			cancelled = true;
 		};
 	}, [userId]);
+
+	// There's no `role` field on the wire (see profile.service.ts) — told
+	// apart the same way the rest of the app tells the two shapes apart.
+	const isHirer = profile !== null && "organizationName" in profile;
+
+	if (status === "ready" && profile && !isHirer) {
+		return (
+			<ArtistDetailsModal
+				// Explicitly null once userId clears, even though `profile` is
+				// still the last-fetched one — this is what actually closes the
+				// modal, the same mechanism DesktopArtistDeck/MobileArtistStack
+				// already rely on.
+				artist={userId ? mapPublicProfileToArtist(profile) : null}
+				onClose={onClose}
+			/>
+		);
+	}
 
 	const username = profile?.user?.username ?? "Unnamed";
 
@@ -62,40 +84,28 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 				</div>
 			)}
 
-			{status === "ready" && profile && (
+			{status === "ready" && profile && isHirer && (
 				<div className="flex flex-col gap-4 p-6">
 					<div className="flex items-center gap-4">
-						<Avatar username={username} avatarUrl={profile.user?.avatarUrl} size="lg" />
+						<Avatar username={username} avatarUrl={profile.user?.avatarUrl ?? null} size="lg" />
 						<div className="min-w-0">
 							<div className="truncate text-xl leading-snug font-semibold">{username}</div>
 							<div className="truncate text-sm text-base-content/60">
-								{profile.category} · {profile.location ?? "Location TBD"}
+								{profile.organizationName} · {profile.location ?? "Location TBD"}
 							</div>
 						</div>
 					</div>
 
 					<div className="flex flex-wrap gap-2">
-						<span
-							className={`badge badge-sm font-medium ${
-								profile.role === "artist" ? "badge-primary" : "badge-secondary"
-							}`}
-						>
-							{profile.role === "artist" ? "Artist" : "Hirer"}
-						</span>
-						{profile.role === "artist" && (
+						<span className="badge badge-sm badge-secondary font-medium">Hirer</span>
+						{profile.categories.map((category) => (
 							<span
-								className={`badge badge-sm font-medium ${
-									profile.availability ? "badge-primary" : "badge-ghost"
-								}`}
+								key={category.slug}
+								className="badge badge-sm badge-outline border-base-content/15"
 							>
-								{profile.availability ? "Available" : "Unavailable"}
+								{category.label}
 							</span>
-						)}
-						{profile.role === "hirer" && (
-							<span className="badge badge-sm badge-outline border-base-content/15">
-								{profile.organizationName}
-							</span>
-						)}
+						))}
 					</div>
 
 					{profile.bio ? (
@@ -104,7 +114,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 						<p className="text-sm text-base-content/40 italic">No bio provided.</p>
 					)}
 
-					{profile.portfolio && profile.portfolio.length > 0 && (
+					{profile.portfolio.length > 0 && (
 						<div className="flex flex-col gap-2">
 							<h3 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 								Portfolio
