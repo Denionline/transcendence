@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import {
 	CheckIcon,
 	CircleCheckIcon,
@@ -13,8 +13,9 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import { useCategories } from "../../categories/hooks/useCategories";
 import Avatar from "../../../components/Avatar";
 import ProfileMediaGallery from "../../artists/components/ProfileMediaGallery";
-import { buildMockProfileMedia } from "../../artists/mockProfileMedia";
 import type { ProfileMediaItem } from "../../artists/types";
+import { fileToMediaItem } from "../../files/toMediaItem";
+import type { FileDto } from "../../files/types";
 import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
 import { notifyProfileUpdated } from "../profileEvents";
 import PortfolioManager from "./PortfolioManager";
@@ -44,16 +45,9 @@ export default function ArtistProfileView() {
 	const [status, setStatus] = useState<Status>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
-	// Seeded once from the same synthesized gallery the swipe deck shows
-	// hirers (see mockProfileMedia.ts), then curated freely from here —
-	// there's no upload endpoint yet, so this list only ever lives in memory.
-	const [media, setMedia] = useState<ProfileMediaItem[]>(() =>
-		user ? buildMockProfileMedia(user.id, user.avatarUrl) : [],
-	);
-	const mediaRef = useRef(media);
-	useEffect(() => {
-		mediaRef.current = media;
-	}, [media]);
+	// The caller's own public files — real uploads via /api/files, fetched
+	// alongside the rest of the profile (see profile.service.ts's `portfolio`).
+	const [files, setFiles] = useState<FileDto[]>([]);
 
 	useEffect(() => {
 		if (!user) return;
@@ -63,34 +57,27 @@ export default function ArtistProfileView() {
 				setBio(profile.bio ?? "");
 				setLocation(profile.location ?? "");
 				setAvailability(profile.availability);
+				setFiles(profile.portfolio);
 				if ("rate" in profile) setRate(profile.rate != null ? String(profile.rate) : "");
 			})
 			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
 			.catch(() => {});
 	}, [user]);
 
-	// Object URLs created for locally-added media are only reclaimed by the
-	// browser on reload — revoke whatever's still outstanding when this view
-	// unmounts instead of leaking them for the rest of the session.
-	useEffect(
-		() => () => {
-			for (const item of mediaRef.current) {
-				if (item.url.startsWith("blob:")) URL.revokeObjectURL(item.url);
-			}
-		},
-		[],
+	// ProfileMediaGallery speaks ProfileMediaItem (shared with the hirer-facing
+	// swipe deck's viewer) — map the real files into that shape rather than
+	// teaching the gallery a second one.
+	const media = useMemo(
+		() => files.map(fileToMediaItem).filter((item): item is ProfileMediaItem => item !== null),
+		[files],
 	);
 
-	function addMedia(item: ProfileMediaItem) {
-		setMedia((previous) => [...previous, item]);
+	function handleUploaded(file: FileDto) {
+		setFiles((previous) => [file, ...previous]);
 	}
 
-	function removeMedia(id: string) {
-		setMedia((previous) => {
-			const target = previous.find((item) => item.id === id);
-			if (target?.url.startsWith("blob:")) URL.revokeObjectURL(target.url);
-			return previous.filter((item) => item.id !== id);
-		});
+	function handleDeleted(id: string) {
+		setFiles((previous) => previous.filter((file) => file.id !== id));
 	}
 
 	if (!user) return null;
@@ -212,7 +199,7 @@ export default function ArtistProfileView() {
 				</div>
 			</section>
 
-			<PortfolioManager media={media} onAdd={addMedia} onRemove={removeMedia} />
+			<PortfolioManager files={files} onUploaded={handleUploaded} onDeleted={handleDeleted} />
 
 			<section className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
 				<div className="flex items-center gap-2.5 border-b border-base-content/10 p-4">
