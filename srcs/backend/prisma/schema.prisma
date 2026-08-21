@@ -109,13 +109,28 @@ enum FileType {
   document
 }
 
+// `visibility` governs *discovery*, not retrieval: it decides what the listing
+// and profile endpoints disclose. The bytes route serves any id it is given,
+// because the id itself is the capability. See docs/mad/20260819-file-uploads.md.
+enum FileVisibility {
+  private
+  public
+}
+
 model File {
-  id        String   @id @default(uuid())
-  ownerId   String
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  type      FileType
-  location  String
-  createdAt DateTime @default(now())
+  id           String         @id @default(uuid())
+  ownerId      String
+  owner        User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  type         FileType
+  mimeType     String
+  sizeBytes    Int
+  originalName String
+  location     String
+  visibility   FileVisibility @default(private)
+  createdAt    DateTime       @default(now())
+
+  // The portfolio query: an artist's public files, newest first.
+  @@index([ownerId, visibility])
 }
 
 enum GigStatus {

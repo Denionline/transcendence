@@ -34,6 +34,9 @@ function byRecentActivity(a: MatchDto, b: MatchDto): number {
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
 	const { user, isLoading } = useAuth();
+	//	The id, not the object: AuthProvider hands back a new `user` identity on
+	//	every session refresh, which would re-run the fetch for the same person.
+	const userId = user?.id ?? null;
 	const [matches, setMatches] = useState<MatchDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
@@ -45,7 +48,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		// token yet while isLoading is true — fetching now would go out
 		// without it and come back 401. Wait for that to settle, and skip
 		// entirely if it settled on "no session".
-		if (isLoading || !user) return;
+		if (isLoading || !userId) return;
 
 		let cancelled = false;
 
@@ -65,7 +68,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [retryToken, isLoading, user?.id]);
+	}, [retryToken, isLoading, userId]);
 
 	useEffect(() => {
 		// Mirrors the gate on the data-loading effect above: this provider

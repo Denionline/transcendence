@@ -13,42 +13,57 @@ BACKEND_PATH			= srcs/backend
 COMPOSE_FILE			= srcs/docker-compose.yml
 
 # **************************************************************************** #
+#                                 Environment                                  #
+# **************************************************************************** #
+
+ifeq ($(wildcard .env),)
+$(error .env not found)
+endif
+
+include .env
+
+POSTGRES_HOST_PORT		?= 5432
+
+DBURL					= postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_HOST_PORT)/$(POSTGRES_DB)?schema=public
+
+# **************************************************************************** #
 #                                   Rules                                      #
 # **************************************************************************** #
 
 MAKE					= make --no-print-directory
 RM						= rm -rf
+COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 
 # **************************************************************************** #
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status test ci report rebuild oblivion dbaccess dbstats seed
+.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help
 
 all: up
 
 build:
-	docker compose --env-file .env -f $(COMPOSE_FILE) build
+	$(COMPOSE) build
 
 up: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
-	docker compose --env-file .env -f $(COMPOSE_FILE) up --build -d
+	$(COMPOSE) up --build -d
 
 down:
-	docker compose --env-file .env -f $(COMPOSE_FILE) down
+	$(COMPOSE) down
 
 clean:
-	docker compose --env-file .env -f $(COMPOSE_FILE) down
-	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
+	$(COMPOSE) down
 
-fclean:
-	docker compose --env-file .env -f $(COMPOSE_FILE) down -v
-	docker compose --env-file .env -f $(COMPOSE_FILE) rm -f
+fclean: clean
+	$(COMPOSE) down -v
 
-re: down up
+re:
+	$(MAKE) down
+	$(MAKE) up
 
 lint:
-	npm run lint --prefix srcs/frontend
-	npm run lint --prefix srcs/backend
+	npm run lint --prefix $(FRONTEND_PATH)
+	npm run lint --prefix $(BACKEND_PATH)
 
 format:
 	npx prettier --write "srcs/**/*.{ts,tsx,js,json,css}"
@@ -56,13 +71,13 @@ format:
 
 # Commands to check docker
 logs:
-	docker compose --env-file .env -f $(COMPOSE_FILE) logs -f
+	$(COMPOSE) logs -f
 
 ps:
-	docker compose --env-file .env -f $(COMPOSE_FILE) ps
+	$(COMPOSE) ps
 
 status:
-	docker compose --env-file .env -f $(COMPOSE_FILE) ps --status running
+	$(COMPOSE) ps --status running
 
 # Development
 srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
@@ -77,24 +92,17 @@ srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/f
 srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
 
-# test: up
-# 	@echo "INFO    access OAuth with: http://localhost:9000/api/auth/42"
-# 	@echo "INFO    access db with 'make dbaccess'"
-
 ci:
 	@echo "TEST    Lint (frontend + backend)"
-	npm run lint --prefix $(FRONTEND_PATH)
-	npm run lint --prefix $(BACKEND_PATH)
+	$(MAKE) lint
 	@echo "TEST    Frontend build"
 	npm run build --prefix $(FRONTEND_PATH)
 	@echo "TEST    Backend typecheck (prisma generate + tsc)"
 	cd $(BACKEND_PATH) && npx prisma generate && npx tsc --noEmit
 	@echo "TEST    Start test database (wait for healthy)"
-	docker compose --env-file .env -f $(COMPOSE_FILE) up -d --wait database
+	$(COMPOSE) up -d --wait database
 	@echo "TEST    Apply migrations"
-	DBPORT="$$(grep -oP '(?<=^POSTGRES_HOST_PORT=).*' .env 2>/dev/null || echo 5432)"; \
-	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:$${DBPORT:-5432}/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
-		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
+	@cd $(BACKEND_PATH) && DATABASE_URL="$(DBURL)" npx prisma migrate deploy
 	@echo "TEST    Backend tests"
 	npm test --prefix $(BACKEND_PATH)
 	@echo "TEST    CI looking good"
@@ -106,30 +114,68 @@ report:
 	echo "    Volumes:" ; docker volume ls ; \
 	echo "    Networks:" ; docker network ls
 
-rebuild: fclean up
+rebuild:
+	$(MAKE) fclean
+	$(MAKE) up
 
 oblivion:
-	@echo "\n\n    WARNING: This will delete ALL Docker data on this system!"
+	@echo "\n\n    WARNING: This will delete ALL containers, images and volumes for THIS project!"
 	@echo "    Press Ctrl+C within 5 seconds to cancel..."
 	@sleep 5
-	$(MAKE) fclean
-	docker system prune --all --force
+	$(COMPOSE) down -v --rmi all
 	$(RM) srcs/backend/node_modules srcs/frontend/node_modules
 	$(RM) --verbose package-lock.json srcs/frontend/package-lock.json srcs/backend/package-lock.json
 	$(RM) --verbose srcs/backend/generated/prisma
 
-# See docs/db_seeding.md
-seed: srcs/backend/node_modules/.package-lock.json
+define require_running
+	@$(COMPOSE) ps -q $(1) | grep -q . || { \
+		echo "ERROR   the $(1) container is not running — run 'make up' first" ; \
+		exit 1 ; \
+	}
+endef
+
+#  See docs/db_seeding.md.
+seed:
+	$(call require_running,backend)
 	@echo "SEED    Apply migrations"
-	DBPORT="$$(grep -oP '(?<=^POSTGRES_HOST_PORT=).*' .env 2>/dev/null || echo 5432)"; \
-	DBURL="postgresql://$$(grep -oP '(?<=^POSTGRES_USER=).*' .env):$$(grep -oP '(?<=^POSTGRES_PASSWORD=).*' .env)@localhost:$${DBPORT:-5432}/$$(grep -oP '(?<=^POSTGRES_DB=).*' .env)?schema=public"; \
-		cd $(BACKEND_PATH) && DATABASE_URL="$$DBURL" npx prisma migrate deploy
+	$(COMPOSE) exec -T backend npx prisma migrate deploy
 	@echo "SEED    Populate demo data"
-	npm run seed --prefix $(BACKEND_PATH)
+	$(COMPOSE) exec -T backend npm run seed
 
 dbstats:
-	@docker exec transcendence-db psql -U $$(grep -oP '(?<=^POSTGRES_USER=).*' .env) -d $$(grep -oP '(?<=^POSTGRES_DB=).*' .env) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories, (SELECT count(*) FROM \"User\" WHERE role = 'artist') artists, (SELECT count(*) FROM \"User\" WHERE role = 'hirer') hirers, (SELECT count(*) FROM \"User\" WHERE role = 'admin') admins;"
+	$(call require_running,database)
+	@$(COMPOSE) exec -T database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) -c "SELECT (SELECT count(*) FROM \"Gig\") gigs, (SELECT count(*) FROM \"Swipe\") swipes, (SELECT count(*) FROM \"Match\") matches, (SELECT count(*) FROM \"ChatMessage\") chats, (SELECT count(*) FROM \"User\") users, (SELECT count(*) FROM \"Category\") categories, (SELECT count(*) FROM \"User\" WHERE role = 'artist') artists, (SELECT count(*) FROM \"User\" WHERE role = 'hirer') hirers, (SELECT count(*) FROM \"User\" WHERE role = 'admin') admins;"
 
 dbaccess:
+	$(call require_running,database)
 	@echo "INFO    type '\\q' to quit"
-	docker exec -it transcendence-db psql -U $$(grep -oP '(?<=^POSTGRES_USER=).*' .env) -d $$(grep -oP '(?<=^POSTGRES_DB=).*' .env)
+	$(COMPOSE) exec database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+
+help:
+	@echo "Stack:"
+	@echo "  all/up      start the stack in the background"
+	@echo "  build       build the images"
+	@echo "  down        stop the stack"
+	@echo "  re          restart (down + up)"
+	@echo "  rebuild     start fresh, dropping volumes (fclean + up)"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  clean       remove the containers"
+	@echo "  fclean      remove the containers and their volumes"
+	@echo "  oblivion    remove this project's containers, images, volumes and node_modules"
+	@echo ""
+	@echo "Code:"
+	@echo "  lint        lint frontend and backend"
+	@echo "  format      run prettier over srcs"
+	@echo "  ci          lint, build, typecheck, migrate and test"
+	@echo ""
+	@echo "Inspect:"
+	@echo "  logs        follow the container logs"
+	@echo "  ps          list this project's containers"
+	@echo "  status      list only the running containers"
+	@echo "  report      list all docker containers, images, volumes and networks"
+	@echo ""
+	@echo "Database:"
+	@echo "  seed        apply migrations and load demo data (needs 'make up' first)"
+	@echo "  dbstats     print row counts per table"
+	@echo "  dbaccess    open a psql shell"
