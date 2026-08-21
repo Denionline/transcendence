@@ -9,7 +9,6 @@ export interface ProfileOnboardingValues {
 	organizationName: string;
 	bio: string;
 	location: string;
-	rate: string;
 	availability: boolean;
 }
 
@@ -37,7 +36,6 @@ export default function ProfileOnboardingModal({
 	const [organizationName, setOrganizationName] = useState("");
 	const [bio, setBio] = useState("");
 	const [location, setLocation] = useState("");
-	const [rate, setRate] = useState("");
 	const [availability, setAvailability] = useState(true);
 
 	const isHirer = role === "hirer";
@@ -50,7 +48,7 @@ export default function ProfileOnboardingModal({
 	function handleSubmit(e: FormEvent) {
 		e.preventDefault();
 		if (!canSubmit) return;
-		onSubmit({ category, organizationName, bio, location, rate, availability });
+		onSubmit({ category, organizationName, bio, location, availability });
 	}
 
 	return (
@@ -135,22 +133,6 @@ export default function ProfileOnboardingModal({
 						onChange={(e) => setLocation(e.target.value)}
 					/>
 				</label>
-
-				{!isHirer && (
-					<label className="fieldset-label flex-col items-start gap-1">
-						<span className="text-sm font-medium">
-							Rate <span className="font-normal text-base-content/40">(optional)</span>
-						</span>
-						<input
-							type="number"
-							min={0}
-							step={1}
-							className="input w-full"
-							value={rate}
-							onChange={(e) => setRate(e.target.value)}
-						/>
-					</label>
-				)}
 
 				{!isHirer && (
 					<label className="fieldset-label flex items-center gap-2">

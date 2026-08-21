@@ -2,9 +2,11 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Briefcase, Building2Icon, EyeIcon, MapPinIcon, PencilLineIcon } from "lucide-react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Avatar from "../../../components/Avatar";
+import type { FileDto } from "../../files/types";
 import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
 import { notifyProfileUpdated } from "../profileEvents";
 import LabeledField from "./LabeledField";
+import PortfolioManager from "./PortfolioManager";
 
 const MAX_BIO_LENGTH = 280;
 
@@ -21,17 +23,32 @@ export default function HirerProfileView() {
 	const [status, setStatus] = useState<Status>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
+	// The caller's own public files — same portfolio concept as the artist
+	// side, backed by the same /api/files endpoints. Hirers don't get a
+	// swipeable gallery preview (no card deck shows them one), just the
+	// management grid.
+	const [files, setFiles] = useState<FileDto[]>([]);
+
 	useEffect(() => {
 		if (!user) return;
 		fetchMyProfile(user.id)
 			.then((profile) => {
 				setBio(profile.bio ?? "");
 				setLocation(profile.location ?? "");
+				setFiles(profile.portfolio);
 				if ("organizationName" in profile) setOrganizationName(profile.organizationName);
 			})
 			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
 			.catch(() => {});
 	}, [user]);
+
+	function handleUploaded(file: FileDto) {
+		setFiles((previous) => [file, ...previous]);
+	}
+
+	function handleDeleted(id: string) {
+		setFiles((previous) => previous.filter((file) => file.id !== id));
+	}
 
 	if (!user) return null;
 
@@ -96,6 +113,8 @@ export default function HirerProfileView() {
 					)}
 				</div>
 			</section>
+
+			<PortfolioManager files={files} onUploaded={handleUploaded} onDeleted={handleDeleted} />
 
 			<section className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
 				<div className="flex items-center gap-2.5 border-b border-base-content/10 p-4">

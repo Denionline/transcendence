@@ -1,7 +1,10 @@
-import { type FormEvent, useState } from "react";
-import { LinkIcon, MailIcon, UserRound, UserRoundIcon } from "lucide-react";
+import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
+import { CameraIcon, LinkIcon, MailIcon, UserRound, UserRoundIcon } from "lucide-react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Avatar from "../../../components/Avatar";
+import { uploadFile } from "../../files/api";
+import { FILE_RULES } from "../../files/constants";
+import { validationErrorFor } from "../../files/schemas";
 import LabeledField from "./LabeledField";
 
 type Status = { type: "success" | "error"; text: string } | null;
@@ -19,7 +22,35 @@ export default function AccountSection() {
 	const [status, setStatus] = useState<Status>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
+	const avatarInputRef = useRef<HTMLInputElement>(null);
+	const [avatarProgress, setAvatarProgress] = useState<number | null>(null);
+	const [avatarError, setAvatarError] = useState<string | null>(null);
+
 	if (!user) return null;
+
+	// The upload itself is real and immediate — it's only *this account*
+	// that doesn't have the new photo until Save changes is clicked, same as
+	// typing a URL into the field below always worked.
+	function handleAvatarFileChange(e: ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		e.target.value = "";
+		if (!file) return;
+
+		const problem = validationErrorFor(file);
+		if (problem || !file.type.startsWith("image/")) {
+			setAvatarError(problem ?? "Choose a JPEG, PNG or WebP image.");
+			return;
+		}
+
+		setAvatarError(null);
+		setAvatarProgress(0);
+		uploadFile(file, { visibility: "public", onProgress: setAvatarProgress })
+			.then((uploaded) => setAvatarUrl(uploaded.url))
+			.catch((err: unknown) => {
+				setAvatarError(err instanceof Error ? err.message : "Upload failed");
+			})
+			.finally(() => setAvatarProgress(null));
+	}
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
@@ -61,15 +92,40 @@ export default function AccountSection() {
 				)}
 
 				<div className="flex items-center gap-4">
-					<Avatar
-						username={username || user.username}
-						avatarUrl={avatarUrl || null}
-						size="lg"
-						className="ring-2 ring-base-100 shadow"
-					/>
-					<p className="text-sm text-base-content/60">
-						Paste an image URL below. Leave it blank to use your initials.
-					</p>
+					<div className="relative shrink-0">
+						<Avatar
+							username={username || user.username}
+							avatarUrl={avatarUrl || null}
+							size="lg"
+							className="ring-2 ring-base-100 shadow"
+						/>
+						<input
+							ref={avatarInputRef}
+							type="file"
+							className="hidden"
+							accept={FILE_RULES.image.mimeTypes.join(",")}
+							onChange={handleAvatarFileChange}
+						/>
+						<button
+							type="button"
+							onClick={() => avatarInputRef.current?.click()}
+							disabled={avatarProgress !== null}
+							aria-label="Change photo"
+							className="btn btn-circle btn-primary btn-xs absolute -right-1 -bottom-1 shadow ring-2 ring-base-100 transition-transform duration-150 hover:scale-110 disabled:opacity-70"
+						>
+							{avatarProgress !== null ? (
+								<span className="loading loading-spinner loading-xs" />
+							) : (
+								<CameraIcon className="size-3.5" aria-hidden="true" />
+							)}
+						</button>
+					</div>
+					<div className="flex flex-col gap-1">
+						<p className="text-sm text-base-content/60">
+							Click the camera to upload a photo, or paste an image URL below.
+						</p>
+						{avatarError && <p className="text-xs text-error">{avatarError}</p>}
+					</div>
 				</div>
 
 				<LabeledField label="Username" icon={UserRoundIcon} className="max-w-sm">
@@ -93,8 +149,11 @@ export default function AccountSection() {
 				</LabeledField>
 
 				<LabeledField label="Avatar URL" icon={LinkIcon} hint="optional" className="max-w-sm">
+					{/* type="text", not "url": an upload above fills this with a
+					    relative /api/files/... path, which the browser's built-in
+					    URL validation would otherwise reject on submit. */}
 					<input
-						type="url"
+						type="text"
 						className="input w-full pl-9"
 						placeholder="https://..."
 						value={avatarUrl}

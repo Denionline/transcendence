@@ -43,8 +43,13 @@ export default function AdminSettingsPage() {
 		e.preventDefault();
 		setPasswordStatus(null);
 
-		if (newPassword.length < 4) {
-			setPasswordStatus({ type: "error", text: "New password must be at least 4 characters." });
+		// Mirrors updateUser's own bounds on the backend — a mismatch here
+		// would just mean the request round-trips to be told the same thing.
+		if (newPassword.length < 8 || newPassword.length > 72) {
+			setPasswordStatus({
+				type: "error",
+				text: "New password must be between 8 and 72 characters.",
+			});
 			return;
 		}
 		if (newPassword !== confirmPassword) {

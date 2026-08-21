@@ -80,7 +80,6 @@ export default function ProfileOnboardingGate() {
 					: {
 							...base,
 							categories: [values.category],
-							rate: values.rate.trim() === "" ? null : Number(values.rate),
 							availability: values.availability,
 						};
 			await saveMyProfile(payload);

@@ -3,11 +3,9 @@ import {
 	CheckIcon,
 	CircleCheckIcon,
 	CircleDashedIcon,
-	DollarSignIcon,
 	EyeIcon,
 	MapPinIcon,
 	PencilLineIcon,
-	WalletIcon,
 } from "lucide-react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useCategories } from "../../categories/hooks/useCategories";
@@ -40,7 +38,6 @@ export default function ArtistProfileView() {
 	const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
 	const [bio, setBio] = useState("");
 	const [location, setLocation] = useState("");
-	const [rate, setRate] = useState("");
 	const [availability, setAvailability] = useState(true);
 	const [status, setStatus] = useState<Status>(null);
 	const [isSaving, setIsSaving] = useState(false);
@@ -58,7 +55,6 @@ export default function ArtistProfileView() {
 				setLocation(profile.location ?? "");
 				setAvailability(profile.availability);
 				setFiles(profile.portfolio);
-				if ("rate" in profile) setRate(profile.rate != null ? String(profile.rate) : "");
 			})
 			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
 			.catch(() => {});
@@ -103,7 +99,6 @@ export default function ArtistProfileView() {
 				bio: bio.trim() || null,
 				location: location.trim() || null,
 				categories: selectedSlugs,
-				rate: rate.trim() === "" ? null : Number(rate),
 				availability,
 			};
 			await saveMyProfile(payload);
@@ -181,19 +176,12 @@ export default function ArtistProfileView() {
 
 					{bio && <p className="text-sm leading-relaxed text-base-content/70">{bio}</p>}
 
-					{(location || rate) && (
+					{location && (
 						<div className="flex flex-wrap gap-4 text-sm text-base-content/60">
-							{location && (
-								<span className="inline-flex items-center gap-1.5">
-									<MapPinIcon className="size-3.5" aria-hidden="true" />
-									{location}
-								</span>
-							)}
-							{rate && (
-								<span className="inline-flex items-center gap-1.5">
-									<WalletIcon className="size-3.5" aria-hidden="true" />${rate}
-								</span>
-							)}
+							<span className="inline-flex items-center gap-1.5">
+								<MapPinIcon className="size-3.5" aria-hidden="true" />
+								{location}
+							</span>
 						</div>
 					)}
 				</div>
@@ -257,11 +245,7 @@ export default function ArtistProfileView() {
 						)}
 					</fieldset>
 
-					<LabeledField
-						label="Bio"
-						hint={`${bio.length}/${MAX_BIO_LENGTH}`}
-						className="sm:col-span-2"
-					>
+					<LabeledField label="Bio" hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
 						<textarea
 							className="textarea w-full"
 							rows={3}
@@ -272,29 +256,15 @@ export default function ArtistProfileView() {
 						/>
 					</LabeledField>
 
-					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-						<LabeledField label="Location" icon={MapPinIcon}>
-							<input
-								type="text"
-								className="input w-full pl-9"
-								placeholder="City, country"
-								value={location}
-								onChange={(e) => setLocation(e.target.value)}
-							/>
-						</LabeledField>
-
-						<LabeledField label="Rate" icon={DollarSignIcon} hint="optional">
-							<input
-								type="number"
-								min={0}
-								step={1}
-								className="input w-full pl-9"
-								placeholder="0"
-								value={rate}
-								onChange={(e) => setRate(e.target.value)}
-							/>
-						</LabeledField>
-					</div>
+					<LabeledField label="Location" icon={MapPinIcon}>
+						<input
+							type="text"
+							className="input w-full max-w-sm pl-9"
+							placeholder="City, country"
+							value={location}
+							onChange={(e) => setLocation(e.target.value)}
+						/>
+					</LabeledField>
 
 					<label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-200/40 p-3 transition-colors has-checked:border-primary/30 has-checked:bg-primary/5">
 						<span className="flex items-center gap-2.5">
