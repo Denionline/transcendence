@@ -37,6 +37,9 @@ model User {
   notifications Notification[]
   refreshTokens RefreshToken[]
   loginAttempts LoginAttempt[]
+
+  friendRequestsSent     Friend[] @relation("FriendRequestsSent")
+  friendRequestsReceived Friend[] @relation("FriendRequestsReceived")
 }
 
 // The controlled vocabulary. `slug` is the stable matching/lookup key,
@@ -217,6 +220,25 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
+}
+
+enum FriendRequestStatus {
+  pending
+  accepted
+  declined
+}
+
+model Friend {
+  id        String              @id @default(uuid())
+  userId    String
+  user      User                @relation("FriendRequestsSent", fields: [userId], references: [id], onDelete: Cascade)
+  friendId  String
+  friend    User                @relation("FriendRequestsReceived", fields: [friendId], references: [id], onDelete: Cascade)
+  status    FriendRequestStatus @default(pending)
+  createdAt DateTime            @default(now())
+
+  @@unique([userId, friendId])
+  @@index([friendId, status])
 }
 
 model RefreshToken {

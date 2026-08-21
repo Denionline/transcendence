@@ -580,12 +580,17 @@ relevant to the `type`:
 
 ## Friends `/api/friends`
 
+A `Friend` row is directional — `userId` is whoever sent the request, `friendId`
+is whoever received it — but every route below resolves the relationship
+regardless of which side the caller is on. Admins cannot send, receive, or
+hold friend requests.
+
 | Method | Path | Who | Notes |
 |---|---|---|---|
-| POST | `/` | logged-in | Body: `{ "addresseeId": "..." }` → `409 FRIENDSHIP_EXISTS` if any relation exists in either direction |
-| GET | `/` | logged-in | Filter `?status=pending\|accepted`; each row has `direction: incoming\|outgoing` and `otherUser` |
-| PUT | `/:id/accept` | addressee | |
-| DELETE | `/:id` | either side | Decline a request or unfriend |
+| GET | `/` | logged-in | The caller's confirmed friends (`status: accepted`), paginated. Each item is normalized to `{ id, displayName, avatarUrl, status }` for the **other** user, regardless of which side originally sent the request |
+| POST | `/:id` | logged-in | Send a friend request to `:id`. Self-invite → `400 VALIDATION_ERROR`. Unknown `:id` → `404 USER_NOT_FOUND`. A request already exists in **either** direction (the caller already invited `:id`, or `:id` already invited the caller) → `409 FRIEND_REQUEST_EXISTS`. Returns `201` with `{ userId, friendId, status: "pending" }` |
+| PATCH | `/:id` | recipient | Respond to a pending request **sent by** `:id`. Body: `{ "accepted": boolean }` — missing/wrong type → `400 VALIDATION_ERROR`. No pending request from `:id` to the caller → `404 FRIEND_REQUEST_NOT_FOUND`. Returns `200` with the updated row. Fires a `"new_notification"` event for `:id` only when accepted — declines aren't notified |
+| DELETE | `/:id` | either side | End the relationship with `:id` — cancels a pending request or unfriends an accepted one, whichever direction it was created in. No relation exists between the two → `404 FRIEND_NOT_FOUND`. Returns `204` |
 
 ---
 
@@ -617,7 +622,9 @@ relevant to the `type`:
 | `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
 | `CATEGORY_EXISTS` | 409 | Creating or re-slugging a category onto a slug another category already owns |
 | `ARTIST_UNAVAILABLE` | 409 | Hirer tried to swipe an artist whose profile is marked unavailable |
-| `FRIENDSHIP_EXISTS` | 409 | Relation already exists in either direction |
+| `FRIEND_REQUEST_EXISTS` | 409 | A friend request already exists between the two users, in either direction |
+| `FRIEND_REQUEST_NOT_FOUND` | 404 | No pending friend request from `:id` to the caller (`PATCH /api/friends/:id`) |
+| `FRIEND_NOT_FOUND` | 404 | No friend request/friendship exists between the caller and `:id` (`DELETE /api/friends/:id`) |
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
 | `SELF_DELETE` | 409 | Admin tried to delete their own account |
 | `FILE_TOO_LARGE` | 413 | Upload exceeded the per-type cap, or the global `MAX_UPLOAD_MB` mid-stream |
