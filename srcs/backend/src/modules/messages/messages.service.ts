@@ -1,4 +1,6 @@
 import { prisma } from "../../lib/prisma.js";
+import { throwError } from "../../lib/http-error.js";
+import { Prisma } from "../../../generated/prisma/client.js";
 
 interface MessagesQuery {
 	callerId: string;
@@ -64,4 +66,14 @@ export async function markMessagesAsRead(callerId: string, matchId: string) {
 		},
 		data: { isRead: true },
 	});
+}
+
+export async function deleteMessage(messageId: string) {
+	try {
+		await prisma.chatMessage.delete({ where: { id: messageId } });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
+			throwError(404, "MESSAGE_NOT_FOUND", "message not found");
+		throw error;
+	}
 }

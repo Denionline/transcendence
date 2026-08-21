@@ -31,3 +31,21 @@ export async function requireMatchParticipant(req: Request, _res: Response, next
 	if (!result) throwError(404, "MATCH_NOT_FOUND", "match not found");
 	next();
 }
+
+export async function requireMessageOwnerOrAdmin(req: Request, _res: Response, next: NextFunction) {
+	const messageId = req.params.messageId;
+	const caller = req.user!;
+
+	if (typeof messageId !== "string")
+		throwError(400, "INVALID_MESSAGE_ID", "messageId must be a single value");
+
+	const result = await prisma.chatMessage.findUnique({
+		where: {
+			id: messageId,
+			senderId: caller.id,
+		},
+	});
+	if (caller.role !== UserRole.admin && !result)
+		throwError(403, "FORBIDDEN", "only the sender or a admin can delete this message");
+	next();
+}
