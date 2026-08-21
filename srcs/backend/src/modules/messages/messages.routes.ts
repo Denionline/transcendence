@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { requireMatchParticipant } from "../../middlewares/messages.middleware.js";
+import {
+	requireMatchParticipant,
+	requireMessageOwnerOrAdmin,
+} from "../../middlewares/messages.middleware.js";
 import { buildMeta, parsePagination } from "../../lib/pagination.js";
-import { getMatchMessages, markMessagesAsRead } from "./messages.service.js";
+import { getMatchMessages, markMessagesAsRead, deleteMessage } from "./messages.service.js";
 import { authEvents } from "../../lib/auth-events.js";
 import { parseMessageContent } from "./messages.service.js";
 import { throwError } from "../../lib/http-error.js";
@@ -50,5 +53,18 @@ router.patch("/read", requireAuth, requireMatchParticipant, async (req, res) => 
 	await markMessagesAsRead(caller.id, matchId);
 	res.status(204).send();
 });
+
+router.delete(
+	"/:messageId",
+	requireAuth,
+	requireMatchParticipant,
+	requireMessageOwnerOrAdmin,
+	async (req, res) => {
+		const messageId = req.params.messageId;
+
+		await deleteMessage(messageId as string);
+		res.status(204).send();
+	},
+);
 
 export default router;
