@@ -9,7 +9,6 @@ export interface ArtistProfileFields {
 	categories: CategoryDto[];
 	bio: string | null;
 	location: string | null;
-	rate: number | null;
 	availability: boolean;
 	// The caller's public files — an artist's portfolio is simply their public
 	// uploads, no separate relation. See listPublicFilesFor on the backend.
@@ -30,7 +29,6 @@ export interface ProfileUpdate {
 	organizationName?: string;
 	bio?: string | null;
 	location?: string | null;
-	rate?: number | null;
 	availability?: boolean;
 }
 
