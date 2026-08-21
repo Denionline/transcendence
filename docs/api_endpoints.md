@@ -537,7 +537,12 @@ Chat is only reachable through a match — no match, no messages.
 | POST | `/` | match member | Body: `{ "content": "..." }` (1–2000 chars). REST path; the WebSocket gateway performs the same write, so history is identical either way |
 | GET | `/` | match member | Paginated history, newest first. Side effect: marks every message on the returned page that wasn't sent by the caller as read |
 | PATCH | `/read` | match member | Marks **every** unread message in the match not sent by the caller as read, regardless of pagination — not tied to a specific message id. Used by the frontend when the chat is already open and a message arrives live over the socket (the `GET` above only catches messages fetched via that call, not ones that arrive afterwards). Always `204`, even if there was nothing to mark |
-| DELETE | `/:id` | sender (or mod/admin) | |
+| DELETE | `/:messageId` | sender or admin | Hard delete — no soft-delete/tombstone, the row is gone. `204` on success. `400 INVALID_MESSAGE_ID` if `messageId` isn't a single string value. `404 MESSAGE_NOT_FOUND` if there's no message with that id **in this match** (wrong matchId in the URL looks the same as a missing message — existence isn't leaked across matches). `403 FORBIDDEN` if the caller is neither the sender nor an admin. Unlike every other route on this router, this one does **not** run behind `requireMatchParticipant` — that middleware rejects admins outright (they aren't match participants), so `requireMessageOwnerOrAdmin` loads the message itself and checks match/sender/role directly instead |
+
+In the frontend, this has no visible delete button on every message — it's a
+small context menu instead, opened per-message: **right-click** on desktop,
+**press and hold** (~500ms) on touch. Both land on the same menu; see
+[MessageBubble.tsx](../srcs/frontend/src/features/messages/components/MessageBubble.tsx).
 
 ## Notifications `/api/notifications`
 
@@ -611,6 +616,8 @@ hold friend requests.
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
 | `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
+| `INVALID_MESSAGE_ID` | 400 | `:messageId` param on `DELETE /matches/:matchId/messages/:messageId` was not a single string value |
+| `MESSAGE_NOT_FOUND` | 404 | No message with that id in that match — deleting it, or a mismatched matchId in the URL |
 | `INVALID_NOTIFICATION_ID` | 400 | `:id` param on a notifications route was not a single string value |
 | `NOTIFICATION_NOT_FOUND` | 404 | No notification with that id belonging to the caller |
 | `EMAIL_EXISTS` | 409 | Email already registered |

@@ -18,6 +18,12 @@ export function markMessagesRead(matchId: string): Promise<void> {
 	});
 }
 
+export function deleteMessage(matchId: string, messageId: string): Promise<void> {
+	return apiRequest<void>(`/matches/${matchId}/messages/${messageId}`, {
+		method: "DELETE",
+	});
+}
+
 export function sendMessage(
 	matchId: string,
 	content: string,
