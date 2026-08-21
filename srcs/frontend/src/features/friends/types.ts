@@ -5,4 +5,6 @@ export interface FriendSummary {
 	displayName: string;
 	avatarUrl: string | null;
 	status: "accepted";
+	role: "artist" | "hirer";
+	location: string | null;
 }

@@ -105,7 +105,13 @@ export default function FriendsPage() {
 								className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80"
 							>
 								<Avatar username={friend.displayName} avatarUrl={friend.avatarUrl} size="md" />
-								<span className="min-w-0 truncate font-medium">{friend.displayName}</span>
+								<div className="min-w-0">
+									<p className="truncate font-medium">{friend.displayName}</p>
+									<p className="truncate text-sm text-base-content/50">
+										{friend.role === "artist" ? "Artist" : "Hirer"} ·{" "}
+										{friend.location ?? "Location TBD"}
+									</p>
+								</div>
 							</Link>
 							<button
 								type="button"

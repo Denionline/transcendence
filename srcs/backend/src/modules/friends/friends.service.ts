@@ -3,23 +3,36 @@ import { Prisma } from "../../../generated/prisma/client.js";
 import { throwError } from "../../lib/http-error.js";
 import { buildMeta } from "../../lib/pagination.js";
 
+const otherUserSelect = {
+	id: true,
+	username: true,
+	avatarUrl: true,
+	role: true,
+	artistProfile: { select: { location: true } },
+	hirerProfile: { select: { organizationName: true, location: true } },
+} satisfies Prisma.UserSelect;
+
 const friendSelect = {
 	userId: true,
 	friendId: true,
 	status: true,
-	user: { select: { id: true, username: true, avatarUrl: true } },
-	friend: { select: { id: true, username: true, avatarUrl: true } },
+	user: { select: otherUserSelect },
+	friend: { select: otherUserSelect },
 } satisfies Prisma.FriendSelect;
 
 type FriendRow = Prisma.FriendGetPayload<{ select: typeof friendSelect }>;
+type OtherUser = FriendRow["user"];
 
 function toFriendSummary(callerId: string, row: FriendRow) {
-	const other = row.userId === callerId ? row.friend : row.user;
+	const other: OtherUser = row.userId === callerId ? row.friend : row.user;
+	const isHirer = other.role === "hirer";
 	return {
 		id: other.id,
-		displayName: other.username,
+		displayName: isHirer ? other.hirerProfile?.organizationName || other.username : other.username,
 		avatarUrl: other.avatarUrl,
 		status: row.status,
+		role: other.role,
+		location: (isHirer ? other.hirerProfile?.location : other.artistProfile?.location) ?? null,
 	};
 }
 
