@@ -71,8 +71,11 @@ docker compose -f srcs/docker-compose.yml down
 ```bash
 make seed
 ```
-Populates the database with a demo cast for manual testing. Needs the
-database up (`make up`). See [`docs/db_seeding.md`](docs/db_seeding.md).
+Populates the database with a demo cast for manual testing, plus the demo
+media behind it — avatars, portfolio images, an audio clip and a short video,
+all tracked in the repository so the demo renders with no internet. Runs inside
+the backend container, so it needs the stack up (`make up`) rather than just
+the database. See [`docs/db_seeding.md`](docs/db_seeding.md).
 
 ---
 

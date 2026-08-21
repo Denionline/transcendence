@@ -12,6 +12,7 @@ import { useTheme } from "../features/theme/hooks/useTheme";
 import { THEMES } from "../features/theme/constants";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
 import ProfileSection from "../features/profile/components/ProfileSection";
+import PortfolioSection from "../features/profile/components/PortfolioSection";
 
 type Section = "profile" | "preferences" | "notifications" | "appearance";
 
@@ -62,7 +63,12 @@ export default function SettingsPage() {
 				</nav>
 
 				<div className="min-w-0">
-					{activeSection === "profile" && <ProfileSection />}
+					{activeSection === "profile" && (
+						<div className="flex flex-col gap-6">
+							<ProfileSection />
+							<PortfolioSection />
+						</div>
+					)}
 
 					{activeSection === "preferences" && (
 						<EmptySection

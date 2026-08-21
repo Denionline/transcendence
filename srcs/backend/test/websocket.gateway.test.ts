@@ -419,3 +419,20 @@ test("logging out disconnects only the matching session, not the user's other se
 		}
 	});
 });
+
+//	MaxListenersExceededWarning only fires at the 11th listener, so leaking one
+//	per server is silent until the 11th test. Count them directly instead.
+test("the gateway releases its authEvents listeners when the server closes", async () => {
+	const events = ["logout", "new_match", "send_message", "new_notification"] as const;
+	const before = events.map((event) => authEvents.listenerCount(event));
+
+	await withServer(async () => {
+		events.forEach((event, i) => {
+			assert.equal(authEvents.listenerCount(event), before[i] + 1, `${event} while open`);
+		});
+	});
+
+	events.forEach((event, i) => {
+		assert.equal(authEvents.listenerCount(event), before[i], `${event} after close`);
+	});
+});

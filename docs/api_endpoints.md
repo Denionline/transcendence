@@ -360,6 +360,97 @@ index on `ArtistProfile` touches that path at all.
 
 Responses carry `categories` as a flat array of `{ id, slug, label }`.
 
+`GET /:id` also embeds **`portfolio`**: the owner's `public` files, newest
+first, each with its `url`. It never lists a `private` one. That filter is not
+cosmetic — it is the access control, because a file's id *is* the permission
+to fetch it (see Files below).
+
+## Files `/api/files`
+
+Upload, preview and delete of images, audio and video. Design decisions and
+their trade-offs are in [`docs/mad/20260819-file-uploads.md`](mad/20260819-file-uploads.md).
+
+| Method | Path | Who | Notes |
+|---|---|---|---|
+| POST | `/` | logged-in | `multipart/form-data`, field name **`file`**, optional field `visibility` (`private` default, or `public`). Returns `201` with the metadata below. Declared type not in the allow-list → `415 UNSUPPORTED_FILE_TYPE`; over the per-type cap → `413 FILE_TOO_LARGE`. A second, looser cap (`MAX_UPLOAD_MB`, 50 by default) is enforced **mid-stream** and also answers `413 FILE_TOO_LARGE` — it aborts an oversized body while it is still arriving, so a 50 GB upload never reaches the per-type check. Rate limited to **20 uploads per 15 min per user** → `429 TOO_MANY_REQUESTS` |
+| GET | `/` | logged-in | The caller's **own** files, both visibilities, paginated. Nobody else's file is ever listed here |
+| GET | `/:id` | logged-in | Metadata. Someone else's `private` file → **`404`, not `403`** — ids must not be enumerable, because the id is the secret |
+| GET | `/:id/raw` | **anyone — no token** | The bytes. Supports HTTP `Range`, `ETag` and `Last-Modified`. Unknown id, or a row whose file is missing from disk → `404`, never a 500. A `Range` the file cannot satisfy → `416 RANGE_NOT_SATISFIABLE` with `Content-Range: bytes */<size>`. A file present but unreadable → `500`, deliberately not a `404`. Rate limited to **600 requests per minute per address** → `429 TOO_MANY_REQUESTS`; deliberately generous, since one gallery page or one video scrub is already a burst |
+| DELETE | `/:id` | owner or admin | `204`. Deletes the row first, then unlinks the bytes. Non-owner non-admin → `403 FORBIDDEN` |
+
+Metadata shape, returned by `POST /`, `GET /` and `GET /:id`:
+
+```json
+{
+  "id": "0f2f…", "type": "image", "mimeType": "image/png",
+  "sizeBytes": 20520, "originalName": "mural.png",
+  "visibility": "public", "createdAt": "2026-08-19T09:03:25.477Z",
+  "url": "/api/files/0f2f…/raw"
+}
+```
+
+### Limits
+
+| `type` | Accepted `Content-Type` | Max |
+|---|---|---|
+| `image` | `image/jpeg`, `image/png`, `image/webp` | 5 MB |
+| `audio` | `audio/mpeg`, `audio/mp4` | 15 MB |
+| `video` | `video/mp4` | 50 MB |
+
+`MAX_UPLOAD_MB` (default 50) is a global cut-off enforced mid-stream, before
+the per-type cap above — it exists to kill a 50 GB upload while it is still
+arriving. The per-type cap is always the tighter, real limit.
+
+**SVG is excluded on purpose**: it is executable XML, so it is the one image
+format that is dangerous even when it really is what it claims to be. `document`
+(PDF) is out of scope for now — it is a valid `FileType` in the schema with no
+entry in the allow-list, so nothing can be uploaded as one.
+
+### The access contract — read this before building on it
+
+Three properties, all deliberate, none of them accidents:
+
+- **`/raw` is unauthenticated by design.** `<img src>` and `<video src>` issue
+  bare browser GETs with no `Authorization` header, so a token check there
+  could only ever reject the legitimate owner's own browser. Anyone who reaches
+  that route already holds the id.
+- **URLs never expire and cannot be revoked.** There is no signature and no
+  expiry: a file's id is a UUIDv4 (122 bits of entropy) and **holding the URL
+  is the permission**. Once a `/raw` URL leaks — a `Referer`, a proxy log, a
+  pasted link — it is out. Deleting the file is the only revocation.
+- **`visibility` governs discovery, not retrieval.** It decides what
+  `GET /api/files` and `GET /api/profile/:id` disclose, and nothing else.
+  `GET /:id/raw` will happily serve a `private` file to a caller holding its
+  id. This is not a signed-URL scheme and must not be mistaken for one; the
+  listing filters *are* the access control.
+
+One consequence worth stating separately: the demo files planted by `make seed`
+have **hardcoded ids committed to this repository**, so the entropy argument
+above covers uploaded files and not seeded ones. That is the right trade for
+content whose only purpose is to be looked at, but do not generalise it to
+every row in the table.
+
+### Content is not validated
+
+Validation is **input validation only**: the declared `Content-Type` is checked
+against the allow-list and the size against the per-type cap. Nothing inspects
+what the bytes actually are, so a text file sent as `image/png` is stored and
+served as an image.
+
+What contains the risk is the response, which makes these headers mandatory
+rather than belt-and-braces:
+
+- `Content-Type` is the **stored** MIME — the value that passed the allow-list
+  at upload, never one re-derived from the extension.
+- `X-Content-Type-Options: nosniff` stops a browser sniffing an HTML payload
+  out of something declared as an image and executing it.
+- `Cache-Control: public|private, max-age=86400, immutable` — `immutable` is
+  honest here, since the bytes at a given id never change.
+
+The realistic failure mode is therefore a broken image, not stored XSS. A test
+in `test/files.test.ts` asserts exactly this, so removing the `nosniff` header
+breaks the build.
+
 ## Categories `/api/categories`
 
 The controlled vocabulary shared by profiles and gigs. A gig references
@@ -511,6 +602,7 @@ relevant to the `type`:
 | `INVALID_REFRESH_TOKEN` | 401 | Refresh token invalid, expired, or revoked |
 | `FORBIDDEN` | 403 | Logged in, but not allowed (wrong owner/role/side) |
 | `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence |
+| `FILE_NOT_FOUND` | 404 | No file with that id — also returned instead of 403 for another user's `private` file, and when the row exists but its bytes do not |
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
 | `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
@@ -528,6 +620,9 @@ relevant to the `type`:
 | `FRIENDSHIP_EXISTS` | 409 | Relation already exists in either direction |
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
 | `SELF_DELETE` | 409 | Admin tried to delete their own account |
+| `FILE_TOO_LARGE` | 413 | Upload exceeded the per-type cap, or the global `MAX_UPLOAD_MB` mid-stream |
+| `UNSUPPORTED_FILE_TYPE` | 415 | Declared `Content-Type` is not in the upload allow-list |
+| `INVALID_PATH` | 400 | A stored file location resolved outside the upload directory — the path-traversal guard |
 | `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
 | `TOO_MANY_REQUESTS` | 429 | Per-IP rate limit hit — see the `Retry-After` header |
 | `INTERNAL_ERROR` | 500 | Unhandled — never leaks internals |

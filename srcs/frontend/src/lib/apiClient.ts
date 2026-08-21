@@ -17,7 +17,9 @@ export class ApiError extends Error {
 // shares this same in-flight promise instead of racing /auth/refresh.
 let refreshPromise: Promise<string> | null = null;
 
-function refreshOnce(): Promise<string> {
+// Exported for features/files/api.ts, which needs XHR for progress events and
+// so cannot go through apiRequest.
+export function refreshOnce(): Promise<string> {
 	if (!refreshPromise) {
 		refreshPromise = refreshAccessToken().finally(() => {
 			refreshPromise = null;
