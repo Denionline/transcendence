@@ -2,7 +2,7 @@ import { Server, Socket, DisconnectReason } from "socket.io";
 import type { Server as HttpServer } from "node:http";
 import { verifyAccessToken } from "../../lib/jwt.js";
 import { getMatchIdsForUser } from "../matches/matches.service.js";
-import { UserRole } from "../../../generated/prisma/enums.js";
+import { NotificationType, UserRole } from "../../../generated/prisma/enums.js";
 import { styleText } from "node:util";
 import { authEvents } from "../../lib/auth-events.js";
 import { createMessage } from "../messages/messages.service.js";
@@ -161,8 +161,8 @@ export function initWebsocket(httpServer: HttpServer) {
 		io.to(`chat:${matchId}`).emit("new_message", { senderId, content, matchId, chatMessageId });
 	};
 
-	const onNewNotification = ({ targetId }: { targetId: string }) => {
-		io.to(`user:${targetId}`).emit("new_notification");
+	const onNewNotification = ({ targetId, type }: { targetId: string; type: NotificationType }) => {
+		io.to(`user:${targetId}`).emit("new_notification", { type });
 	};
 
 	authEvents.on("logout", onLogout);

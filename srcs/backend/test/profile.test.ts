@@ -351,8 +351,78 @@ test("GET /api/profile/:id returns another user's artist profile to any logged-i
 
 		assert.equal(status, 200);
 		assert.equal(body?.userId, artist.id);
+		assert.equal(body?.role, "artist");
 		assert.equal(body?.bio, "visible");
 		assert.deepEqual(categoryNamesOf(body), [category]);
+	});
+});
+
+test("GET /api/profile/:id returns another user's hirer profile with role: hirer", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+	const viewer = await makeUser(UserRole.artist);
+	const category = await uniqueCategory();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "PATCH", "/api/profile/me", {
+			token: tokenFor(hirer),
+			body: { categories: [category], organizationName: "Galeria Norte" },
+		});
+
+		const { status, body } = await api(baseUrl, "GET", `/api/profile/${hirer.id}`, {
+			token: tokenFor(viewer),
+		});
+
+		assert.equal(status, 200);
+		assert.equal(body?.role, "hirer");
+		assert.equal(body?.organizationName, "Galeria Norte");
+	});
+});
+
+test("GET /api/profile/:id reports friendshipStatus for the viewer", async () => {
+	const artist = await makeUser(UserRole.artist);
+	const viewer = await makeUser(UserRole.hirer);
+	const category = await uniqueCategory();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "PATCH", "/api/profile/me", {
+			token: tokenFor(artist),
+			body: { categories: [category], bio: "visible" },
+		});
+
+		const none = await api(baseUrl, "GET", `/api/profile/${artist.id}`, {
+			token: tokenFor(viewer),
+		});
+		assert.equal(none.body?.friendshipStatus, "none");
+
+		await api(baseUrl, "POST", `/api/friends/${artist.id}`, { token: tokenFor(viewer) });
+
+		const sent = await api(baseUrl, "GET", `/api/profile/${artist.id}`, {
+			token: tokenFor(viewer),
+		});
+		assert.equal(sent.body?.friendshipStatus, "pending_sent");
+
+		// From the artist's side, that same request is pending_received — but
+		// the artist has no artist/hirer profile of their own to view here, so
+		// check it from viewer's profile instead: viewer creates a hirer
+		// profile so the artist can look them up too.
+		await api(baseUrl, "PATCH", "/api/profile/me", {
+			token: tokenFor(viewer),
+			body: { categories: [category], organizationName: "Studio" },
+		});
+		const received = await api(baseUrl, "GET", `/api/profile/${viewer.id}`, {
+			token: tokenFor(artist),
+		});
+		assert.equal(received.body?.friendshipStatus, "pending_received");
+
+		await api(baseUrl, "PATCH", `/api/friends/${viewer.id}`, {
+			token: tokenFor(artist),
+			body: { accepted: true },
+		});
+
+		const accepted = await api(baseUrl, "GET", `/api/profile/${artist.id}`, {
+			token: tokenFor(viewer),
+		});
+		assert.equal(accepted.body?.friendshipStatus, "accepted");
 	});
 });
 

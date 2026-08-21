@@ -179,6 +179,27 @@ test("PATCH /api/friends/:id declines a pending request", async () => {
 	});
 });
 
+test("PATCH /api/friends/:id decline lets the original sender invite again later", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		const declined = await api(baseUrl, "PATCH", `/api/friends/${a.id}`, {
+			token: tokenFor(b),
+			body: { accepted: false },
+		});
+		assert.equal(declined.status, 200);
+		assert.equal(declined.body?.status, "declined");
+
+		const { status, body } = await api(baseUrl, "POST", `/api/friends/${b.id}`, {
+			token: tokenFor(a),
+		});
+		assert.equal(status, 201);
+		assert.equal(body?.status, "pending");
+	});
+});
+
 test("PATCH /api/friends/:id rejects a non-boolean body (400 VALIDATION_ERROR)", async () => {
 	const a = await makeUser();
 	const b = await makeUser();

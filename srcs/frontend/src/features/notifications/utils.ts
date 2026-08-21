@@ -13,6 +13,12 @@ interface NotificationMeta {
 	iconClass: string;
 	message: (notification: NotificationDto, isHirer: boolean) => string;
 	href: (notification: NotificationDto) => string;
+	/**
+	 * When true, clicking the row opens the accept/decline modal in place
+	 * instead of navigating via `href` — used only by new_invite, whose href
+	 * is kept as a `/friends` fallback for notifications with no actor.
+	 */
+	respondsInline?: boolean;
 }
 
 export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
@@ -46,18 +52,17 @@ export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
 				: `${n.actor?.displayName ?? "Someone"} is interested in you`,
 		href: () => "/matches",
 	},
-	// TODO: href just stays on /notifications for now — there's no friends
-	// page yet. Point these at it once it exists.
 	new_invite: {
 		icon: UserPlusIcon,
 		iconClass: "text-primary",
 		message: (n) => `${n.actor?.displayName ?? "Someone"} sent you a friend request`,
-		href: () => "/notifications",
+		href: () => "/friends",
+		respondsInline: true,
 	},
 	invite_accepted: {
 		icon: UserCheckIcon,
 		iconClass: "text-success",
 		message: (n) => `${n.actor?.displayName ?? "Someone"} accepted your friend request`,
-		href: () => "/notifications",
+		href: () => "/friends",
 	},
 };

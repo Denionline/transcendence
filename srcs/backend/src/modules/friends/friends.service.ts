@@ -70,15 +70,32 @@ export async function sendInvite(callerId: string, friendId: string) {
 
 export async function updateStatus(callerId: string, requestedId: string, accepted: boolean) {
 	try {
-		return await prisma.friend.update({
-			where: { userId_friendId: { userId: requestedId, friendId: callerId } },
-			data: { status: accepted ? "accepted" : "declined" },
-		});
+		const where = { userId_friendId: { userId: requestedId, friendId: callerId } };
+		if (!accepted) {
+			const deleted = await prisma.friend.delete({ where });
+			return { ...deleted, status: "declined" as const };
+		}
+		return await prisma.friend.update({ where, data: { status: "accepted" } });
 	} catch (error) {
 		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
 			throwError(404, "FRIEND_REQUEST_NOT_FOUND", "friend request not found");
 		throw error;
 	}
+}
+
+export async function getFriendshipStatus(callerId: string, otherId: string) {
+	const row = await prisma.friend.findFirst({
+		where: {
+			OR: [
+				{ userId: callerId, friendId: otherId },
+				{ userId: otherId, friendId: callerId },
+			],
+		},
+		select: { userId: true, status: true },
+	});
+	if (!row) return "none" as const;
+	if (row.status === "accepted") return "accepted" as const;
+	return row.userId === callerId ? ("pending_sent" as const) : ("pending_received" as const);
 }
 
 export async function deleteFriend(callerId: string, otherId: string) {

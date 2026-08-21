@@ -7,11 +7,13 @@ const HIRER_ITEMS: NavbarItem[] = [
 	{ to: "/discover", label: "Discover", end: true },
 	{ to: "/opportunities/mine", label: "My opportunities" },
 	{ to: "/matches", label: "Matches" },
+	{ to: "/friends", label: "Friends" },
 ];
 
 const ARTIST_ITEMS: NavbarItem[] = [
 	{ to: "/opportunities", label: "Opportunities", end: true },
 	{ to: "/matches", label: "Matches" },
+	{ to: "/friends", label: "Friends" },
 ];
 
 export default function AppLayout() {

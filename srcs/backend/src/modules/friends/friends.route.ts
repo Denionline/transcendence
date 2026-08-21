@@ -41,7 +41,7 @@ router.post("/:id", requireAuth, async (req, res) => {
 		type: NotificationType.new_invite,
 		data: {},
 	});
-	authEvents.emit("new_notification", { targetId: friendId });
+	authEvents.emit("new_notification", { targetId: friendId, type: NotificationType.new_invite });
 	res.status(201).json(invite);
 });
 
@@ -61,7 +61,10 @@ router.patch("/:id", requireAuth, async (req, res) => {
 			type: NotificationType.invite_accepted,
 			data: {},
 		});
-		authEvents.emit("new_notification", { targetId: requestedId });
+		authEvents.emit("new_notification", {
+			targetId: requestedId,
+			type: NotificationType.invite_accepted,
+		});
 	}
 	res.status(200).json(updated);
 });

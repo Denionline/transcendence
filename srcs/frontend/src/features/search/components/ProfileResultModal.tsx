@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
-import Avatar from "../../../components/Avatar";
-import FileGallery from "../../files/components/FileGallery";
+import FriendRequestButton from "../../friends/components/FriendRequestButton";
+import type { FriendshipStatus } from "../../friends/types";
+import PublicProfileView from "./PublicProfileView";
 import { fetchPublicProfile } from "../api";
+import { profileDisplayName } from "../utils";
 import type { PublicProfileDto } from "../types";
 
 interface ProfileResultModalProps {
@@ -12,11 +14,12 @@ interface ProfileResultModalProps {
 
 /**
  * Read-only view of another user's artist/hirer profile, opened from a
- * search result — deliberately no swipe actions (Pass/Interested/Save), this
- * is just "who is this", not a candidate to act on.
+ * search result — no swipe actions (Pass/Interested/Save), just "who is
+ * this" plus the ability to send/respond to a friend request.
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
+	const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>("none");
 	const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
 	useEffect(() => {
@@ -30,6 +33,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			const result = await fetchPublicProfile(userId);
 			if (cancelled) return;
 			setProfile(result);
+			setFriendshipStatus(result.friendshipStatus ?? "none");
 			setStatus("ready");
 		})().catch(() => {
 			if (cancelled) return;
@@ -40,7 +44,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 		};
 	}, [userId]);
 
-	const username = profile?.user?.username ?? "Unnamed";
+	const username = profile ? profileDisplayName(profile) : "Unnamed";
 
 	return (
 		<Modal open={Boolean(userId)} onClose={onClose} labelledBy="profile-result-title">
@@ -62,57 +66,18 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 				</div>
 			)}
 
-			{status === "ready" && profile && (
-				<div className="flex flex-col gap-4 p-6">
-					<div className="flex items-center gap-4">
-						<Avatar username={username} avatarUrl={profile.user?.avatarUrl} size="lg" />
-						<div className="min-w-0">
-							<div className="truncate text-xl leading-snug font-semibold">{username}</div>
-							<div className="truncate text-sm text-base-content/60">
-								{profile.category} · {profile.location ?? "Location TBD"}
-							</div>
-						</div>
-					</div>
-
-					<div className="flex flex-wrap gap-2">
-						<span
-							className={`badge badge-sm font-medium ${
-								profile.role === "artist" ? "badge-primary" : "badge-secondary"
-							}`}
-						>
-							{profile.role === "artist" ? "Artist" : "Hirer"}
-						</span>
-						{profile.role === "artist" && (
-							<span
-								className={`badge badge-sm font-medium ${
-									profile.availability ? "badge-primary" : "badge-ghost"
-								}`}
-							>
-								{profile.availability ? "Available" : "Unavailable"}
-							</span>
-						)}
-						{profile.role === "hirer" && (
-							<span className="badge badge-sm badge-outline border-base-content/15">
-								{profile.organizationName}
-							</span>
-						)}
-					</div>
-
-					{profile.bio ? (
-						<p className="text-sm leading-relaxed text-base-content/70">{profile.bio}</p>
-					) : (
-						<p className="text-sm text-base-content/40 italic">No bio provided.</p>
-					)}
-
-					{profile.portfolio && profile.portfolio.length > 0 && (
-						<div className="flex flex-col gap-2">
-							<h3 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-								Portfolio
-							</h3>
-							{/* Read-only: no `onDelete`. These are someone else's files. */}
-							<FileGallery files={profile.portfolio} />
-						</div>
-					)}
+			{status === "ready" && profile && userId && (
+				<div className="p-6">
+					<PublicProfileView
+						profile={profile}
+						friendSlot={
+							<FriendRequestButton
+								userId={userId}
+								status={friendshipStatus}
+								onStatusChange={setFriendshipStatus}
+							/>
+						}
+					/>
 				</div>
 			)}
 		</Modal>

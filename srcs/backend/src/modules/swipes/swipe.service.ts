@@ -293,7 +293,11 @@ export async function handleSwipe(
 		if (data.liked !== true) return undefined;
 		return validateMatch(tx, data as SwipeData);
 	});
-	if (data.liked || matchId) authEvents.emit("new_notification", { targetId: data.swipedId });
+	if (data.liked || matchId)
+		authEvents.emit("new_notification", {
+			targetId: data.swipedId,
+			type: matchId ? NotificationType.new_match : NotificationType.swipe_liked,
+		});
 	if (matchId) authEvents.emit("new_match", { matchId, userIds: [data.swiperId, data.swipedId] });
 	return { matchId };
 }
