@@ -54,17 +54,11 @@ router.patch("/read", requireAuth, requireMatchParticipant, async (req, res) => 
 	res.status(204).send();
 });
 
-router.delete(
-	"/:messageId",
-	requireAuth,
-	requireMatchParticipant,
-	requireMessageOwnerOrAdmin,
-	async (req, res) => {
-		const messageId = req.params.messageId;
+router.delete("/:messageId", requireAuth, requireMessageOwnerOrAdmin, async (req, res) => {
+	const messageId = req.params.messageId;
 
-		await deleteMessage(messageId as string);
-		res.status(204).send();
-	},
-);
+	await deleteMessage(messageId as string);
+	res.status(204).send();
+});
 
 export default router;
