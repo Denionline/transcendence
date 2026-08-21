@@ -3,4 +3,13 @@ node_modules/
 .env
 .git
 .gitignore
-*.md
+
+#	`*.md` only matches the root, so prisma/seed-assets/README.md was shipping
+#	with the image. Docker patterns are not recursive unless you say so.
+**/*.md
+
+#	The seed *fixtures* must ship — the demo has to work offline from a bare
+#	clone — but the script that made them must not. It is a developer tool that
+#	needs Pillow and ffmpeg, neither of which is in this image, and it writes
+#	into a directory the container has no reason to write to.
+prisma/seed-assets/generate.py

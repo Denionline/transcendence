@@ -1,13 +1,22 @@
 // Must run first: populates process.env from the repo-root .env before
-// ../src/lib/prisma.js constructs the client. See docs/db_seeding.md.
-import "../test/setup.js";
+// ../src/lib/prisma.js constructs the client, and before ../src/lib/env.js
+// reads UPLOAD_DIR. See docs/db_seeding.md.
+import "../src/lib/load-dotenv.js";
+
+import { copyFile, stat } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { prisma } from "../src/lib/prisma.js";
 import { hashPassword } from "../src/lib/password.js";
 import { upsertArtistProfile, upsertHirerProfile } from "../src/modules/profile/profile.service.js";
 import { createGig } from "../src/modules/gigs/gigs.service.js";
 import { handleSwipe } from "../src/modules/swipes/swipe.service.js";
-import { UserRole } from "../generated/prisma/client.js";
+import { fileUrl } from "../src/modules/files/files.service.js";
+import { extFor, typeForMime } from "../src/lib/file-limits.js";
+import { ensureUploadDir } from "../src/lib/storage.js";
+import { UPLOAD_DIR } from "../src/lib/env.js";
+import { FileVisibility, UserRole } from "../generated/prisma/client.js";
 import seedData from "./seed-data.json" with { type: "json" };
 
 interface SeedActor {
@@ -26,30 +35,44 @@ async function seedCategories() {
 	console.log(`OK      ${seedData.categories.length} categories`);
 }
 
+//	The File ids are hardcoded in seed-data.json, so an avatar's URL is
+//	knowable before the rows or the bytes exist — which is what lets people
+//	be seeded first and their files after.
+const avatarFiles = seedData.files.filter((file) => file.use === "avatar");
+let avatarCursor = 0;
+
+function nextAvatarUrl(): string {
+	const file = avatarFiles[avatarCursor % avatarFiles.length];
+	avatarCursor += 1;
+	return fileUrl(file.id);
+}
+
 async function seedUser(
-	input: { email: string; username: string; avatarUrl: string; role: UserRole },
+	input: { email: string; username: string; role: UserRole },
 	passwordHash: string,
 ) {
+	//	The cursor restarts every run, so re-seeding hands each account the
+	//	same avatar it had before.
+	const avatarUrl = nextAvatarUrl();
 	return await prisma.user.upsert({
 		where: { email: input.email },
-		update: { username: input.username, avatarUrl: input.avatarUrl, role: input.role },
-		create: { ...input, passwordHash },
+		update: { username: input.username, avatarUrl, role: input.role },
+		create: { ...input, avatarUrl, passwordHash },
 	});
 }
 
 async function seedPeople(passwordHash: string) {
-	await seedUser({ ...seedData.admin, role: UserRole.admin }, passwordHash);
+	const admin = await seedUser({ ...seedData.admin, role: UserRole.admin }, passwordHash);
 
-	const actors: Record<string, SeedActor> = {};
+	//	The admin owns the shared avatar files, so deleting the admin cascades
+	//	to all six. See docs/db_seeding.md.
+	const actors: Record<string, SeedActor> = {
+		[seedData.admin.email]: { id: admin.id, role: UserRole.admin },
+	};
 
 	for (const artist of seedData.artists) {
 		const user = await seedUser(
-			{
-				email: artist.email,
-				username: artist.username,
-				avatarUrl: artist.avatarUrl,
-				role: UserRole.artist,
-			},
+			{ email: artist.email, username: artist.username, role: UserRole.artist },
 			passwordHash,
 		);
 		await upsertArtistProfile(user.id, {
@@ -62,12 +85,7 @@ async function seedPeople(passwordHash: string) {
 
 	for (const hirer of seedData.hirers) {
 		const user = await seedUser(
-			{
-				email: hirer.email,
-				username: hirer.username,
-				avatarUrl: hirer.avatarUrl,
-				role: UserRole.hirer,
-			},
+			{ email: hirer.email, username: hirer.username, role: UserRole.hirer },
 			passwordHash,
 		);
 		await upsertHirerProfile(user.id, {
@@ -80,6 +98,59 @@ async function seedPeople(passwordHash: string) {
 	console.log(`OK      ${seedData.hirers.length} hirers`);
 
 	return actors;
+}
+
+//	Resolved from this module's own URL, never process.cwd(): the seed runs
+//	from srcs/backend on the host and from /app inside the container.
+const ASSETS_DIR = fileURLToPath(new URL("./seed-assets/", import.meta.url));
+
+//	Rows are not bytes. The demo must work offline from a bare clone, so the
+//	fixtures are tracked in git and this function plants them.
+async function seedFiles(actors: Record<string, SeedActor>) {
+	await ensureUploadDir();
+
+	for (const entry of seedData.files) {
+		//	Derived, never hardcoded: nothing can be seeded that the API would
+		//	have refused to accept.
+		const type = typeForMime(entry.mimeType);
+		const extension = extFor(entry.mimeType);
+		if (type === null || extension === null)
+			throw new Error(`seed-data.json: "${entry.mimeType}" is not in FILE_RULES`);
+
+		const owner = actors[entry.owner];
+		if (!owner) throw new Error(`seed-data.json: unknown file owner "${entry.owner}"`);
+
+		const source = join(ASSETS_DIR, entry.asset);
+		const location = `${entry.id}.${extension}`;
+		const { size } = await stat(source);
+
+		//	Bytes first, row second — the same order as createFile().
+		await copyFile(source, join(UPLOAD_DIR, location));
+
+		//	The hardcoded id is the idempotency mechanism: a File has no natural
+		//	key, so re-seeding upserts the same row instead of accumulating
+		//	duplicates. CI runs the seed twice to catch a regression here.
+		await prisma.file.upsert({
+			where: { id: entry.id },
+			update: {
+				location,
+				mimeType: entry.mimeType,
+				sizeBytes: size,
+				visibility: entry.visibility as FileVisibility,
+			},
+			create: {
+				id: entry.id,
+				ownerId: owner.id,
+				type,
+				mimeType: entry.mimeType,
+				sizeBytes: size,
+				originalName: entry.asset,
+				location,
+				visibility: entry.visibility as FileVisibility,
+			},
+		});
+	}
+	console.log(`OK      ${seedData.files.length} files`);
 }
 
 async function seedGigs(actors: Record<string, SeedActor>) {
@@ -141,6 +212,7 @@ async function main() {
 	await seedCategories();
 	const passwordHash = await hashPassword(seedData.password);
 	const actors = await seedPeople(passwordHash);
+	await seedFiles(actors);
 	const gigs = await seedGigs(actors);
 	const matchIdsByGig = await seedSwipes(actors, gigs);
 	await seedChats(actors, matchIdsByGig);

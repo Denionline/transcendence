@@ -27,17 +27,30 @@ limiting, documentation, and at least 5 endpoints:
     - View, edit, and delete users (CRUD).
     - Roles management (admin, user, guest, moderator, etc.).
     - Different views and actions based on user role.
+- File upload and management system. **Done** — see
+docs/mad/20260819-file-uploads.md for the decisions and their trade-offs.
+    - Support multiple file types: images (JPEG/PNG/WebP), audio (MP3/M4A) and
+    video (MP4). PDF/`document` is deliberately out of scope for now, and SVG
+    is excluded on purpose — it is executable XML.
+    - Client-side and server-side validation (type, size). Both check the
+    *declared* type and the size against a per-type cap; neither inspects the
+    bytes. The response headers are what contain that risk, and the reasoning
+    is written down rather than left implied.
+    - Secure file storage: bytes live in a named Docker volume, never in the
+    working tree, and one module (`src/lib/storage.ts`) is the only thing that
+    touches the directory. Access control is by unguessable id — `visibility`
+    governs discovery, not retrieval, which is a real property of the design
+    and is documented as such.
+    - File preview: `<img>`, `<audio>` and `<video>`, served with HTTP Range so
+    a video actually seeks.
+    - Progress indicators for uploads (XHR `upload.onprogress`; `fetch` cannot
+    report upload progress at all).
+    - Ability to delete uploaded files, including cleaning up the bytes when a
+    whole account is deleted.
  
 ## Modules we will probably use:
 - Use an ORM for the database.
 - Implement advanced search functionality with filters, sorting, and pagination.
-- File upload and management system.
-    - Support multiple file types (images, documents, etc.).
-    - Client-side and server-side validation (type, size, format).
-    - Secure file storage with proper access control.
-    - File preview functionality where applicable.
-    - Progress indicators for uploads.
-    - Ability to delete uploaded files.
 - Support for multiple languages (at least 3 languages).
     - Implement i18n (internationalization) system.
     - At least 3 complete language translations.

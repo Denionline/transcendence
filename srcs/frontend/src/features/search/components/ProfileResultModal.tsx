@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
 import Avatar from "../../../components/Avatar";
+import FileGallery from "../../files/components/FileGallery";
 import { fetchPublicProfile } from "../api";
 import type { PublicProfileDto } from "../types";
 
@@ -101,6 +102,16 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 						<p className="text-sm leading-relaxed text-base-content/70">{profile.bio}</p>
 					) : (
 						<p className="text-sm text-base-content/40 italic">No bio provided.</p>
+					)}
+
+					{profile.portfolio && profile.portfolio.length > 0 && (
+						<div className="flex flex-col gap-2">
+							<h3 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
+								Portfolio
+							</h3>
+							{/* Read-only: no `onDelete`. These are someone else's files. */}
+							<FileGallery files={profile.portfolio} />
+						</div>
 					)}
 				</div>
 			)}

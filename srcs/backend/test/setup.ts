@@ -1,14 +1,11 @@
+import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { config } from "dotenv";
-import { expand } from "dotenv-expand";
 
-// Tests run from srcs/backend, but the real environment lives in the repo-root
-// .env — whose DATABASE_URL contains ${POSTGRES_*} placeholders that are only
-// interpolated at container start. Load that file explicitly and expand the
-// interpolations so a bare `npm test` (or a single-file run) works on the host.
-// In CI the .env file is gitignored (absent), so this is a no-op and the
-// workflow's inline env vars are used instead.
-const rootEnv = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../.env");
-const result = config({ path: rootEnv, quiet: true });
-if (result.parsed) expand(result);
+//	Populates process.env from the repo-root .env. Must come before anything
+//	that reads a variable at import time — src/lib/env.ts, above all.
+import "../src/lib/load-dotenv.js";
+
+//	That .env sets UPLOAD_DIR to a path that only exists inside the backend
+//	container, so redirect tests at a per-pid temp directory. Not in
+//	load-dotenv.ts, because `npm run seed` needs the real UPLOAD_DIR.
+process.env.UPLOAD_DIR = path.join(os.tmpdir(), `artmate-test-uploads-${process.pid}`);

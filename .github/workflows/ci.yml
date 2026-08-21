@@ -105,6 +105,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Point UPLOAD_DIR at the runner's temp directory
+        run: echo "UPLOAD_DIR=$RUNNER_TEMP/uploads" >> "$GITHUB_ENV"
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Generate Prisma Client

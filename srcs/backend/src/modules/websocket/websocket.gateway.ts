@@ -130,11 +130,14 @@ export function initWebsocket(httpServer: HttpServer) {
 		});
 	});
 
-	authEvents.on("logout", ({ sessionId }) => {
+	//	Named, not inline: `authEvents` is a module-level singleton that outlives
+	//	any one `io`, and an anonymous closure cannot be detached. Every gateway
+	//	ever created stayed subscribed for the life of the process.
+	const onLogout = ({ sessionId }: { sessionId: string }) => {
 		io.in(`session:${sessionId}`).disconnectSockets(true);
-	});
+	};
 
-	authEvents.on("new_match", ({ matchId, userIds }: { matchId: string; userIds: string[] }) => {
+	const onNewMatch = ({ matchId, userIds }: { matchId: string; userIds: string[] }) => {
 		userIds.forEach((userId) => {
 			io.in(`user:${userId}`).socketsJoin(`chat:${matchId}`);
 		});
@@ -142,14 +145,39 @@ export function initWebsocket(httpServer: HttpServer) {
 		userIds.forEach((userId) => {
 			io.to(`chat:${matchId}`).except(`user:${userId}`).emit("user_online", { userId });
 		});
-	});
+	};
 
-	authEvents.on("send_message", ({ senderId, content, matchId, chatMessageId }) => {
+	const onSendMessage = ({
+		senderId,
+		content,
+		matchId,
+		chatMessageId,
+	}: {
+		senderId: string;
+		content: string;
+		matchId: string;
+		chatMessageId: string;
+	}) => {
 		io.to(`chat:${matchId}`).emit("new_message", { senderId, content, matchId, chatMessageId });
+	};
+
+	const onNewNotification = ({ targetId }: { targetId: string }) => {
+		io.to(`user:${targetId}`).emit("new_notification");
+	};
+
+	authEvents.on("logout", onLogout);
+	authEvents.on("new_match", onNewMatch);
+	authEvents.on("send_message", onSendMessage);
+	authEvents.on("new_notification", onNewNotification);
+
+	//	`io.close()` closes the http server it was given, so existing teardown
+	//	reaches this without any caller changing.
+	httpServer.on("close", () => {
+		authEvents.off("logout", onLogout);
+		authEvents.off("new_match", onNewMatch);
+		authEvents.off("send_message", onSendMessage);
+		authEvents.off("new_notification", onNewNotification);
 	});
 
-	authEvents.on("new_notification", ({ targetId }) => {
-		io.to(`user:${targetId}`).emit("new_notification");
-	});
 	return io;
 }
