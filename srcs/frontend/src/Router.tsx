@@ -23,7 +23,6 @@ import OpportunityDetailPage from "./pages/OpportunityDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import FriendsPage from "./pages/FriendsPage";
 import ProfilePage from "./pages/ProfilePage";
-import ProfilePage from "./pages/ProfilePage";
 
 export function defaultPathForRole(role: UserRole): string {
 	if (role === "admin") return "/admin";

@@ -15,13 +15,13 @@ interface PublicProfileUser {
 }
 
 // Mirrors what GET /profile/:id actually returns (profile.service.ts's
-// getArtistProfile / getHirerProfile) — there's no `role` field on the wire;
-// the two shapes are told apart the same way the rest of the app tells them
-// apart, by whether `organizationName` is present.
+// getCallerProfile, which wraps getArtistProfile / getHirerProfile — see
+// `role` and `friendshipStatus` there).
 export interface PublicArtistProfileDto {
 	role: "artist";
-	portfolio?: FileDto[];
-	category: string;
+	id: string;
+	userId: string;
+	categories: CategoryDto[];
 	bio: string | null;
 	location: string | null;
 	availability: boolean;
@@ -32,6 +32,7 @@ export interface PublicArtistProfileDto {
 }
 
 export interface PublicHirerProfileDto {
+	role: "hirer";
 	id: string;
 	userId: string;
 	categories: CategoryDto[];

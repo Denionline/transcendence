@@ -42,7 +42,6 @@ const publicHirerSelect = {
 	location: true,
 	availability: true,
 	categories: categoriesSelect,
-	user: { select: { avatarUrl: true } },
 	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.HirerProfileSelect;
 

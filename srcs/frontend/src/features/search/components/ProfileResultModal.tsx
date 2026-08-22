@@ -49,28 +49,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 		};
 	}, [userId]);
 
-	// There's no `role` field on the wire (see profile.service.ts) — told
-	// apart the same way the rest of the app tells the two shapes apart.
-	const isHirer = profile !== null && "organizationName" in profile;
-
-	if (status === "ready" && profile && !isHirer) {
-		return (
-			<ArtistDetailsModal
-				// Explicitly null once userId clears, even though `profile` is
-				// still the last-fetched one — this is what actually closes the
-				// modal, the same mechanism DesktopArtistDeck/MobileArtistStack
-				// already rely on.
-				artist={userId ? mapPublicProfileToArtist(profile) : null}
-				onClose={onClose}
-			/>
-		);
-	}
-
-	// There's no `role` field on the wire (see profile.service.ts) — told
-	// apart the same way the rest of the app tells the two shapes apart.
-	const isHirer = profile !== null && "organizationName" in profile;
-
-	if (status === "ready" && profile && !isHirer) {
+	if (status === "ready" && profile && profile.role === "artist") {
 		return (
 			<ArtistDetailsModal
 				// Explicitly null once userId clears, even though `profile` is

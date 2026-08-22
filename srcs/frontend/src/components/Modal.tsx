@@ -13,16 +13,15 @@ interface ModalProps {
 	onClose: () => void;
 	labelledBy: string;
 	children: ReactNode;
+	/**
+	 * Set to false for a modal the caller must resolve to proceed (e.g. a
+	 * mandatory onboarding step): hides the close button and stops Escape and
+	 * a backdrop click from calling `onClose`. Defaults to true.
+	 */
 	dismissible?: boolean;
-	size?: "md" | "lg";
 	/** Max width of the dialog. Defaults to "md" (32rem). */
 	size?: keyof typeof SIZE_CLASSES;
 }
-
-const SIZE_CLASSES = {
-	md: "max-w-lg",
-	lg: "max-w-3xl",
-} as const;
 
 export default function Modal({
 	open,

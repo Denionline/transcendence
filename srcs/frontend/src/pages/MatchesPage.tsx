@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { CheckIcon, ChevronDownIcon, MessageCircleIcon, Trash2Icon, XIcon } from "lucide-react";
 import Avatar from "../components/Avatar";
 import { listPendingInterests, respondToInterest } from "../features/interests/api";
@@ -11,7 +10,6 @@ import { useOnlineStatusUpdates } from "../features/matches/useOnlineStatus";
 import { getSocket } from "../lib/socket";
 import { ApiError } from "../lib/apiClient";
 import { formatDate, formatRelativeTime } from "../lib/format";
-import { getSocket } from "../lib/socket";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import type { NotificationType } from "../features/notifications/types";
 
@@ -22,7 +20,6 @@ function interestKey(interest: PendingInterestDto): string {
 }
 
 export default function MatchesPage() {
-	const { user, isLoading: authLoading } = useAuth();
 	return (
 		<div className="mx-auto flex max-w-2xl flex-col gap-10">
 			<div>
@@ -44,6 +41,7 @@ export default function MatchesPage() {
 // ---------------------------------------------------------------------------
 
 function PossibleMatchesSection() {
+	const { user, isLoading: authLoading } = useAuth();
 	const [interests, setInterests] = useState<PendingInterestDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [error, setError] = useState<string | null>(null);
