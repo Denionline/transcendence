@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
-import Avatar from "../../../components/Avatar";
-import FileGallery from "../../files/components/FileGallery";
+import FriendRequestButton from "../../friends/components/FriendRequestButton";
+import type { FriendshipStatus } from "../../friends/types";
+import PublicProfileView from "./PublicProfileView";
 import ArtistDetailsModal from "../../artists/components/ArtistDetailsModal";
 import { mapPublicProfileToArtist } from "../../artists/mapPublicProfile";
 import { fetchPublicProfile } from "../api";
+import { profileDisplayName } from "../utils";
 import type { PublicProfileDto } from "../types";
 
 interface ProfileResultModalProps {
@@ -22,6 +24,7 @@ interface ProfileResultModalProps {
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
+	const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>("none");
 	const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
 
 	useEffect(() => {
@@ -35,6 +38,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			const result = await fetchPublicProfile(userId);
 			if (cancelled) return;
 			setProfile(result);
+			setFriendshipStatus(result.friendshipStatus ?? "none");
 			setStatus("ready");
 		})().catch(() => {
 			if (cancelled) return;
@@ -62,7 +66,24 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 		);
 	}
 
-	const username = profile?.user?.username ?? "Unnamed";
+	// There's no `role` field on the wire (see profile.service.ts) — told
+	// apart the same way the rest of the app tells the two shapes apart.
+	const isHirer = profile !== null && "organizationName" in profile;
+
+	if (status === "ready" && profile && !isHirer) {
+		return (
+			<ArtistDetailsModal
+				// Explicitly null once userId clears, even though `profile` is
+				// still the last-fetched one — this is what actually closes the
+				// modal, the same mechanism DesktopArtistDeck/MobileArtistStack
+				// already rely on.
+				artist={userId ? mapPublicProfileToArtist(profile) : null}
+				onClose={onClose}
+			/>
+		);
+	}
+
+	const username = profile ? profileDisplayName(profile) : "Unnamed";
 
 	return (
 		<Modal open={Boolean(userId)} onClose={onClose} labelledBy="profile-result-title">
@@ -84,45 +105,18 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 				</div>
 			)}
 
-			{status === "ready" && profile && isHirer && (
-				<div className="flex flex-col gap-4 p-6">
-					<div className="flex items-center gap-4">
-						<Avatar username={username} avatarUrl={profile.user?.avatarUrl ?? null} size="lg" />
-						<div className="min-w-0">
-							<div className="truncate text-xl leading-snug font-semibold">{username}</div>
-							<div className="truncate text-sm text-base-content/60">
-								{profile.organizationName} · {profile.location ?? "Location TBD"}
-							</div>
-						</div>
-					</div>
-
-					<div className="flex flex-wrap gap-2">
-						<span className="badge badge-sm badge-secondary font-medium">Hirer</span>
-						{profile.categories.map((category) => (
-							<span
-								key={category.slug}
-								className="badge badge-sm badge-outline border-base-content/15"
-							>
-								{category.label}
-							</span>
-						))}
-					</div>
-
-					{profile.bio ? (
-						<p className="text-sm leading-relaxed text-base-content/70">{profile.bio}</p>
-					) : (
-						<p className="text-sm text-base-content/40 italic">No bio provided.</p>
-					)}
-
-					{profile.portfolio.length > 0 && (
-						<div className="flex flex-col gap-2">
-							<h3 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-								Portfolio
-							</h3>
-							{/* Read-only: no `onDelete`. These are someone else's files. */}
-							<FileGallery files={profile.portfolio} />
-						</div>
-					)}
+			{status === "ready" && profile && userId && (
+				<div className="p-6">
+					<PublicProfileView
+						profile={profile}
+						friendSlot={
+							<FriendRequestButton
+								userId={userId}
+								status={friendshipStatus}
+								onStatusChange={setFriendshipStatus}
+							/>
+						}
+					/>
 				</div>
 			)}
 		</Modal>

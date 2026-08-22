@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { CheckIcon, ChevronDownIcon, MessageCircleIcon, Trash2Icon, XIcon } from "lucide-react";
 import Avatar from "../components/Avatar";
 import { listPendingInterests, respondToInterest } from "../features/interests/api";
@@ -10,6 +11,9 @@ import { useOnlineStatusUpdates } from "../features/matches/useOnlineStatus";
 import { getSocket } from "../lib/socket";
 import { ApiError } from "../lib/apiClient";
 import { formatDate, formatRelativeTime } from "../lib/format";
+import { getSocket } from "../lib/socket";
+import { useAuth } from "../features/auth/hooks/useAuth";
+import type { NotificationType } from "../features/notifications/types";
 
 type Status = "loading" | "ready" | "error";
 
@@ -18,6 +22,7 @@ function interestKey(interest: PendingInterestDto): string {
 }
 
 export default function MatchesPage() {
+	const { user, isLoading: authLoading } = useAuth();
 	return (
 		<div className="mx-auto flex max-w-2xl flex-col gap-10">
 			<div>
@@ -52,7 +57,6 @@ function PossibleMatchesSection() {
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
-			setStatus("loading");
 			const items = await listPendingInterests();
 			if (cancelled) return;
 			setInterests(items);
@@ -66,6 +70,25 @@ function PossibleMatchesSection() {
 			cancelled = true;
 		};
 	}, [retryToken]);
+
+	// Someone showing interest fires a `swipe_liked` notification, pushed live
+	// over the socket with its type — refetch only for that type, since other
+	// notifications (a friend request, a gig closing) never add a new pending
+	// interest here.
+	useEffect(() => {
+		if (authLoading || !user) return;
+		const socket = getSocket();
+		if (!socket) return;
+
+		function handleNewNotification({ type }: { type: NotificationType }) {
+			if (type === "swipe_liked") setRetryToken((t) => t + 1);
+		}
+
+		socket.on("new_notification", handleNewNotification);
+		return () => {
+			socket.off("new_notification", handleNewNotification);
+		};
+	}, [authLoading, user]);
 
 	function retry() {
 		setRetryToken((t) => t + 1);
@@ -208,7 +231,10 @@ function PossibleMatchesSection() {
 								key={key}
 								className="flex items-center justify-between gap-4 rounded-2xl border border-base-content/10 p-4"
 							>
-								<div className="flex min-w-0 items-center gap-3">
+								<Link
+									to={`/profile/${interest.otherUser.id}`}
+									className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80"
+								>
 									<Avatar
 										username={interest.otherUser.displayName}
 										avatarUrl={interest.otherUser.avatarUrl}
@@ -220,7 +246,7 @@ function PossibleMatchesSection() {
 											Interested in {interest.gig.title} · {formatDate(interest.createdAt)}
 										</p>
 									</div>
-								</div>
+								</Link>
 
 								<div className="flex shrink-0 items-center gap-2">
 									<button

@@ -38,9 +38,10 @@ router.patch("/me", requireAuth, async (req, res) => {
 });
 
 router.get("/:id", requireAuth, async (req, res) => {
+	const caller = req.user!;
 	const targetId = parseId(req.params.id);
 
-	const result = await getCallerProfile(targetId);
+	const result = await getCallerProfile(targetId, caller.id);
 	res.status(200).json(result);
 });
 

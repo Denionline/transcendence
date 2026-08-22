@@ -3,6 +3,7 @@ import { throwError } from "../../lib/http-error.js";
 import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { publicCategorySelect, resolveCategoryIds } from "../categories/categories.service.js";
 import { listPublicFilesFor } from "../files/files.service.js";
+import { getFriendshipStatus } from "../friends/friends.service.js";
 
 export interface ArtistProfileInput {
 	categories?: unknown;
@@ -41,6 +42,7 @@ const publicHirerSelect = {
 	location: true,
 	availability: true,
 	categories: categoriesSelect,
+	user: { select: { avatarUrl: true } },
 	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.HirerProfileSelect;
 
@@ -106,11 +108,7 @@ export async function upsertArtistProfile(userId: string, input: ArtistProfileIn
 	});
 	requireCategoriesOnCreate(existing !== null, categoryIds);
 
-	//	The profile row and its category links must move together, or a failed
-	//	link write would leave a profile advertising categories it no longer has.
 	await prisma.$transaction(async (tx) => {
-		//	Deliberately not an upsert: Prisma validates the `create` branch even
-		//	when the row exists, so a partial edit (bio only) used to fail.
 		const profile = existing
 			? await tx.artistProfile.update({ where: { userId }, data, select: { id: true } })
 			: await tx.artistProfile.create({ data: { userId, ...data }, select: { id: true } });
@@ -173,9 +171,6 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 	return await getHirerProfile(userId);
 }
 
-//	An owner's public files are their portfolio — no relation, no flag, which
-//	is why this needed no migration. A file cannot be public and off the
-//	portfolio. See docs/mad/20260819-file-uploads.md.
 async function getArtistProfile(userId: string) {
 	const profile = await prisma.artistProfile.findUnique({
 		where: { userId },
@@ -196,13 +191,19 @@ async function getHirerProfile(userId: string) {
 	return { ...flattenCategories(profile), portfolio };
 }
 
-export async function getCallerProfile(targetId: string) {
+export async function getCallerProfile(targetId: string, callerId: string) {
 	const profile = await prisma.user.findUnique({ where: { id: targetId } });
 	if (!profile) throwError(404, "USER_NOT_FOUND", "no user with that id");
 	if (profile.role === UserRole.admin)
 		throwError(404, "PROFILE_NOT_FOUND", "admin accounts don't have an artist/hirer profile");
-	if (profile.role === UserRole.artist) return await getArtistProfile(targetId);
-	return await getHirerProfile(targetId);
+
+	const isArtist = profile.role === UserRole.artist;
+	const base = isArtist ? await getArtistProfile(targetId) : await getHirerProfile(targetId);
+	const result = { role: isArtist ? ("artist" as const) : ("hirer" as const), ...base };
+
+	if (callerId === targetId) return result;
+	const friendshipStatus = await getFriendshipStatus(callerId, targetId);
+	return { ...result, friendshipStatus };
 }
 
 export async function deleteProfile(targetId: string) {
