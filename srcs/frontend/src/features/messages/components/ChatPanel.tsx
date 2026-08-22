@@ -2,10 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeftIcon, SendIcon } from "lucide-react";
 import Avatar from "../../../components/Avatar";
-import { listMessages, markMessagesRead, sendMessage, toOptimisticMessage } from "../api";
+import MessageBubble from "./MessageBubble";
+import {
+	deleteMessage,
+	listMessages,
+	markMessagesRead,
+	sendMessage,
+	toOptimisticMessage,
+} from "../api";
 import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
-import { formatTime } from "../../../lib/format";
 import { getSocket } from "../../../lib/socket";
 import { useUnreadMessages } from "../hooks/useUnreadMessages";
 
@@ -132,6 +138,15 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			});
 	}
 
+	async function handleDeleteMessage(messageId: string) {
+		try {
+			await deleteMessage(match.matchId, messageId);
+			setMessages((prev) => prev.filter((m) => m.id !== messageId));
+		} catch (err: unknown) {
+			console.error("Failed to delete message:", err);
+		}
+	}
+
 	function handleScroll() {
 		const el = listRef.current;
 		if (!el) return;
@@ -254,21 +269,14 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 							</div>
 						) : (
 							<div className="flex flex-col">
-								{messages.map((message) => {
-									const isMine = message.senderId === currentUserId;
-									return (
-										<div key={message.id} className={`chat ${isMine ? "chat-end" : "chat-start"}`}>
-											<div
-												className={`chat-bubble ${isMine ? "chat-bubble-primary" : "bg-base-200 text-base-content"}`}
-											>
-												{message.content}
-											</div>
-											<div className="chat-footer text-xs text-base-content/40">
-												{formatTime(message.createdAt)}
-											</div>
-										</div>
-									);
-								})}
+								{messages.map((message) => (
+									<MessageBubble
+										key={message.id}
+										message={message}
+										isMine={message.senderId === currentUserId}
+										onDelete={handleDeleteMessage}
+									/>
+								))}
 							</div>
 						)}
 					</>
