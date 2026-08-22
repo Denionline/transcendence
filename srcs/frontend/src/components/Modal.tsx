@@ -8,13 +8,14 @@ interface ModalProps {
 	onClose: () => void;
 	labelledBy: string;
 	children: ReactNode;
-	/**
-	 * Set to false for a modal the caller must resolve to proceed (e.g. a
-	 * mandatory onboarding step): hides the close button and stops Escape and
-	 * a backdrop click from calling `onClose`. Defaults to true.
-	 */
 	dismissible?: boolean;
+	size?: "md" | "lg";
 }
+
+const SIZE_CLASSES = {
+	md: "max-w-lg",
+	lg: "max-w-3xl",
+} as const;
 
 export default function Modal({
 	open,
@@ -22,16 +23,10 @@ export default function Modal({
 	labelledBy,
 	children,
 	dismissible = true,
+	size = "md",
 }: ModalProps) {
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const dialogRef = useRef<HTMLDivElement>(null);
-	// Callers routinely pass an inline `onClose` (`onClose={() => setX(null)}`)
-	// that's a fresh function on every one of *their* renders — including
-	// renders triggered by typing into a field this modal contains. Mirroring
-	// it into a ref (kept current via its own effect, not written during
-	// render) lets the focus/scroll-lock effect below depend on `open` alone,
-	// instead of re-running — and re-stealing focus into the dialog — on
-	// every keystroke.
 	const onCloseRef = useRef(onClose);
 	useEffect(() => {
 		onCloseRef.current = onClose;
@@ -70,7 +65,7 @@ export default function Modal({
 				aria-modal="true"
 				aria-labelledby={labelledBy}
 				tabIndex={-1}
-				className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl outline-none animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
+				className={`relative z-10 max-h-[85vh] w-full ${SIZE_CLASSES[size]} overflow-y-auto rounded-2xl border border-base-content/10 bg-base-100 shadow-2xl outline-none animate-[modal-pop-in_220ms_cubic-bezier(0.16,1,0.3,1)]`}
 			>
 				{dismissible && (
 					<button

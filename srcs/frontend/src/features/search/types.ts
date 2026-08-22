@@ -1,4 +1,5 @@
 import type { FileDto } from "../files/types";
+import type { FriendshipStatus } from "../friends/types";
 
 export interface SearchProfileResult {
 	userId: string;
@@ -14,13 +15,13 @@ interface PublicProfileUser {
 
 export interface PublicArtistProfileDto {
 	role: "artist";
-	/** The owner's `public` files — GET /api/profile/:id never lists a private one. */
 	portfolio?: FileDto[];
 	category: string;
 	bio: string | null;
 	location: string | null;
 	availability: boolean;
 	user?: PublicProfileUser | null;
+	friendshipStatus?: FriendshipStatus;
 }
 
 export interface PublicHirerProfileDto {
@@ -32,6 +33,7 @@ export interface PublicHirerProfileDto {
 	location: string | null;
 	availability: boolean;
 	user?: PublicProfileUser | null;
+	friendshipStatus?: FriendshipStatus;
 }
 
 export type PublicProfileDto = PublicArtistProfileDto | PublicHirerProfileDto;
