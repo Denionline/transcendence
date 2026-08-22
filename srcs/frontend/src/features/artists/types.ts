@@ -1,11 +1,12 @@
 import type { CategoryDto } from "../categories/types";
+import type { FileDto } from "../files/types";
 
 /**
- * One item in a profile's media gallery — today these are synthesized client-side
- * (see mockProfileMedia.ts) since the backend doesn't yet persist a media list per
- * profile, only the single `User.avatarUrl`. The shape is deliberately what a real
- * `GET /profiles/:id` media array would look like, so swapping the mock builder for
- * real API data later is a one-file change.
+ * One item in a profile's media gallery — built from the artist's real
+ * `File` rows via `fileToMediaItem` (see files/toMediaItem.ts). Kept as its
+ * own shape, rather than reusing `FileDto` directly, because `ArtistCard`'s
+ * viewer (`ProfileMediaGallery`) also wants a `posterUrl` slides can supply
+ * that has no equivalent on a stored file.
  */
 export interface ProfileMediaItem {
 	id: string;
@@ -48,4 +49,6 @@ export interface ArtistCandidateDto {
 		username: string;
 		avatarUrl: string | null;
 	} | null;
+	/** The same public files `GET /profile/:id` calls `portfolio` — real uploads, not mock media. */
+	portfolio: FileDto[];
 }

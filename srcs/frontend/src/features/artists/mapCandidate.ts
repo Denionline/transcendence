@@ -1,8 +1,25 @@
-import { buildMockProfileMedia } from "./mockProfileMedia";
-import type { Artist, ArtistCandidateDto } from "./types";
+import { fileToMediaItem } from "../files/toMediaItem";
+import type { Artist, ArtistCandidateDto, ProfileMediaItem } from "./types";
 
 export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artist {
 	const photoUrl = candidate.user?.avatarUrl ?? null;
+
+	// The same gallery the artist sees on their own profile: the avatar first
+	// (if set), then every public portfolio file, newest first — nothing
+	// synthesized. See docs/mad/20260819-file-uploads.md.
+	const media: ProfileMediaItem[] = [];
+	if (photoUrl)
+		media.push({
+			id: `${candidate.id}-avatar`,
+			type: "image",
+			url: photoUrl,
+			label: "Profile photo",
+		});
+	for (const file of candidate.portfolio) {
+		const item = fileToMediaItem(file);
+		if (item) media.push(item);
+	}
+
 	return {
 		id: candidate.id,
 		userId: candidate.userId,
@@ -16,6 +33,6 @@ export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artis
 		tags: candidate.categories.map((category) => category.label),
 		photoUrl,
 		bio: candidate.bio ?? "",
-		media: buildMockProfileMedia(candidate.id, photoUrl),
+		media,
 	};
 }
