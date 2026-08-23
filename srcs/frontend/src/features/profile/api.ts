@@ -1,5 +1,6 @@
 import { apiRequest } from "../../lib/apiClient";
 import type { CategoryDto } from "../categories/types";
+import type { FileDto } from "../files/types";
 
 // Reads return whole Category rows; writes send slugs. The two differ on
 // purpose: the server owns the vocabulary, so the client names a category
@@ -8,8 +9,10 @@ export interface ArtistProfileFields {
 	categories: CategoryDto[];
 	bio: string | null;
 	location: string | null;
-	rate: number | null;
 	availability: boolean;
+	// The caller's public files — an artist's portfolio is simply their public
+	// uploads, no separate relation. See listPublicFilesFor on the backend.
+	portfolio: FileDto[];
 }
 
 export interface HirerProfileFields {
@@ -18,6 +21,7 @@ export interface HirerProfileFields {
 	bio: string | null;
 	location: string | null;
 	availability: boolean;
+	portfolio: FileDto[];
 }
 
 export interface ProfileUpdate {
@@ -25,7 +29,6 @@ export interface ProfileUpdate {
 	organizationName?: string;
 	bio?: string | null;
 	location?: string | null;
-	rate?: number | null;
 	availability?: boolean;
 }
 

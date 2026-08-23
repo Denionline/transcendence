@@ -1,6 +1,7 @@
 export interface GigListing {
 	id: string;
 	hirerName: string;
+	hirerAvatarUrl?: string | null;
 	verified?: boolean;
 	/** Matching key for the discipline filter. */
 	category: string;

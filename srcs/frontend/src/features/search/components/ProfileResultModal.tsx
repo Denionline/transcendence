@@ -3,6 +3,8 @@ import Modal from "../../../components/Modal";
 import FriendRequestButton from "../../friends/components/FriendRequestButton";
 import type { FriendshipStatus } from "../../friends/types";
 import PublicProfileView from "./PublicProfileView";
+import ArtistDetailsModal from "../../artists/components/ArtistDetailsModal";
+import { mapPublicProfileToArtist } from "../../artists/mapPublicProfile";
 import { fetchPublicProfile } from "../api";
 import { profileDisplayName } from "../utils";
 import type { PublicProfileDto } from "../types";
@@ -13,9 +15,12 @@ interface ProfileResultModalProps {
 }
 
 /**
- * Read-only view of another user's artist/hirer profile, opened from a
- * search result — no swipe actions (Pass/Interested/Save), just "who is
- * this" plus the ability to send/respond to a friend request.
+ * Opened from a search result. An artist hit reuses ArtistDetailsModal
+ * outright — the exact same profile a hirer sees clicking an ArtistCard on
+ * Discover, portfolio and all — just without the Pass/Interested actions,
+ * since a search hit isn't a swipe candidate. There's no equivalent "hirer
+ * card" anywhere else in the app to mirror, so a hirer hit gets a lighter,
+ * purpose-built read-only panel instead.
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
@@ -24,8 +29,8 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 
 	useEffect(() => {
 		// Nothing to fetch once the modal's closing (userId cleared) — the
-		// stale profile/status left behind doesn't matter, Modal itself already
-		// renders nothing while `open` is false.
+		// stale profile/status left behind doesn't matter, both render
+		// branches below key their "is this open" state off `userId` itself.
 		if (!userId) return;
 		let cancelled = false;
 		(async () => {
@@ -43,6 +48,19 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			cancelled = true;
 		};
 	}, [userId]);
+
+	if (status === "ready" && profile && profile.role === "artist") {
+		return (
+			<ArtistDetailsModal
+				// Explicitly null once userId clears, even though `profile` is
+				// still the last-fetched one — this is what actually closes the
+				// modal, the same mechanism DesktopArtistDeck/MobileArtistStack
+				// already rely on.
+				artist={userId ? mapPublicProfileToArtist(profile) : null}
+				onClose={onClose}
+			/>
+		);
+	}
 
 	const username = profile ? profileDisplayName(profile) : "Unnamed";
 

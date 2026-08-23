@@ -11,13 +11,12 @@ import { useNavigate } from "react-router-dom";
 import { useTheme } from "../features/theme/hooks/useTheme";
 import { THEMES } from "../features/theme/constants";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
-import ProfileSection from "../features/profile/components/ProfileSection";
-import PortfolioSection from "../features/profile/components/PortfolioSection";
+import AccountSection from "../features/profile/components/AccountSection";
 
-type Section = "profile" | "preferences" | "notifications" | "appearance";
+type Section = "account" | "preferences" | "notifications" | "appearance";
 
 const SECTIONS: { id: Section; label: string; icon: typeof UserRoundIcon }[] = [
-	{ id: "profile", label: "Profile", icon: UserRoundIcon },
+	{ id: "account", label: "Account", icon: UserRoundIcon },
 	// { id: "preferences", label: "Preferences", icon: SlidersHorizontalIcon },
 	// { id: "notifications", label: "Notifications", icon: BellIcon },
 	{ id: "appearance", label: "Appearance", icon: PaletteIcon },
@@ -25,7 +24,7 @@ const SECTIONS: { id: Section; label: string; icon: typeof UserRoundIcon }[] = [
 
 export default function SettingsPage() {
 	const navigate = useNavigate();
-	const [activeSection, setActiveSection] = useState<Section>("profile");
+	const [activeSection, setActiveSection] = useState<Section>("account");
 
 	return (
 		<div className="min-h-screen bg-base-100">
@@ -63,12 +62,7 @@ export default function SettingsPage() {
 				</nav>
 
 				<div className="min-w-0">
-					{activeSection === "profile" && (
-						<div className="flex flex-col gap-6">
-							<ProfileSection />
-							<PortfolioSection />
-						</div>
-					)}
+					{activeSection === "account" && <AccountSection />}
 
 					{activeSection === "preferences" && (
 						<EmptySection
@@ -103,7 +97,7 @@ function EmptySection({
 	description: string;
 }) {
 	return (
-		<section className="rounded-box border border-base-content/10 bg-base-100">
+		<section className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
 			<div className="border-b border-base-content/10 p-4">
 				<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 					{title}
@@ -122,7 +116,7 @@ function AppearanceSection() {
 
 	return (
 		<section className="flex flex-col gap-6">
-			<div className="rounded-box border border-base-content/10 bg-base-100">
+			<div className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
 				<div className="border-b border-base-content/10 p-4">
 					<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 						Theme

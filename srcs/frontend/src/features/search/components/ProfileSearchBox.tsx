@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { SearchIcon } from "lucide-react";
 import { searchProfiles } from "../api";
 import ProfileResultModal from "./ProfileResultModal";
+import Avatar from "../../../components/Avatar";
 import { useAuth } from "../../auth/hooks/useAuth";
 import type { SearchProfileResult } from "../types";
 
@@ -104,15 +105,16 @@ export default function ProfileSearchBox({
 			</label>
 
 			{isOpen && results.length > 0 && (
-				<ul className="absolute inset-x-0 top-full z-20 mt-2 overflow-hidden rounded-box border border-base-content/10 bg-base-100 py-1 shadow-lg">
+				<ul className="absolute inset-x-0 top-full z-40 mt-2 overflow-hidden rounded-box border border-base-content/10 bg-base-100 py-1 shadow-lg">
 					{results.map((result) => (
 						<li key={result.userId}>
 							<button
 								type="button"
 								onClick={() => handleSelect(result.userId)}
-								className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-base-200"
+								className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-base-200"
 							>
-								<span className="truncate font-medium">{result.username}</span>
+								<Avatar username={result.username} avatarUrl={result.avatarUrl} size="sm" />
+								<span className="min-w-0 flex-1 truncate font-medium">{result.username}</span>
 								<span
 									className={`badge badge-sm shrink-0 font-medium ${
 										result.role === "artist" ? "badge-primary" : "badge-secondary"

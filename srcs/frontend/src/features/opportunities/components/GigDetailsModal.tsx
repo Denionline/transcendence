@@ -1,6 +1,6 @@
 import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
-import { initials } from "../../../lib/format";
+import Avatar from "../../../components/Avatar";
 import type { GigListing } from "../gigTypes";
 
 interface GigDetailsModalProps {
@@ -44,11 +44,12 @@ export default function GigDetailsModal({
 
 					<div className="flex flex-col gap-4 p-6">
 						<div className="flex items-center gap-2 text-sm">
-							<div className="avatar avatar-placeholder shrink-0">
-								<div className="w-9 rounded-full bg-neutral text-neutral-content">
-									<span className="text-xs">{initials(gig.hirerName)}</span>
-								</div>
-							</div>
+							<Avatar
+								username={gig.hirerName}
+								avatarUrl={gig.hirerAvatarUrl}
+								size="sm"
+								className="shrink-0"
+							/>
 							<div className="min-w-0">
 								<div className="flex items-center gap-1 truncate font-medium">
 									<span className="truncate">{gig.hirerName}</span>

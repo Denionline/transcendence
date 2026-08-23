@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, XIcon } from "lucide-react";
+import { BadgeCheckIcon, EyeIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import type { Artist } from "../types";
 
@@ -69,6 +69,16 @@ export default function ArtistCard({
 		</span>
 	);
 
+	// Gently pulses forever so it reads as an invitation on its own — mobile
+	// has no hover to reveal it with. On desktop, hovering settles it into a
+	// steady, slightly bigger state instead of fighting the loop mid-pulse.
+	const detailsHint = (
+		<span className="pointer-events-none absolute top-3 right-3 flex animate-[hint-pulse_2400ms_ease-in-out_infinite] items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur transition-transform duration-200 group-hover:animate-none group-hover:scale-110">
+			<EyeIcon className="size-3" aria-hidden="true" />
+			View profile
+		</span>
+	);
+
 	// `tags` and `categorySlugs` are built from the same category list, in the
 	// same order (see mapCandidate.ts / mapProfile.ts) — zipping by index pairs
 	// each display label back up with its matching key.
@@ -99,6 +109,7 @@ export default function ArtistCard({
 				{photo}
 
 				<div className="absolute top-3 left-3">{availabilityBadge}</div>
+				{detailsHint}
 
 				<div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-linear-to-t from-black/85 via-black/50 to-transparent p-5 pt-16 text-white">
 					<div>
@@ -130,6 +141,7 @@ export default function ArtistCard({
 			<div className="relative min-h-0 flex-1 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
 				{photo}
 				<div className="absolute top-3 left-3">{availabilityBadge}</div>
+				{detailsHint}
 			</div>
 
 			<div className="flex shrink-0 flex-col gap-3 p-4">

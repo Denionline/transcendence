@@ -1,6 +1,6 @@
 import { BadgeCheckIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
-import { initials } from "../../../lib/format";
+import Avatar from "../../../components/Avatar";
 import type { GigListing } from "../gigTypes";
 
 interface GigCardProps {
@@ -41,6 +41,7 @@ export default function GigCard({
 
 	const {
 		hirerName,
+		hirerAvatarUrl,
 		verified,
 		category,
 		categoryLabel,
@@ -83,11 +84,7 @@ export default function GigCard({
 
 			<div className="flex shrink-0 flex-col gap-3 p-4">
 				<div className="flex items-center gap-2 text-sm">
-					<div className="avatar avatar-placeholder shrink-0">
-						<div className="w-8 rounded-full bg-neutral text-neutral-content">
-							<span className="text-[10px]">{initials(hirerName)}</span>
-						</div>
-					</div>
+					<Avatar username={hirerName} avatarUrl={hirerAvatarUrl} size="sm" className="shrink-0" />
 					<div className="min-w-0">
 						<div className="flex items-center gap-1 truncate font-medium">
 							<span className="truncate">{hirerName}</span>

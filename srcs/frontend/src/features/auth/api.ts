@@ -89,11 +89,20 @@ export async function updateProfileRequest(
 
 export async function updatePasswordRequest(
 	id: string,
+	email: string,
 	currentPassword: string,
 	newPassword: string,
 ): Promise<void> {
-	void id;
-	void currentPassword;
-	void newPassword;
-	throw new Error("Changing your password is not available yet");
+	// There's no dedicated change-password endpoint that verifies the current
+	// password server-side — PUT /users/:id will set any password an
+	// authenticated caller sends, no questions asked. Reusing the one
+	// endpoint that actually checks a password (login) as the verification
+	// step means a wrong current password also counts against the account's
+	// real login-attempt lockout, same as a genuine failed login would —
+	// rather than skipping verification, or inventing a fake check.
+	await loginRequest({ email, password: currentPassword });
+	await request(`/users/${id}`, {
+		method: "PUT",
+		body: JSON.stringify({ password: newPassword }),
+	});
 }

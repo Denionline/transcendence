@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	async function updatePassword(currentPassword: string, newPassword: string) {
 		if (!user) throw new Error("Not authenticated");
-		await updatePasswordRequest(user.id, currentPassword, newPassword);
+		await updatePasswordRequest(user.id, user.email, currentPassword, newPassword);
 	}
 
 	return (

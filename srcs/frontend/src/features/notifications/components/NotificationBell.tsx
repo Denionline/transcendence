@@ -43,7 +43,7 @@ export default function NotificationBell() {
 			</div>
 			<div
 				tabIndex={0}
-				className="dropdown-content z-1 mt-3 w-80 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg sm:w-96"
+				className="dropdown-content z-40 mt-3 w-80 rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg sm:w-96"
 			>
 				<NotificationDropdown />
 			</div>

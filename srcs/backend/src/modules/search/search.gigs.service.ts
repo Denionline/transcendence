@@ -65,9 +65,17 @@ function descriptionMatches(q: string): Prisma.GigWhereInput {
 	return { description: { contains: q, mode: "insensitive" } };
 }
 
+//	The navbar's quick-search box is the only caller that ever sends ?q= here
+//	(see ProfileSearchBox / searchProfiles), and it's a *name* search — an
+//	artist typing the hirer they're looking for should find them even when
+//	that name never appears in a gig's own title or description.
+function hirerNameMatches(q: string): Prisma.GigWhereInput {
+	return { hirer: { username: { contains: q, mode: "insensitive" } } };
+}
+
 function withTextSearch(filters: Prisma.GigWhereInput, q?: string): Prisma.GigWhereInput {
 	if (q === undefined) return filters;
-	return { AND: [filters, { OR: [titleMatches(q), descriptionMatches(q)] }] };
+	return { AND: [filters, { OR: [titleMatches(q), descriptionMatches(q), hirerNameMatches(q)] }] };
 }
 
 function buildGigOrderBy(sort: GigSort): Prisma.GigOrderByWithRelationInput[] {
@@ -103,7 +111,7 @@ async function searchGigsByRelevance(
 ) {
 	const whereA: Prisma.GigWhereInput = { AND: [filters, titleMatches(q)] };
 	const whereB: Prisma.GigWhereInput = {
-		AND: [filters, { NOT: titleMatches(q) }, descriptionMatches(q)],
+		AND: [filters, { NOT: titleMatches(q) }, { OR: [descriptionMatches(q), hirerNameMatches(q)] }],
 	};
 
 	const [countA, countB] = await prisma.$transaction([

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogOutIcon, MenuIcon, PlusIcon, SettingsIcon, XIcon } from "lucide-react";
+import { LogOutIcon, MenuIcon, PlusIcon, SettingsIcon, UserRoundIcon, XIcon } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 import Avatar from "./Avatar";
@@ -46,7 +46,13 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 	}
 
 	return (
-		<header className="sticky top-0 z-30 border-b border-base-content/10 bg-base-100">
+		// z-40, not z-30: several pages (Profile, Settings, New Opportunity) mount
+		// their own `sticky top-0` header below this one. Two positioned siblings
+		// with an equal z-index stack by DOM order, so at z-30 those later headers
+		// would win the tie and paint over this navbar — dropdown menus included,
+		// since a descendant's z-index only orders it within its own parent's
+		// stacking context, not against a sibling context further up the tree.
+		<header className="sticky top-0 z-40 border-b border-base-content/10 bg-base-100">
 			<nav className="navbar gap-2 px-4 sm:gap-4 sm:px-6">
 				<div className="flex flex-none items-center gap-1">
 					<button
@@ -112,9 +118,15 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 							</div>
 							<ul
 								tabIndex={0}
-								className="menu dropdown-content menu-sm z-1 mt-3 w-44 rounded-box bg-base-100 p-2 shadow"
+								className="menu dropdown-content menu-sm z-40 mt-3 w-44 rounded-box bg-base-100 p-2 shadow"
 							>
 								<li className="menu-title truncate">{user.username}</li>
+								<li>
+									<Link to="/profile">
+										<UserRoundIcon className="size-4" aria-hidden="true" />
+										Profile
+									</Link>
+								</li>
 								<li>
 									<Link to="/settings">
 										<SettingsIcon className="size-4" aria-hidden="true" />

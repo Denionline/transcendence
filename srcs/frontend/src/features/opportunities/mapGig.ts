@@ -16,6 +16,7 @@ export function mapGigToListing(gig: GigDto): GigListing {
 	return {
 		id: gig.id,
 		hirerName: gig.hirer?.username ?? "Unnamed hirer",
+		hirerAvatarUrl: gig.hirer?.avatarUrl ?? null,
 		category: gig.category.slug,
 		categoryLabel: gig.category.label,
 		// `??` alone misses an explicitly empty string (as opposed to a genuinely

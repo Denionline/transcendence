@@ -35,12 +35,14 @@ export const publicArtistSelect = {
 } satisfies Prisma.ArtistProfileSelect;
 
 const publicHirerSelect = {
+	id: true,
+	userId: true,
 	organizationName: true,
 	bio: true,
 	location: true,
 	availability: true,
 	categories: categoriesSelect,
-	user: { select: { avatarUrl: true } },
+	user: { select: { username: true, avatarUrl: true } },
 } satisfies Prisma.HirerProfileSelect;
 
 //	Prisma nests the join row, but nobody outside wants to see it: a profile
@@ -145,7 +147,10 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 			"VALIDATION_ERROR",
 			"organizationName is required when creating a profile for the first time",
 		);
-	requireCategoriesOnCreate(existing !== null, categoryIds);
+	// Unlike artists, a hirer's own category was never read by anything —
+	// matching runs on each gig's category (see verifyCategoryMatch), not the
+	// hirer's profile — so creating one doesn't require picking a category.
+	// `categoryIds` is still honored if a caller sends it, for any old data.
 
 	await prisma.$transaction(async (tx) => {
 		const profile = existing

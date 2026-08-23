@@ -1,5 +1,6 @@
 import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
+import ProfileMediaGallery from "./ProfileMediaGallery";
 import type { Artist } from "../types";
 
 interface ArtistDetailsModalProps {
@@ -7,8 +8,10 @@ interface ArtistDetailsModalProps {
 	/** Discipline slugs currently checked in the sidebar filter — matching tags render highlighted. */
 	selectedDisciplines?: Set<string>;
 	onClose: () => void;
-	onPass: () => void;
-	onInterested: () => void;
+	/** Omit both to render a read-only profile — e.g. opened from a search
+	 *  result, which isn't a swipe candidate to act on. */
+	onPass?: () => void;
+	onInterested?: () => void;
 }
 
 export default function ArtistDetailsModal({
@@ -19,29 +22,23 @@ export default function ArtistDetailsModal({
 	onInterested,
 }: ArtistDetailsModalProps) {
 	return (
-		<Modal open={Boolean(artist)} onClose={onClose} labelledBy="artist-details-title">
+		<Modal open={Boolean(artist)} onClose={onClose} labelledBy="artist-details-title" size="lg">
 			{artist && (
 				<>
-					<div className="relative aspect-16/9 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
-						<span
-							className={`badge badge-sm absolute top-3 left-3 font-medium ${
-								artist.availabilityTone === "available" ? "badge-primary" : "badge-warning"
-							}`}
-						>
-							{artist.availabilityLabel}
-						</span>
-						{artist.photoUrl ? (
-							<img
-								src={artist.photoUrl}
-								alt=""
-								className="absolute inset-0 h-full w-full object-cover"
-							/>
-						) : (
-							<span className="absolute inset-0 flex items-center justify-center text-xs tracking-wide text-base-content/40 uppercase">
-								Artist photo / reel
+					<ProfileMediaGallery
+						key={artist.id}
+						media={artist.media}
+						name={artist.name}
+						topLeftSlot={
+							<span
+								className={`badge badge-sm font-medium ${
+									artist.availabilityTone === "available" ? "badge-primary" : "badge-warning"
+								}`}
+							>
+								{artist.availabilityLabel}
 							</span>
-						)}
-					</div>
+						}
+					/>
 
 					<div className="flex flex-col gap-4 p-6">
 						<div>
@@ -77,29 +74,31 @@ export default function ArtistDetailsModal({
 
 						<p className="text-sm leading-relaxed text-base-content/70">{artist.bio}</p>
 
-						<div className="flex items-center gap-2 pt-2">
-							<button
-								type="button"
-								onClick={() => {
-									onPass();
-									onClose();
-								}}
-								aria-label={`Pass on ${artist.name}`}
-								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
-							>
-								<XIcon className="size-5" aria-hidden="true" />
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									onInterested();
-									onClose();
-								}}
-								className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
-							>
-								Interested
-							</button>
-						</div>
+						{(onPass || onInterested) && (
+							<div className="flex items-center gap-2 pt-2">
+								<button
+									type="button"
+									onClick={() => {
+										onPass?.();
+										onClose();
+									}}
+									aria-label={`Pass on ${artist.name}`}
+									className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
+								>
+									<XIcon className="size-5" aria-hidden="true" />
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										onInterested?.();
+										onClose();
+									}}
+									className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
+								>
+									Interested
+								</button>
+							</div>
+						)}
 					</div>
 				</>
 			)}

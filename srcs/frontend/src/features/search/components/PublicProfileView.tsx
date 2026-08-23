@@ -14,6 +14,7 @@ interface PublicProfileViewProps {
  *  the search-result modal and the full profile page so the two stay in sync. */
 export default function PublicProfileView({ profile, friendSlot }: PublicProfileViewProps) {
 	const username = profileDisplayName(profile);
+	const categoryLabel = profile.categories.map((category) => category.label).join(", ") || "";
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -22,7 +23,8 @@ export default function PublicProfileView({ profile, friendSlot }: PublicProfile
 				<div className="min-w-0 flex-1">
 					<div className="truncate text-xl leading-snug font-semibold">{username}</div>
 					<div className="truncate text-sm text-base-content/60">
-						{profile.category} · {profile.location ?? "Location TBD"}
+						{categoryLabel && `${categoryLabel} · `}
+						{profile.location ?? "Location TBD"}
 					</div>
 				</div>
 				{friendSlot}

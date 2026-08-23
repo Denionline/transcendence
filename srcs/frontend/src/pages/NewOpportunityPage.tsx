@@ -281,6 +281,7 @@ export default function NewOpportunityPage() {
 					</p>
 					<OpportunityCard
 						hirerName={user?.username ?? ""}
+						hirerAvatarUrl={user?.avatarUrl}
 						title={values.title}
 						description={values.description}
 						location={values.location}

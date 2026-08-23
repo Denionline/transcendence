@@ -58,7 +58,7 @@ export const router = createBrowserRouter([
 		),
 		children: [
 			{ path: "/discover", element: <DiscoverPage /> },
-			{ path: "/profile", element: <Navigate to="/settings" replace /> },
+			{ path: "/profile", element: <ProfilePage /> },
 			{ path: "/profile/:id", element: <ProfilePage /> },
 			{ path: "/friends", element: <FriendsPage /> },
 			{ path: "/opportunities", element: <OpportunitiesPage /> },

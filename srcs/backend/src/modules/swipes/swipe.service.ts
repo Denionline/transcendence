@@ -6,6 +6,7 @@ import { ArtistProfile, Prisma } from "../../../generated/prisma/client.js";
 import { getGigById as getPublicGig, publicGigSelect } from "../gigs/gigs.service.js";
 import { flattenCategories, publicArtistSelect } from "../profile/profile.service.js";
 import { publicCategorySelect, findCategoryIdsBySlug } from "../categories/categories.service.js";
+import { listPublicFilesFor } from "../files/files.service.js";
 import { buildMeta } from "../../lib/pagination.js";
 import { authEvents } from "../../lib/auth-events.js";
 import { createNotification } from "../notifications/notifications.service.js";
@@ -358,7 +359,12 @@ async function getNextCandidateForHirer(
 		select: publicArtistSelect,
 	});
 	if (!artist) return null;
-	return flattenCategories(artist);
+
+	//	Same rule as the profile endpoint: a candidate card shows exactly what
+	//	a public profile shows, no more — an artist's own portfolio is the
+	//	only media this card is allowed to reveal. See docs/mad/20260819-file-uploads.md.
+	const portfolio = await listPublicFilesFor(artist.userId);
+	return { ...flattenCategories(artist), portfolio };
 }
 
 export async function handleNext(

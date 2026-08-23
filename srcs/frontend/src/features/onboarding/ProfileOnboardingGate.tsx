@@ -16,13 +16,14 @@ function themePromptKey(userId: string): string {
 
 /**
  * Artist and hirer onboarding: a brand-new account has no ArtistProfile /
- * HirerProfile (and so no category) yet. For artists that's a hard block —
- * swipe matching is keyed on the category, so there's nothing for that side
- * of the app to show without one. Blocks on a mandatory profile picker
- * (category always; organization name too for hirers, since the backend
- * won't create their profile without one either) until saved, then offers an
- * optional, once-ever theme picker. Renders nothing once both are resolved,
- * and is a no-op for admins.
+ * HirerProfile yet. For artists that's a hard block — swipe matching is
+ * keyed on the category, so there's nothing for that side of the app to show
+ * without one. Hirers don't pick a category at all (each gig carries its own,
+ * set when it's posted) — for them the mandatory field is organization name,
+ * which the backend won't create their profile without. Blocks on that
+ * mandatory profile picker until saved, then offers an optional, once-ever
+ * theme picker. Renders nothing once both are resolved, and is a no-op for
+ * admins.
  */
 export default function ProfileOnboardingGate() {
 	const { user } = useAuth();
@@ -38,7 +39,13 @@ export default function ProfileOnboardingGate() {
 		fetchMyProfile(user.id)
 			.then((profile) => {
 				if (cancelled) return;
-				setStep(profile.categories.length > 0 ? nextStepAfterProfile(user.id) : "profile");
+				// A hirer profile never needs a category (see the module comment
+				// above), so its mere existence means onboarding is done. An artist
+				// profile can't exist without one — categories.length > 0 always
+				// holds by the time we get here — but checking it explicitly still
+				// guards against a profile that predates that requirement.
+				const profileComplete = user.role === "hirer" || profile.categories.length > 0;
+				setStep(profileComplete ? nextStepAfterProfile(user.id) : "profile");
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
@@ -64,7 +71,6 @@ export default function ProfileOnboardingGate() {
 		setSaveError(null);
 		try {
 			const base = {
-				categories: [values.category],
 				bio: values.bio.trim() || null,
 				location: values.location.trim() || null,
 			};
@@ -73,7 +79,7 @@ export default function ProfileOnboardingGate() {
 					? { ...base, organizationName: values.organizationName.trim() }
 					: {
 							...base,
-							rate: values.rate.trim() === "" ? null : Number(values.rate),
+							categories: [values.category],
 							availability: values.availability,
 						};
 			await saveMyProfile(payload);
