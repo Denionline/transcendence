@@ -23,8 +23,6 @@ services:
     image: trans_be
     container_name: express_backend
     env_file: ../.env
-    ports:
-      - "9000:9000"
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?schema=public
       PORT: 9000
@@ -50,8 +48,8 @@ services:
     image: trans-fe
     container_name: react_frontend
     env_file: ../.env
-    ports:
-      - "5173:5173"
+    environment:
+      HTTPS_PORT: "${HTTPS_PORT:-8443}"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:5173').then(() => process.exit(0)).catch(() => process.exit(1))\""]
       interval: 30s
@@ -60,6 +58,33 @@ services:
       retries: 3
     depends_on:
       backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - matosinhos
+
+  nginx:
+    build:
+      context: ./nginx
+    image: trans_proxy
+    container_name: nginx_proxy
+    environment:
+      NGINX_ENVSUBST_FILTER: "^NGINX_"
+      NGINX_HTTPS_PORT: "${HTTPS_PORT:-8443}"
+      NGINX_MAX_BODY_SIZE: "${MAX_UPLOAD_MB:-50}m"
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-check-certificate -qO- https://127.0.0.1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
         condition: service_healthy
     restart: unless-stopped
     networks:

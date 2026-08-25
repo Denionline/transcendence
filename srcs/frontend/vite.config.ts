@@ -22,6 +22,9 @@ export default defineConfig({
 	server: {
 		host: "0.0.0.0",
 		port: 5173,
+		...(process.env.HTTPS_PORT
+			? { hmr: { protocol: "wss", clientPort: Number(process.env.HTTPS_PORT) } }
+			: {}),
 		proxy: {
 			"/api": {
 				target: "http://backend:9000",

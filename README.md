@@ -55,16 +55,20 @@ make
 
 ### Execution
 ```bash
-docker compose -f srcs/docker-compose.yml up --build
+make up
 ```
 The application will then be available at:
 ```
-https://localhost
+https://localhost:8443
 ```
+The certificate is self-signed and generated when the image is built, so the
+browser shows a warning on the first visit — accept it to continue. Plain HTTP
+on `http://localhost:8080` only redirects here. Both ports are configurable
+via `HTTP_PORT` and `HTTPS_PORT`; see [`docs/environment.md`](docs/environment.md).
 
 ### Stopping the project
 ```bash
-docker compose -f srcs/docker-compose.yml down
+make down
 ```
 
 ### Seeding demo data
@@ -135,7 +139,7 @@ AI assistance (Claude) was used during this project for:
 - **Backend**: Express
 - **Database**: PostgreSQL, accessed via Prisma ORM
 - **Realtime**: Socket.io
-- **Reverse proxy**: NginX (handles HTTPS termination on port 443, routes to frontend on `:3000` and backend on `:9000`)
+- **Reverse proxy**: NginX (handles HTTPS termination on port 443, routes to frontend on `:5173` and backend on `:9000`)
 - **Containerization**: Docker / Docker Compose
 
 ### Architecture
@@ -151,7 +155,7 @@ AI assistance (Claude) was used during this project for:
 │                ┌─────────┐               |
 |                |  NginX  |               |
 |                └─────────┘               |
-|            :3000|       |:9000           |
+|            :5173|       |:9000           |
 |  ┌────────────────┐    ┌───────────┐     |
 |  |  React + Vite  |    |  Express  |     |
 |  └────────────────┘    └───────────┘     |

@@ -70,6 +70,26 @@ jobs:
         working-directory: srcs/backend
         run: npx tsc --noEmit
 
+  proxy:
+    name: Proxy config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate the compose file
+        run: docker compose -f srcs/docker-compose.yml --env-file .env.example config --quiet
+      - name: Build the nginx image
+        run: docker build -t proxy-check srcs/nginx
+      - name: Check the rendered nginx config (upstream names must resolve)
+        run: |
+          docker run --rm \
+            -e NGINX_ENVSUBST_FILTER='^NGINX_' \
+            -e NGINX_HTTPS_PORT=8443 \
+            -e NGINX_MAX_BODY_SIZE=50m \
+            --add-host backend:127.0.0.1 \
+            --add-host frontend:127.0.0.1 \
+            --entrypoint /bin/sh proxy-check \
+            -c '/docker-entrypoint.sh nginx -t'
+
   test:
     name: Test
     runs-on: ubuntu-latest
