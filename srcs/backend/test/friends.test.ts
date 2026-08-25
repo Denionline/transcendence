@@ -215,6 +215,52 @@ test("PATCH /api/friends/:id rejects a non-boolean body (400 VALIDATION_ERROR)",
 	});
 });
 
+test("PATCH /api/friends/:id with no body at all is a 400, not a 500", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		const { status, body } = await api(baseUrl, "PATCH", `/api/friends/${a.id}`, {
+			token: tokenFor(b),
+		});
+		assert.equal(status, 400);
+		assert.equal(body?.error, "VALIDATION_ERROR");
+	});
+});
+
+test("PATCH /api/friends/:id with a non-JSON content type is a 400, not a 500", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		const res = await fetch(`${baseUrl}/api/friends/${a.id}`, {
+			method: "PATCH",
+			headers: { Authorization: `Bearer ${tokenFor(b)}`, "Content-Type": "text/plain" },
+		});
+		assert.equal(res.status, 400);
+		assert.equal(((await res.json()) as { error?: string }).error, "VALIDATION_ERROR");
+	});
+});
+
+test("a validation failure names the field that failed", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		const { body } = await api(baseUrl, "PATCH", `/api/friends/${a.id}`, {
+			token: tokenFor(b),
+			body: { accepted: "yes" },
+		});
+		const details = body?.details as { path: string; message: string }[] | undefined;
+		assert.ok(Array.isArray(details) && details.length > 0);
+		assert.equal(details[0].path, "accepted");
+		assert.match(details[0].message, /boolean/);
+	});
+});
+
 test("PATCH /api/friends/:id with no matching request (404 FRIEND_REQUEST_NOT_FOUND)", async () => {
 	const a = await makeUser();
 	const b = await makeUser();

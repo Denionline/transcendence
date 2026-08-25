@@ -12,6 +12,7 @@ import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { rateLimit } from "../../middlewares/rate.limit.middleware.js";
 import crypto from "node:crypto";
 import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
+import { loginBody, registerBody } from "./auth.schema.js";
 
 const router = Router();
 
@@ -83,13 +84,13 @@ router.get("/42/callback", async (req, res) => {
 });
 
 router.post("/register", registerLimiter, async (req, res) => {
-	const { email, password, name, role } = req.body;
+	const { email, password, name, role } = registerBody.parse(req.body);
 	const user = await registerUser(email, password, name, role);
 	res.status(201).json(user);
 });
 
 router.post("/login", loginLimiter, async (req, res) => {
-	const { email, password } = req.body;
+	const { email, password } = loginBody.parse(req.body);
 	const { refreshToken, ...user } = await userLogin(email, password, req.ip);
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,

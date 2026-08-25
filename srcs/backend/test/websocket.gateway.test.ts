@@ -318,6 +318,36 @@ test("the sender does not receive its own broadcasted message", async () => {
 	});
 });
 
+test("send_message with a malformed payload answers message_error instead of crashing", async () => {
+	const { artist, hirer, match } = await makeMatch();
+
+	await withServer(async (baseUrl, io) => {
+		const hirerSocket = connectClient(baseUrl, tokenFor(hirer));
+		const artistSocket = connectClient(baseUrl, tokenFor(artist));
+		try {
+			await Promise.all([
+				waitForEvent(hirerSocket, "connect"),
+				waitForEvent(artistSocket, "connect"),
+			]);
+			await waitUntil(() => (io.sockets.adapter.rooms.get(`chat:${match.id}`)?.size ?? 0) === 2);
+
+			const before = await prisma.chatMessage.count({ where: { matchId: match.id } });
+
+			for (const payload of [undefined, null, {}, { matchId: match.id }, { content: "hi" }]) {
+				const error = waitForEvent(artistSocket, "message_error");
+				artistSocket.emit("send_message", payload);
+				assert.deepEqual(await error, { reason: "invalid_content" });
+			}
+
+			assert.equal(artistSocket.connected, true);
+			assert.equal(await prisma.chatMessage.count({ where: { matchId: match.id } }), before);
+		} finally {
+			hirerSocket.close();
+			artistSocket.close();
+		}
+	});
+});
+
 test("send_message acknowledges the sender with the created message's id", async () => {
 	const { artist, hirer, match } = await makeMatch();
 

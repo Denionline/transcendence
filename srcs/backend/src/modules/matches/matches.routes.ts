@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { parsePagination } from "../../lib/pagination.js";
-import { parseId } from "../gigs/gigs.routes.js";
+import { id } from "../../lib/schemas.js";
 import { listMatches, getMatchById, deleteMatch } from "./matches.service.js";
 
 const router = Router();
@@ -17,7 +17,7 @@ router.get("/", requireAuth, async (req, res) => {
 
 router.get("/:id", requireAuth, async (req, res) => {
 	const user = req.user!;
-	const matchId = parseId(req.params.id);
+	const matchId = id.parse(req.params.id);
 
 	const match = await getMatchById(user, matchId);
 	res.status(200).json(match);
@@ -25,7 +25,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 
 router.delete("/:id", requireAuth, async (req, res) => {
 	const user = req.user!;
-	const matchId = parseId(req.params.id);
+	const matchId = id.parse(req.params.id);
 
 	await deleteMatch(user, matchId);
 	res.status(204).send();

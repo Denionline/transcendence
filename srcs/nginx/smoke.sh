@@ -162,5 +162,10 @@ not_found="$("${CURL[@]}" "$BASE/api/definitely-not-a-route")"
 check_contains "an unmatched API route answers JSON, not HTML" '"error":"NOT_FOUND"' "$not_found"
 check_absent  "an unmatched API route does not answer Express's HTML page" "<!DOCTYPE html>" "$not_found"
 
+validation="$("${CURL[@]}" -X POST -H "Content-Type: application/json" \
+	--data-binary '{"email":"not-an-email","password":""}' "$BASE/api/auth/login")"
+check_contains "a validation failure carries per-field details" '"details":' "$validation"
+check_contains "the details name the field that failed" '"path":"email"' "$validation"
+
 printf '\n\033[1m%d passed, %d failed\033[0m\n' "$passed" "$failed"
 [ "$failed" -eq 0 ] || exit 1

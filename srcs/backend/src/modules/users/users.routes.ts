@@ -4,21 +4,9 @@ import { requireAuth, requireRole } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/client.js";
 import { parsePagination } from "../../lib/pagination.js";
 import { getUserById, listUsers, updateUser, deleteUser } from "./users.service.js";
+import { listUsersQuery, updateUserBody, userIdParams } from "./users.schema.js";
 
 const router = Router();
-
-function parseRole(value: unknown): UserRole | undefined {
-	return typeof value === "string" && (Object.values(UserRole) as string[]).includes(value)
-		? (value as UserRole)
-		: undefined;
-}
-
-function parseId(value: string | string[] | undefined): string {
-	if (typeof value !== "string") {
-		throwError(400, "VALIDATION_ERROR", "invalid id parameter");
-	}
-	return value;
-}
 
 router.get("/me", requireAuth, async (req, res) => {
 	const user = await getUserById(req.user!.id);
@@ -27,15 +15,14 @@ router.get("/me", requireAuth, async (req, res) => {
 
 router.get("/", requireAuth, requireRole(UserRole.admin), async (req, res) => {
 	const { page, pageSize } = parsePagination(req.query);
-	const role = parseRole(req.query.role);
-	const search = typeof req.query.search === "string" ? req.query.search : undefined;
+	const { role, search } = listUsersQuery.parse(req.query);
 
 	const result = await listUsers({ page, pageSize, role, search });
 	res.status(200).json(result);
 });
 
 router.get("/:id", requireAuth, async (req, res) => {
-	const requestedUserId = parseId(req.params.id);
+	const { id: requestedUserId } = userIdParams.parse(req.params);
 	const caller = req.user!;
 
 	let isViewingOwnRecord = false;
@@ -62,9 +49,9 @@ router.get("/:id", requireAuth, async (req, res) => {
 });
 
 router.put("/:id", requireAuth, async (req, res) => {
-	const targetUserId = parseId(req.params.id);
+	const { id: targetUserId } = userIdParams.parse(req.params);
 	const caller = req.user!; // { id, role } — set by requireAuth
-	const body = req.body ?? {};
+	const body = updateUserBody.parse(req.body ?? {});
 
 	//	Reference:
 	//		https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
@@ -101,18 +88,12 @@ router.put("/:id", requireAuth, async (req, res) => {
 		}
 	}
 
-	const updated = await updateUser(targetUserId, {
-		email: body.email,
-		username: body.username,
-		avatarUrl: body.avatarUrl,
-		password: body.password,
-		role: body.role,
-	});
+	const updated = await updateUser(targetUserId, body);
 	res.status(200).json(updated);
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
-	const targetUserId = parseId(req.params.id);
+	const { id: targetUserId } = userIdParams.parse(req.params);
 	const caller = req.user!;
 
 	let callerIsAdmin = false;

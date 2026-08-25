@@ -6,7 +6,7 @@ import { NotificationType, UserRole } from "../../../generated/prisma/enums.js";
 import { styleText } from "node:util";
 import { authEvents } from "../../lib/auth-events.js";
 import { createMessage } from "../messages/messages.service.js";
-import { parseMessageContent } from "../messages/messages.service.js";
+import { sendMessageEvent } from "../messages/messages.schema.js";
 
 declare module "socket.io" {
 	interface Socket {
@@ -99,26 +99,29 @@ export function initWebsocket(httpServer: HttpServer) {
 		});
 
 		socket.on("send_message", async (data, ack?: (response: { chatMessageId: string }) => void) => {
-			if (!parseMessageContent(data.content)) {
+			const parsed = sendMessageEvent.safeParse(data);
+			if (!parsed.success) {
 				socket.emit("message_error", { reason: "invalid_content" });
 				return;
 			}
-			const room = `chat:${data.matchId}`;
+			const { matchId, content } = parsed.data;
+
+			const room = `chat:${matchId}`;
 			if (!socket.rooms.has(room)) return;
 			const result = await createMessage({
-				matchId: data.matchId,
+				matchId,
 				senderId: socket.userId,
-				content: data.content,
+				content,
 			});
 			if (result.state === false) {
 				socket.emit("message_error", { reason: "failed_to_send" });
 				return;
 			}
 			ack?.({ chatMessageId: result.message!.id });
-			socket.to(`chat:${data.matchId}`).emit("new_message", {
-				matchId: data.matchId,
+			socket.to(room).emit("new_message", {
+				matchId,
 				senderId: socket.userId,
-				content: data.content,
+				content,
 				chatMessageId: result.message!.id,
 			});
 		});

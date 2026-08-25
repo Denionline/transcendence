@@ -8,13 +8,14 @@ import {
 } from "./profile.service.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
 import { throwError } from "../../lib/http-error.js";
-import { parseId } from "../gigs/gigs.routes.js";
+import { id } from "../../lib/schemas.js";
+import { updateProfileBody } from "./profile.schema.js";
 
 const router = Router();
 
 router.patch("/me", requireAuth, async (req, res) => {
 	const caller = req.user!;
-	const body = req.body ?? {};
+	const body = updateProfileBody.parse(req.body ?? {});
 
 	if (caller.role !== UserRole.artist && caller.role !== UserRole.hirer)
 		throwError(403, "FORBIDDEN", "this role does not have an artist/hirer profile");
@@ -39,14 +40,14 @@ router.patch("/me", requireAuth, async (req, res) => {
 
 router.get("/:id", requireAuth, async (req, res) => {
 	const caller = req.user!;
-	const targetId = parseId(req.params.id);
+	const targetId = id.parse(req.params.id);
 
 	const result = await getCallerProfile(targetId, caller.id);
 	res.status(200).json(result);
 });
 
 router.delete("/:id", requireAuth, async (req, res) => {
-	const targetId = parseId(req.params.id);
+	const targetId = id.parse(req.params.id);
 	const caller = req.user!;
 
 	if (caller.id === targetId || caller.role === UserRole.admin) {
