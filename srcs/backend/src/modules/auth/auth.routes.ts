@@ -125,9 +125,7 @@ router.get("/me", requireAuth, async (req, res) => {
 		(req.user as { userId?: string; id?: string } | undefined)?.userId ??
 		(req.user as { userId?: string; id?: string } | undefined)?.id;
 
-	if (!userId) {
-		return res.status(401).json({ message: "Unauthorized" });
-	}
+	if (!userId) throwError(401, "UNAUTHENTICATED", "authentication required");
 
 	const user = await getCurrentUser(userId);
 	res.status(200).json(user);

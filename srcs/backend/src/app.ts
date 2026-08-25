@@ -13,7 +13,7 @@ import messagesRoutes from "./modules/messages/messages.routes.js";
 import notificationsRoutes from "./modules/notifications/notifications.route.js";
 import filesRoutes from "./modules/files/files.routes.js";
 import friendsRoutes from "./modules/friends/friends.route.js";
-import { errorHandler } from "./middlewares/error.middleware.js";
+import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 const apiRouter = Router();
@@ -21,7 +21,7 @@ const apiRouter = Router();
 // Global middlewares
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({ limit: "100kb", type: "application/json" }));
 app.use((req, _res, next) => {
 	// eslint-disable-next-line no-console
 	console.log(`[Http request] ${req.method} ${req.path}`);
@@ -49,6 +49,7 @@ apiRouter.use("/matches/:matchId/messages", messagesRoutes);
 apiRouter.use("/notifications", notificationsRoutes);
 apiRouter.use("/friends", friendsRoutes);
 
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 export default app;

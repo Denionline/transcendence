@@ -35,15 +35,10 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 }
 
 export function requireRole(...allowedRoles: UserRole[]) {
-	return function (req: Request, res: Response, next: NextFunction) {
-		if (!req.user) {
-			res.status(401).json({ error: "authentication required" });
-			return;
-		}
-		if (!allowedRoles.includes(req.user.role)) {
-			res.status(403).json({ error: "insufficient permissions" });
-			return;
-		}
+	return function (req: Request, _res: Response, next: NextFunction) {
+		if (!req.user) throwError(401, "UNAUTHENTICATED", "authentication required");
+		if (!allowedRoles.includes(req.user.role))
+			throwError(403, "FORBIDDEN", "insufficient permissions");
 		next();
 	};
 }
