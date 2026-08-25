@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import ProfileMediaGallery from "./ProfileMediaGallery";
@@ -12,6 +13,10 @@ interface ArtistDetailsModalProps {
 	 *  result, which isn't a swipe candidate to act on. */
 	onPass?: () => void;
 	onInterested?: () => void;
+	/** Rendered next to the name — the Add Friend button, when the caller
+	 *  wants one (e.g. opened from a search result). Nothing renders there
+	 *  by default, so the swipe deck's own use is unaffected. */
+	friendSlot?: ReactNode;
 }
 
 export default function ArtistDetailsModal({
@@ -20,6 +25,7 @@ export default function ArtistDetailsModal({
 	onClose,
 	onPass,
 	onInterested,
+	friendSlot,
 }: ArtistDetailsModalProps) {
 	return (
 		<Modal open={Boolean(artist)} onClose={onClose} labelledBy="artist-details-title" size="lg">
@@ -41,19 +47,22 @@ export default function ArtistDetailsModal({
 					/>
 
 					<div className="flex flex-col gap-4 p-6">
-						<div>
-							<div
-								id="artist-details-title"
-								className="flex items-center gap-2 text-xl leading-snug font-semibold"
-							>
-								<span>{artist.name}</span>
-								{artist.verified && (
-									<BadgeCheckIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
-								)}
+						<div className="flex items-start justify-between gap-3">
+							<div className="min-w-0">
+								<div
+									id="artist-details-title"
+									className="flex items-center gap-2 text-xl leading-snug font-semibold"
+								>
+									<span className="truncate">{artist.name}</span>
+									{artist.verified && (
+										<BadgeCheckIcon className="size-5 shrink-0 text-primary" aria-hidden="true" />
+									)}
+								</div>
+								<div className="truncate text-sm text-base-content/60">
+									{artist.discipline} · {artist.remoteOk ? "Remote OK" : artist.location}
+								</div>
 							</div>
-							<div className="text-sm text-base-content/60">
-								{artist.discipline} · {artist.remoteOk ? "Remote OK" : artist.location}
-							</div>
+							{friendSlot}
 						</div>
 
 						<div className="flex flex-wrap gap-2">

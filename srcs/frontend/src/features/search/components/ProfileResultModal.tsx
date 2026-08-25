@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "../../../components/Modal";
+import FriendRequestButton from "../../friends/components/FriendRequestButton";
 import type { FriendshipStatus } from "../../friends/types";
 import ArtistDetailsModal from "../../artists/components/ArtistDetailsModal";
 import { mapPublicProfileToArtist } from "../../artists/mapPublicProfile";
@@ -15,10 +16,11 @@ interface ProfileResultModalProps {
 /**
  * Opened from a search result — always the same photo-header/badge/tag card
  * layout a swipe candidate opens as, just without the Pass/Interested
- * actions, since a search hit isn't a swipe candidate. An artist hit reuses
- * ArtistDetailsModal outright (the exact modal a hirer sees clicking an
- * ArtistCard on Discover); a hirer hit uses HirerDetailsModal, styled to
- * match even though there's no swipeable "hirer card" elsewhere to reuse.
+ * actions (a search hit isn't a swipe candidate) and with an Add Friend
+ * button next to the name instead. An artist hit reuses ArtistDetailsModal
+ * outright (the exact modal a hirer sees clicking an ArtistCard on
+ * Discover); a hirer hit uses HirerDetailsModal, styled to match even
+ * though there's no swipeable "hirer card" elsewhere to reuse.
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
@@ -49,7 +51,19 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 
 	if (status === "ready" && profile && userId) {
 		if (profile.role === "artist") {
-			return <ArtistDetailsModal artist={mapPublicProfileToArtist(profile)} onClose={onClose} />;
+			return (
+				<ArtistDetailsModal
+					artist={mapPublicProfileToArtist(profile)}
+					onClose={onClose}
+					friendSlot={
+						<FriendRequestButton
+							userId={userId}
+							status={friendshipStatus}
+							onStatusChange={setFriendshipStatus}
+						/>
+					}
+				/>
+			);
 		}
 		return (
 			<HirerDetailsModal
