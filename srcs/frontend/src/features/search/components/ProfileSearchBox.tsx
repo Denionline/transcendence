@@ -101,6 +101,8 @@ export default function ProfileSearchBox({
 					value={query}
 					onChange={(e) => handleQueryChange(e.target.value)}
 					onFocus={() => results.length > 0 && setIsOpen(true)}
+					// The server caps a term at 100 characters (search.params.ts).
+					maxLength={100}
 				/>
 			</label>
 

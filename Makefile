@@ -97,6 +97,8 @@ ci:
 	$(MAKE) lint
 	@echo "TEST    Frontend build"
 	npm run build --prefix $(FRONTEND_PATH)
+	@echo "TEST    Frontend tests"
+	npm test --prefix $(FRONTEND_PATH)
 	@echo "TEST    Backend typecheck (prisma generate + tsc)"
 	cd $(BACKEND_PATH) && npx prisma generate && npx tsc --noEmit
 	@echo "TEST    Start test database (wait for healthy)"

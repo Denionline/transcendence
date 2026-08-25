@@ -10,6 +10,7 @@ import {
 	sendMessage,
 	toOptimisticMessage,
 } from "../api";
+import { messageContentSchema } from "../schemas";
 import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
 import { getSocket } from "../../../lib/socket";
@@ -182,8 +183,18 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
-		const content = draft.trim();
-		if (!content || sending) return;
+		if (sending) return;
+
+		//	maxLength caps what can be typed, but not what can be pasted in
+		//	some browsers, and it says nothing about a draft of pure
+		//	whitespace — which the server refuses.
+		const checked = messageContentSchema.safeParse(draft);
+		if (!checked.success) {
+			setSendError(checked.error.issues[0]?.message ?? "Couldn't send that message.");
+			return;
+		}
+		const content = checked.data;
+
 		setSending(true);
 		setSendError(null);
 		try {

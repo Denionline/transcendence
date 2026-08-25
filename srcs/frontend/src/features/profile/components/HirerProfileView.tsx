@@ -7,8 +7,9 @@ import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
 import { notifyProfileUpdated } from "../profileEvents";
 import LabeledField from "./LabeledField";
 import PortfolioManager from "./PortfolioManager";
-
-const MAX_BIO_LENGTH = 280;
+import FieldError from "../../../components/FieldError";
+import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
+import { MAX_BIO_LENGTH, hirerDetailsSchema, type HirerDetailsValues } from "../schemas";
 
 type Status = { type: "success" | "error"; text: string } | null;
 
@@ -21,6 +22,7 @@ export default function HirerProfileView() {
 	const [bio, setBio] = useState("");
 	const [location, setLocation] = useState("");
 	const [status, setStatus] = useState<Status>(null);
+	const [errors, setErrors] = useState<FieldErrors<HirerDetailsValues>>({});
 	const [isSaving, setIsSaving] = useState(false);
 
 	// The caller's own public files — same portfolio concept as the artist
@@ -54,22 +56,34 @@ export default function HirerProfileView() {
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
+
+		const checked = validateForm(hirerDetailsSchema, { organizationName, bio, location });
+		if (!checked.ok) {
+			setErrors(checked.errors);
+			return;
+		}
+
 		setStatus(null);
+		setErrors({});
 		setIsSaving(true);
 		try {
+			//	Empty means "cleared", which the API spells null rather than "".
 			const payload: ProfileUpdate = {
-				bio: bio.trim() || null,
-				location: location.trim() || null,
-				organizationName: organizationName.trim(),
+				...checked.data,
+				bio: checked.data.bio || null,
+				location: checked.data.location || null,
 			};
 			await saveMyProfile(payload);
 			notifyProfileUpdated();
 			setStatus({ type: "success", text: "Profile updated successfully." });
 		} catch (err) {
-			setStatus({
-				type: "error",
-				text: err instanceof Error ? err.message : "Update failed.",
-			});
+			const fromServer = fieldErrorsFromApi<HirerDetailsValues>(err);
+			if (fromServer) setErrors(fromServer);
+			else
+				setStatus({
+					type: "error",
+					text: err instanceof Error ? err.message : "Update failed.",
+				});
 		} finally {
 			setIsSaving(false);
 		}
@@ -146,8 +160,9 @@ export default function HirerProfileView() {
 							className="input w-full pl-9"
 							value={organizationName}
 							onChange={(e) => setOrganizationName(e.target.value)}
-							required
+							aria-invalid={errors.organizationName ? "true" : undefined}
 						/>
+						<FieldError message={errors.organizationName} />
 					</LabeledField>
 
 					<LabeledField label="Bio" hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
@@ -158,7 +173,9 @@ export default function HirerProfileView() {
 							placeholder="What does your organization do, and what are you looking for?"
 							value={bio}
 							onChange={(e) => setBio(e.target.value)}
+							aria-invalid={errors.bio ? "true" : undefined}
 						/>
+						<FieldError message={errors.bio} />
 					</LabeledField>
 
 					<LabeledField label="Location" icon={MapPinIcon}>
@@ -168,7 +185,9 @@ export default function HirerProfileView() {
 							placeholder="City, country"
 							value={location}
 							onChange={(e) => setLocation(e.target.value)}
+							aria-invalid={errors.location ? "true" : undefined}
 						/>
+						<FieldError message={errors.location} />
 					</LabeledField>
 
 					<div>

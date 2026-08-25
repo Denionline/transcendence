@@ -3,6 +3,16 @@ import { PaletteIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import { useCategories } from "../../categories/hooks/useCategories";
 import type { UserRole } from "../../auth/types";
+import FieldError from "../../../components/FieldError";
+import { validateForm, type FieldErrors } from "../../../lib/formValidation";
+import { LIMITS } from "../../../lib/limits";
+import {
+	MAX_BIO_LENGTH,
+	artistOnboardingSchema,
+	hirerOnboardingSchema,
+	type ArtistOnboardingValues,
+	type HirerOnboardingValues,
+} from "../../profile/schemas";
 
 export interface ProfileOnboardingValues {
 	category: string;
@@ -37,6 +47,11 @@ export default function ProfileOnboardingModal({
 	const [bio, setBio] = useState("");
 	const [location, setLocation] = useState("");
 	const [availability, setAvailability] = useState(true);
+	//	One bag of messages for both shapes: the form renders whichever of
+	//	category/organizationName its role asks for, never both.
+	const [errors, setErrors] = useState<FieldErrors<ArtistOnboardingValues & HirerOnboardingValues>>(
+		{},
+	);
 
 	const isHirer = role === "hirer";
 	// Hirers don't pick a category at all — matching runs on each gig's own
@@ -48,7 +63,20 @@ export default function ProfileOnboardingModal({
 	function handleSubmit(e: FormEvent) {
 		e.preventDefault();
 		if (!canSubmit) return;
-		onSubmit({ category, organizationName, bio, location, availability });
+
+		//	canSubmit covers the one field that must be *there*; the schema
+		//	covers what it and the optional ones may contain.
+		const values = { category, organizationName, bio, location, availability };
+		const checked = isHirer
+			? validateForm(hirerOnboardingSchema, values)
+			: validateForm(artistOnboardingSchema, values);
+		if (!checked.ok) {
+			setErrors(checked.errors);
+			return;
+		}
+
+		setErrors({});
+		onSubmit({ ...values, ...checked.data });
 	}
 
 	return (
@@ -105,8 +133,10 @@ export default function ProfileOnboardingModal({
 							className="input w-full"
 							value={organizationName}
 							onChange={(e) => setOrganizationName(e.target.value)}
-							required
+							maxLength={LIMITS.shortText}
+							aria-invalid={errors.organizationName ? "true" : undefined}
 						/>
+						<FieldError message={errors.organizationName} />
 					</label>
 				)}
 
@@ -119,7 +149,10 @@ export default function ProfileOnboardingModal({
 						rows={2}
 						value={bio}
 						onChange={(e) => setBio(e.target.value)}
+						maxLength={MAX_BIO_LENGTH}
+						aria-invalid={errors.bio ? "true" : undefined}
 					/>
+					<FieldError message={errors.bio} />
 				</label>
 
 				<label className="fieldset-label flex-col items-start gap-1">
@@ -131,7 +164,10 @@ export default function ProfileOnboardingModal({
 						className="input w-full"
 						value={location}
 						onChange={(e) => setLocation(e.target.value)}
+						maxLength={LIMITS.shortText}
+						aria-invalid={errors.location ? "true" : undefined}
 					/>
+					<FieldError message={errors.location} />
 				</label>
 
 				{!isHirer && (

@@ -1,6 +1,16 @@
 import { type FormEvent, useState } from "react";
 import { KeyRound, UserRound } from "lucide-react";
 import { useAuth } from "../features/auth/hooks/useAuth";
+import FieldError from "../components/FieldError";
+import PasswordStrengthChecklist from "../features/auth/components/PasswordStrengthChecklist";
+import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../lib/formValidation";
+import { changePasswordSchema, type ChangePasswordValues } from "../features/auth/schemas";
+import { accountSchema } from "../features/profile/schemas";
+
+//	The same account rules as the profile page, minus the avatar this form
+//	does not collect.
+const profileSchema = accountSchema.omit({ avatarUrl: true });
+type ProfileValues = { username: string; email: string };
 
 export default function AdminSettingsPage() {
 	const { user, updateProfile, updatePassword } = useAuth();
@@ -11,6 +21,7 @@ export default function AdminSettingsPage() {
 		type: "success" | "error";
 		text: string;
 	} | null>(null);
+	const [profileErrors, setProfileErrors] = useState<FieldErrors<ProfileValues>>({});
 	const [isSavingProfile, setIsSavingProfile] = useState(false);
 
 	const [currentPassword, setCurrentPassword] = useState("");
@@ -20,20 +31,32 @@ export default function AdminSettingsPage() {
 		type: "success" | "error";
 		text: string;
 	} | null>(null);
+	const [passwordErrors, setPasswordErrors] = useState<FieldErrors<ChangePasswordValues>>({});
 	const [isSavingPassword, setIsSavingPassword] = useState(false);
 
 	async function handleProfileSubmit(e: FormEvent) {
 		e.preventDefault();
+
+		const checked = validateForm(profileSchema, { username, email });
+		if (!checked.ok) {
+			setProfileErrors(checked.errors);
+			return;
+		}
+
 		setProfileStatus(null);
+		setProfileErrors({});
 		setIsSavingProfile(true);
 		try {
-			await updateProfile({ username: username.trim(), email: email.trim() });
+			await updateProfile(checked.data);
 			setProfileStatus({ type: "success", text: "Profile updated successfully." });
 		} catch (err) {
-			setProfileStatus({
-				type: "error",
-				text: err instanceof Error ? err.message : "Update failed.",
-			});
+			const fromServer = fieldErrorsFromApi<ProfileValues>(err);
+			if (fromServer) setProfileErrors(fromServer);
+			else
+				setProfileStatus({
+					type: "error",
+					text: err instanceof Error ? err.message : "Update failed.",
+				});
 		} finally {
 			setIsSavingProfile(false);
 		}
@@ -41,26 +64,27 @@ export default function AdminSettingsPage() {
 
 	async function handlePasswordSubmit(e: FormEvent) {
 		e.preventDefault();
+
+		//	The same schema registration uses. A length check alone was laxer
+		//	than the server, which also wants four character classes — so the
+		//	only feedback on a weak password was a 400 after submitting.
+		const checked = validateForm(changePasswordSchema, {
+			currentPassword,
+			newPassword,
+			confirmPassword,
+		});
+		if (!checked.ok) {
+			setPasswordErrors(checked.errors);
+			return;
+		}
+
 		setPasswordStatus(null);
-
-		// Mirrors updateUser's own bounds on the backend — a mismatch here
-		// would just mean the request round-trips to be told the same thing.
-		if (newPassword.length < 8 || newPassword.length > 72) {
-			setPasswordStatus({
-				type: "error",
-				text: "New password must be between 8 and 72 characters.",
-			});
-			return;
-		}
-		if (newPassword !== confirmPassword) {
-			setPasswordStatus({ type: "error", text: "Passwords do not match." });
-			return;
-		}
-
+		setPasswordErrors({});
 		setIsSavingPassword(true);
 		try {
 			await updatePassword(currentPassword, newPassword);
 			setPasswordStatus({ type: "success", text: "Password changed successfully." });
+			setPasswordErrors({});
 			setCurrentPassword("");
 			setNewPassword("");
 			setConfirmPassword("");
@@ -103,8 +127,9 @@ export default function AdminSettingsPage() {
 							className="input w-full max-w-sm"
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
-							required
+							aria-invalid={profileErrors.username ? "true" : undefined}
 						/>
+						<FieldError message={profileErrors.username} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -114,8 +139,9 @@ export default function AdminSettingsPage() {
 							className="input w-full max-w-sm"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
-							required
+							aria-invalid={profileErrors.email ? "true" : undefined}
 						/>
+						<FieldError message={profileErrors.email} />
 					</label>
 
 					<div>
@@ -149,8 +175,9 @@ export default function AdminSettingsPage() {
 							className="input w-full max-w-sm"
 							value={currentPassword}
 							onChange={(e) => setCurrentPassword(e.target.value)}
-							required
+							aria-invalid={passwordErrors.currentPassword ? "true" : undefined}
 						/>
+						<FieldError message={passwordErrors.currentPassword} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -160,8 +187,14 @@ export default function AdminSettingsPage() {
 							className="input w-full max-w-sm"
 							value={newPassword}
 							onChange={(e) => setNewPassword(e.target.value)}
-							required
+							aria-invalid={passwordErrors.newPassword ? "true" : undefined}
 						/>
+						<FieldError message={passwordErrors.newPassword} />
+						{/*	The same checklist registration shows, so both places
+							teach the same rules while you type. */}
+						{newPassword !== "" && (
+							<PasswordStrengthChecklist password={newPassword} name={username} email={email} />
+						)}
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -171,8 +204,9 @@ export default function AdminSettingsPage() {
 							className="input w-full max-w-sm"
 							value={confirmPassword}
 							onChange={(e) => setConfirmPassword(e.target.value)}
-							required
+							aria-invalid={passwordErrors.confirmPassword ? "true" : undefined}
 						/>
+						<FieldError message={passwordErrors.confirmPassword} />
 					</label>
 
 					<div>
