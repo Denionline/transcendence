@@ -40,16 +40,15 @@ export default function ProfileSearchBox({
 		}
 	}
 
-	// Only artists and hirers see this box (it lives in AppLayout's navbar),
-	// but guard anyway since searchProfiles needs a role to pick an endpoint.
-	const callerRole = user?.role === "artist" || user?.role === "hirer" ? user.role : null;
+	// Only artists and hirers see this box — it lives in AppLayout's navbar.
+	const canSearch = user?.role === "artist" || user?.role === "hirer";
 
 	useEffect(() => {
 		const trimmed = query.trim();
-		if (trimmed === "" || callerRole === null) return;
+		if (trimmed === "" || !canSearch) return;
 		let cancelled = false;
 		const timer = window.setTimeout(() => {
-			searchProfiles(trimmed, callerRole)
+			searchProfiles(trimmed)
 				.then((matches) => {
 					if (cancelled) return;
 					setResults(matches.slice(0, MAX_RESULTS));
@@ -64,7 +63,7 @@ export default function ProfileSearchBox({
 			cancelled = true;
 			window.clearTimeout(timer);
 		};
-	}, [query, callerRole]);
+	}, [query, canSearch]);
 
 	useEffect(() => {
 		if (!isOpen) return;

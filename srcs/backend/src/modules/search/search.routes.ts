@@ -8,6 +8,7 @@ import {
 	parseAvailability,
 	parseCategories,
 	parseGigStatus,
+	parseHirerSort,
 	parseLocation,
 	parseQ,
 	parseRateRange,
@@ -15,6 +16,7 @@ import {
 } from "./search.params.js";
 import { searchGigs } from "./search.gigs.service.js";
 import { searchArtists } from "./search.artists.service.js";
+import { searchHirers } from "./search.hirers.service.js";
 
 const router = Router();
 
@@ -58,6 +60,23 @@ router.get("/artists", requireAuth, searchLimiter, async (req: Request, res) => 
 		location: parseLocation(req.query.location),
 		availability: parseAvailability(req.query.availability),
 		sort: parseArtistSort(req.query.sort),
+	});
+	res.status(200).json(result);
+});
+
+router.get("/hirers", requireAuth, searchLimiter, async (req: Request, res) => {
+	const { page, pageSize } = parsePagination(req.query);
+	const caller = req.user!;
+
+	const result = await searchHirers({
+		callerId: caller.id,
+		page,
+		pageSize,
+		q: parseQ(req.query.q),
+		categories: parseCategories(req.query.category),
+		location: parseLocation(req.query.location),
+		availability: parseAvailability(req.query.availability),
+		sort: parseHirerSort(req.query.sort),
 	});
 	res.status(200).json(result);
 });
