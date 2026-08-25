@@ -34,6 +34,11 @@ export interface ProfileUpdate {
 
 export type ProfileFields = ArtistProfileFields | HirerProfileFields;
 
+//	A brand-new account has no profile yet — genuinely the common case right
+//	after signup, not an error — so this is never a 404 to unwrap, unlike
+//	fetching someone *else's* profile (see search/api.ts's fetchPublicProfile).
+export type MyProfileStatus = { exists: false } | ({ exists: true } & ProfileFields);
+
 export async function saveMyProfile(updates: ProfileUpdate): Promise<ProfileFields> {
 	return await apiRequest("/profile/me", {
 		method: "PATCH",
@@ -41,6 +46,6 @@ export async function saveMyProfile(updates: ProfileUpdate): Promise<ProfileFiel
 	});
 }
 
-export async function fetchMyProfile(userId: string): Promise<ProfileFields> {
-	return apiRequest(`/profile/${userId}`);
+export async function fetchMyProfile(): Promise<MyProfileStatus> {
+	return apiRequest("/profile/me");
 }

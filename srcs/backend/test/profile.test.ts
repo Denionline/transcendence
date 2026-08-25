@@ -334,6 +334,71 @@ test("PATCH /api/profile/me requires authentication (401 without a token)", asyn
 	});
 });
 
+test("GET /api/profile/me reports exists: false for a brand-new artist — never a 404", async () => {
+	const artist = await makeUser(UserRole.artist);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", "/api/profile/me", {
+			token: tokenFor(artist),
+		});
+		assert.equal(status, 200);
+		assert.equal(body?.exists, false);
+		assert.equal(body?.role, "artist");
+	});
+});
+
+test("GET /api/profile/me reports exists: false for a brand-new hirer — never a 404", async () => {
+	const hirer = await makeUser(UserRole.hirer);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", "/api/profile/me", {
+			token: tokenFor(hirer),
+		});
+		assert.equal(status, 200);
+		assert.equal(body?.exists, false);
+		assert.equal(body?.role, "hirer");
+	});
+});
+
+test("GET /api/profile/me reports exists: true with the profile fields once one is created", async () => {
+	const artist = await makeUser(UserRole.artist);
+	const category = await uniqueCategory();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "PATCH", "/api/profile/me", {
+			token: tokenFor(artist),
+			body: { categories: [category], bio: "paints walls" },
+		});
+
+		const { status, body } = await api(baseUrl, "GET", "/api/profile/me", {
+			token: tokenFor(artist),
+		});
+		assert.equal(status, 200);
+		assert.equal(body?.exists, true);
+		assert.equal(body?.bio, "paints walls");
+		assert.deepEqual(categoryNamesOf(body), [category]);
+	});
+});
+
+test("GET /api/profile/me forbids an admin (403 FORBIDDEN)", async () => {
+	const admin = await makeUser(UserRole.admin);
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", "/api/profile/me", {
+			token: tokenFor(admin),
+		});
+		assert.equal(status, 403);
+		assert.equal(body?.error, "FORBIDDEN");
+	});
+});
+
+test("GET /api/profile/me requires authentication (401 without a token)", async () => {
+	await withServer(async (baseUrl) => {
+		const { status } = await api(baseUrl, "GET", "/api/profile/me");
+		assert.equal(status, 401);
+	});
+});
+
 test("GET /api/profile/:id returns another user's artist profile to any logged-in user", async () => {
 	const artist = await makeUser(UserRole.artist);
 	const viewer = await makeUser(UserRole.hirer);

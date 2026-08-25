@@ -36,24 +36,25 @@ export default function ProfileOnboardingGate() {
 		// a no-op for them regardless of `step`, so there's no state to set here.
 		if (!user || (user.role !== "artist" && user.role !== "hirer")) return;
 		let cancelled = false;
-		fetchMyProfile(user.id)
-			.then((profile) => {
+		fetchMyProfile()
+			.then((status) => {
 				if (cancelled) return;
+				// The expected shape for a genuinely new account — no profile at
+				// all yet, not an error (GET /profile/me is a 200 either way).
+				if (!status.exists) {
+					setStep("profile");
+					return;
+				}
 				// A hirer profile never needs a category (see the module comment
 				// above), so its mere existence means onboarding is done. An artist
 				// profile can't exist without one — categories.length > 0 always
 				// holds by the time we get here — but checking it explicitly still
 				// guards against a profile that predates that requirement.
-				const profileComplete = user.role === "hirer" || profile.categories.length > 0;
+				const profileComplete = user.role === "hirer" || status.categories.length > 0;
 				setStep(profileComplete ? nextStepAfterProfile(user.id) : "profile");
 			})
-			.catch((err: unknown) => {
+			.catch(() => {
 				if (cancelled) return;
-				// The expected shape for a genuinely new account — no profile at all yet.
-				if (err instanceof ApiError && err.code === "PROFILE_NOT_FOUND") {
-					setStep("profile");
-					return;
-				}
 				setStep("none");
 			});
 		return () => {

@@ -31,14 +31,17 @@ export default function HirerProfileView() {
 
 	useEffect(() => {
 		if (!user) return;
-		fetchMyProfile(user.id)
-			.then((profile) => {
-				setBio(profile.bio ?? "");
-				setLocation(profile.location ?? "");
-				setFiles(profile.portfolio);
-				if ("organizationName" in profile) setOrganizationName(profile.organizationName);
+		fetchMyProfile()
+			.then((status) => {
+				// No profile yet (a brand-new account) — leave the form blank,
+				// same as it starts. ProfileOnboardingGate is what actually
+				// creates the first one; this just previews whatever exists.
+				if (!status.exists) return;
+				setBio(status.bio ?? "");
+				setLocation(status.location ?? "");
+				setFiles(status.portfolio);
+				if ("organizationName" in status) setOrganizationName(status.organizationName);
 			})
-			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
 			.catch(() => {});
 	}, [user]);
 

@@ -190,6 +190,34 @@ async function getHirerProfile(userId: string) {
 	return { ...flattenCategories(profile), portfolio };
 }
 
+//	The caller checking their own onboarding status — from ProfileOnboardingGate
+//	on every page, before they may have ever created a profile — is a normal,
+//	expected state, not an error. Unlike getCallerProfile (used for GET
+//	/profile/:id, where "no profile" on a real target legitimately 404s),
+//	this always answers 200 so a brand-new account's very first page load
+//	never logs a network failure to the console over something this routine.
+export async function getMyProfile(caller: { id: string; role: UserRole }) {
+	if (caller.role !== UserRole.artist && caller.role !== UserRole.hirer) {
+		throwError(403, "FORBIDDEN", "this role does not have an artist/hirer profile");
+	}
+	const isArtist = caller.role === UserRole.artist;
+	const role = isArtist ? ("artist" as const) : ("hirer" as const);
+
+	const profile = isArtist
+		? await prisma.artistProfile.findUnique({
+				where: { userId: caller.id },
+				select: publicArtistSelect,
+			})
+		: await prisma.hirerProfile.findUnique({
+				where: { userId: caller.id },
+				select: publicHirerSelect,
+			});
+	if (!profile) return { exists: false as const, role };
+
+	const portfolio = await listPublicFilesFor(caller.id);
+	return { exists: true as const, role, ...flattenCategories(profile), portfolio };
+}
+
 export async function getCallerProfile(targetId: string, callerId: string) {
 	const profile = await prisma.user.findUnique({ where: { id: targetId } });
 	if (!profile) throwError(404, "USER_NOT_FOUND", "no user with that id");
