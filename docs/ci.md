@@ -13,16 +13,17 @@ Superseded runs on the same branch/PR are cancelled automatically.
 
 ## Jobs
 
-| Job     | What it does                                                                 |
-| ------- | --------------------------------------------------------------------------- |
-| `lint`  | Runs ESLint (with the shared Prettier rules) on `frontend` and `backend`.   |
-| `build` | Builds the frontend production bundle (`vite build`), validates thge Prisma schema (`prisma validate`) and syntax-checks the backend entrypoint (`node --check`). |
-| `test`  | Runs the backend test suite (`node --test`).                                |
+| Job              | What it does                                                                 |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `lint`           | Runs ESLint (with the shared Prettier rules) on `frontend` and `backend`.     |
+| `build`          | Builds the frontend production bundle (`vite build`), validates the Prisma schema (`prisma validate`), generates the client and typechecks the backend (`tsc --noEmit`). |
+| `proxy`          | Validates the compose file, builds the nginx image and runs `nginx -t` against the rendered config. |
+| `test-frontend`  | Runs the frontend suite (`vitest run`): the client-side schemas, the form-validation plumbing, and the parity checks against the backend's schemas. |
+| `test`           | Runs the backend suite (`node --test`) against a real PostgreSQL service container. |
 
 All jobs use Node 22, matching the `node:22-alpine` base image used by the
-Docker services. Dependencies are installed with `npm install` because
-`package-lock.json` files are not committed (see `.gitignore`); switch to
-`npm ci` if/when lockfiles are added.
+Docker services. Dependencies are installed with `npm ci`, from the committed
+lockfiles, so CI resolves the same tree the Dockerfiles do.
 
 ## Protecting the `main` branch
 
@@ -34,8 +35,10 @@ done once by a repository administrator (Settings → Branches → Add rule):
 3. Enable **Require status checks to pass before merging** and select:
    - `Lint (frontend)`
    - `Lint (backend)`
-   - `Test`
    - `Build`
+   - `Proxy config`
+   - `Test (frontend)`
+   - `Test (backend)`
 4. (Recommended) Enable **Require branches to be up to date before merging**.
 5. Save the rule.
 
@@ -43,5 +46,10 @@ done once by a repository administrator (Settings → Branches → Add rule):
 > least once (e.g. after opening the first pull request that includes this
 > workflow), so open a PR first, then add them to the rule.
 
-Once configured, a pull request cannot be merged into `main` unless lint,
-build, and test all pass.
+Once configured, a pull request cannot be merged into `main` unless every job
+above passes.
+
+> Job **names** are what the rule matches, not job ids, and renaming one silently
+> drops it from the required set — the rule keeps waiting for a check that no
+> longer reports. `Test` became `Test (backend)` when the frontend suite was
+> added, so a rule written before that needs both entries re-selected.

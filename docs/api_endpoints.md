@@ -3,7 +3,25 @@
 All protected endpoints require an `Authorization: Bearer <token>` header (JWT access token) except `/api/auth/*`.
 The refresh token (also a JWT) is never exposed to JS — it travels only as an httpOnly cookie, scoped to `/api/auth`.
 Errors always have the shape `{ "error": "CODE", "message": "..." }`.
-`error` is a machine-readable code (see table below); `message` is human-readable.
+`error` is a machine-readable code (see table below); `message` is human-readable
+and may be reworded at any time — branch on `error`, never on `message`.
+A validation failure adds a third key, `details`, with one entry per rejected field:
+
+```json
+{
+  "error": "VALIDATION_ERROR",
+  "message": "request failed validation",
+  "details": [
+    { "path": "email", "message": "invalid email format" },
+    { "path": "password", "message": "password is required" }
+  ]
+}
+```
+
+`details` appears **only** on `VALIDATION_ERROR`; `path` is `""` for a problem
+with the payload as a whole. Every other failure — including an unmatched route
+(`404 NOT_FOUND`), a malformed JSON body (`400 MALFORMED_JSON`) and a body over
+the 100 kB parser limit (`413 PAYLOAD_TOO_LARGE`) — uses the two-key shape.
 Paginated lists accept `?page=1&pageSize=20` and return `{ items, page, pageSize, total }`.
 `/api/search/*` returns a **superset** of that envelope, adding `totalPages` and `hasMore`; `/api/users` and `/api/gigs` still return the four-field version.
 
@@ -608,44 +626,88 @@ hold friend requests.
 
 ---
 
+## Where validation happens
+
+Body, query and param shapes are zod schemas living next to the routes that use
+them (`srcs/backend/src/modules/*/*.schema.ts`), built from shared primitives in
+`srcs/backend/src/lib/schemas.ts` — which is also where every bound this API
+enforces is written down. Two modules keep hand-written validators instead:
+`search` (`search.params.ts`, which also escapes `\`, `%` and `_` before
+Prisma's `contains` — a raw `?q=%` would otherwise match everything) and
+`categories`, both of which were already bounded and are covered by tests that
+assert their exact messages.
+
+Text fields are sanitized before they are measured (`lib/sanitize.ts`):
+Unicode-normalized to NFC, with control characters, zero-width characters and
+bidi overrides removed. Single-line fields also lose line breaks; prose fields
+keep them. A field of nothing but invisible characters is therefore empty, and
+fails a "required" rule rather than satisfying it.
+
+Unknown keys are **stripped, not rejected** — the client already sends fields
+this API has no column for, and dropping them keeps mass assignment impossible
+without breaking those forms.
+
+The same bounds are enforced again in the browser, so a typo is answered in the
+form instead of by a round trip. `srcs/frontend/src/test/parity.test.ts` imports
+both sides' schemas and fails if a client rule is ever looser than the server
+rule it mirrors; the server stays the authority either way.
+
 ## Error codes used above
+
+Every code below is thrown somewhere in `srcs/backend/src`; the table is the
+whole set. Codes are grouped by status, with a param-validation code kept
+beside the not-found code it precedes.
 
 | Code | Status | Meaning |
 |---|---|---|
-| `VALIDATION_ERROR` | 400 | Zod rejected body/query/params (also used by auth for missing/invalid fields) |
-| `SELF_SWIPE` | 400 | Tried to swipe on yourself |
+| `VALIDATION_ERROR` | 400 | A schema rejected the body, query or params — carries `details` |
+| `MALFORMED_JSON` | 400 | Body was not valid JSON |
+| `REQUEST_ABORTED` | 400 | Caller hung up before the body finished arriving |
+| `WEAK_PASSWORD` | 400 | Password failed the policy in `lib/password.ts` — on registration **and** on password change |
+| `INVALID_CONTENT` | 400 | Message content outside 1–2000 characters after sanitizing |
+| `INVALID_PATH` | 400 | A stored file location resolved outside the upload directory — the path-traversal guard |
+| `CATEGORY_MISMATCH` | 400 | The swiping (or targeted) artist holds none of the gig's category |
+| `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
+| `OAUTH_INVALID_REQUEST` | 400 | 42 redirected back to the callback without a `code` or `state` |
+| `OAUTH_STATE_INVALID` | 400 | The `state` in the callback does not match the cookie set when the flow started — a CSRF guard |
 | `INVALID_CREDENTIALS` | 401 | Wrong email or password on login |
 | `MISSING_TOKEN` | 401 | Authorization header missing/malformed, or refresh cookie missing |
 | `INVALID_TOKEN` | 401 | Access token signature invalid or malformed |
 | `TOKEN_EXPIRED` | 401 | Access token expired |
 | `INVALID_REFRESH_TOKEN` | 401 | Refresh token invalid, expired, or revoked |
+| `UNAUTHENTICATED` | 401 | A route that requires a signed-in caller was reached without one |
 | `FORBIDDEN` | 403 | Logged in, but not allowed (wrong owner/role/side) |
-| `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence |
-| `FILE_NOT_FOUND` | 404 | No file with that id — also returned instead of 403 for another user's `private` file, and when the row exists but its bytes do not |
+| `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence, and by the catch-all for an unmatched `/api` route |
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
+| `FILE_NOT_FOUND` | 404 | No file with that id — also returned instead of 403 for another user's `private` file, and when the row exists but its bytes do not |
+| `PROFILE_NOT_FOUND` | 404 | The artist/hirer profile a request needs does not exist (admins never have one) |
+| `INVALID_MATCH_ID` | 400 | `:matchId` in a messages route was not a single string value |
 | `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
-| `INVALID_MESSAGE_ID` | 400 | `:messageId` param on `DELETE /matches/:matchId/messages/:messageId` was not a single string value |
+| `INVALID_MESSAGE_ID` | 400 | `:messageId` on `DELETE /matches/:matchId/messages/:messageId` was not a single string value |
 | `MESSAGE_NOT_FOUND` | 404 | No message with that id in that match — deleting it, or a mismatched matchId in the URL |
 | `INVALID_NOTIFICATION_ID` | 400 | `:id` param on a notifications route was not a single string value |
 | `NOTIFICATION_NOT_FOUND` | 404 | No notification with that id belonging to the caller |
+| `FRIEND_REQUEST_NOT_FOUND` | 404 | No pending friend request from `:id` to the caller (`PATCH /api/friends/:id`) |
+| `FRIEND_NOT_FOUND` | 404 | No friend request/friendship exists between the caller and `:id` (`DELETE /api/friends/:id`) |
 | `EMAIL_EXISTS` | 409 | Email already registered |
-| `PROFILE_EXISTS` | 409 | User already has a profile |
 | `SWIPE_EXISTS` | 409 | A swipe already exists for this (swiper, swiped, gig) combination |
 | `GIG_CLOSED` | 409 | Tried to swipe on a gig that is no longer `open` |
-| `PROFILE_NOT_FOUND` | 404 | Hirer's swipe target has no artist profile |
-| `CATEGORY_MISMATCH` | 400 | The swiping (or targeted) artist holds none of the gig's category |
-| `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
 | `CATEGORY_EXISTS` | 409 | Creating or re-slugging a category onto a slug another category already owns |
 | `ARTIST_UNAVAILABLE` | 409 | Hirer tried to swipe an artist whose profile is marked unavailable |
 | `FRIEND_REQUEST_EXISTS` | 409 | A friend request already exists between the two users, in either direction |
-| `FRIEND_REQUEST_NOT_FOUND` | 404 | No pending friend request from `:id` to the caller (`PATCH /api/friends/:id`) |
-| `FRIEND_NOT_FOUND` | 404 | No friend request/friendship exists between the caller and `:id` (`DELETE /api/friends/:id`) |
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
 | `SELF_DELETE` | 409 | Admin tried to delete their own account |
 | `FILE_TOO_LARGE` | 413 | Upload exceeded the per-type cap, or the global `MAX_UPLOAD_MB` mid-stream |
+| `PAYLOAD_TOO_LARGE` | 413 | JSON body over the 100 kB parser limit (uploads use `FILE_TOO_LARGE`) |
 | `UNSUPPORTED_FILE_TYPE` | 415 | Declared `Content-Type` is not in the upload allow-list |
-| `INVALID_PATH` | 400 | A stored file location resolved outside the upload directory — the path-traversal guard |
+| `FILE_CONTENT_MISMATCH` | 415 | The bytes are not the type the upload declared — checked against the file's own signature, before anything is written |
+| `UNSUPPORTED_ENCODING` | 415 | Body used a `Content-Encoding` the parser cannot read |
+| `RANGE_NOT_SATISFIABLE` | 416 | `Range` header asks for bytes outside the file |
 | `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
-| `TOO_MANY_REQUESTS` | 429 | Per-IP rate limit hit — see the `Retry-After` header |
-| `INTERNAL_ERROR` | 500 | Unhandled — never leaks internals |
+| `TOO_MANY_REQUESTS` | 429 | Per-caller rate limit hit — see the `Retry-After` header |
+| `REQUEST_FAILED` | 4xx | A library rejected the request; its status is kept, its message is not |
+| `MESSAGE_FAILED` | 500 | The message passed validation but could not be saved |
+| `INTERNAL_ERROR` | 500 | Unhandled failure — logged server-side, never detailed to the caller |
+| `FT_EXCHANGE_FAILED` | 502 | 42 refused to exchange the authorization code for a token |
+| `FT_PROFILE_FAILED` | 502 | 42 issued a token but would not return the profile behind it |

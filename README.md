@@ -151,7 +151,7 @@ AI assistance (Claude) was used during this project for:
                 https| ▲
 ┌──────────────────────────────────────────┐
 │  Docker            | |                   |
-|                    ▼ |:443               |
+|                    ▼ |:8443 → :443       |
 │                ┌─────────┐               |
 |                |  NginX  |               |
 |                └─────────┘               |
@@ -180,10 +180,10 @@ AI assistance (Claude) was used during this project for:
 | :--- | :--- |
 | **User** | Account identity: email, username, password hash, role (`artist` / `hirer` / `admin`), avatar |
 | **Category** | The controlled vocabulary (`slug` + `label`); referenced by profiles and gigs |
-| **ArtistProfile** | Artist-specific fields (bio, location, rate, availability); 1:1 with User; many Categories |
+| **ArtistProfile** | Artist-specific fields (bio, location, availability); 1:1 with User; many Categories |
 | **HirerProfile** | Hirer-specific fields (organization name, bio, location, availability); 1:1 with User; many Categories |
 | **ArtistCategory** / **HirerCategory** | Join tables giving a profile several categories; composite PK prevents duplicates |
-| **Gig** | An opportunity posted by a hirer; belongs to exactly one Category |
+| **Gig** | An opportunity posted by a hirer (title, description, location, rate, status); belongs to exactly one Category |
 | **File** | Portfolio uploads (image/audio/video/document); belongs to a User |
 | **Swipe** | One row per swipe (like or pass), between two Users |
 | **Match** | Artist ↔ Hirer match; also serves as the friend/connection relationship |
