@@ -12,8 +12,8 @@ import { SECRET, UPLOAD_DIR } from "../src/lib/env.js";
 import { prisma } from "../src/lib/prisma.js";
 import { UserRole } from "../generated/prisma/client.js";
 
-//	A real 1x1 PNG. Nothing in the backend inspects the bytes, but uploading
-//	plausible input is a better regression net than not.
+//	A real 1x1 PNG. createFile checks the head of the buffer against the
+//	declared type, so every happy-path upload needs genuine bytes.
 const PNG = Buffer.from(
 	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
 	"base64",
@@ -178,19 +178,36 @@ test("POST /api/files rejects a bogus visibility with 400, prototype keys includ
 	});
 });
 
-//	The documented hole, asserted on purpose: nothing checks that the bytes
-//	are really a PNG. What contains the risk is the response — the stored
-//	MIME plus nosniff. Drop the nosniff header and this test breaks.
-test("mislabelled bytes are stored, and served with the declared type and nosniff", async () => {
+//	This used to be the documented hole: the bytes were stored whatever they
+//	were, and the response headers alone contained the risk. createFile now
+//	reads the head of the buffer and refuses a file that disagrees with the
+//	type it claims (lib/file-signature.ts).
+test("bytes that are not what the upload claims are refused", async () => {
 	const artist = await makeUser();
 	const html = Buffer.from("<script>alert(1)</script>", "utf8");
 
 	await withServer(async (baseUrl) => {
+		const before = (await readdir(UPLOAD_DIR)).length;
 		const { status, body } = await upload(baseUrl, tokenFor(artist), {
 			bytes: html,
 			mimeType: "image/png",
 			filename: "not-really.png",
 		});
+
+		assert.equal(status, 415);
+		assert.equal(body?.error, "FILE_CONTENT_MISMATCH");
+		assert.equal((await readdir(UPLOAD_DIR)).length, before, "nothing should be written");
+		assert.equal(await prisma.file.count({ where: { ownerId: artist.id } }), 0);
+	});
+});
+
+//	The headers are still the second line of defence, and still asserted:
+//	drop nosniff and this breaks.
+test("a real image is served with its stored type and nosniff", async () => {
+	const artist = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await upload(baseUrl, tokenFor(artist));
 		assert.equal(status, 201);
 
 		const raw = await fetch(`${baseUrl}/api/files/${body?.id}/raw`);

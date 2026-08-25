@@ -67,10 +67,11 @@ chosen anyway, for the reason recorded below.
 * Validation is **input validation only**: a `zod` check and an `accept` attribute
   client-side (fast feedback), multer's `limits.fileSize` enforced *while streaming* so an
   oversized upload dies mid-flight, and a server-side allow-list (never a deny-list) over
-  the declared `Content-Type` plus a per-type size cap. Nothing inspects the bytes, so a
-  text file sent as `image/png` is stored and served as an image.
-* That is survivable only because two response headers are treated as mandatory rather
-  than as hardening: `X-Content-Type-Options: nosniff` and the **stored** MIME as
+  the declared `Content-Type` plus a per-type size cap. Issue #37 added a magic-byte check
+  on top (`lib/file-signature.ts`), so a file whose head disagrees with its declared type
+  is refused `415 FILE_CONTENT_MISMATCH` before anything is written.
+* Two response headers remain mandatory rather than hardening, as the second line of
+  defence behind that check: `X-Content-Type-Options: nosniff` and the **stored** MIME as
   `Content-Type` (never one re-derived from the extension). Together they mean a browser
   never parses a mislabelled payload as HTML. SVG is excluded from the allow-list for the
   same reason — it is the one format that is dangerous even when genuine.
@@ -170,9 +171,10 @@ chosen anyway, for the reason recorded below.
 * Bad, because a single listing endpoint that forgets its `visibility` filter publishes a
   private file outright. Under B2 the signature was a second gate; there is only one now,
   which is why it has its own test.
-* Bad, because we validate the declaration, not the content — a mislabelled file is
-  stored and served under the type it claimed. Contained by `nosniff`, the stored MIME and
-  the SVG exclusion, and asserted by a test so removing the header fails the build.
+* Bad, because the magic-byte check reads only the head of the buffer: it establishes
+  that a file is the container it claims to be, not that the rest of it is well-formed.
+  The remaining risk is contained by `nosniff`, the stored MIME and the SVG exclusion,
+  each asserted by a test so removing one fails the build.
 * Bad, because the filesystem is not transactional with the database, so a crash at the
   wrong moment leaves an orphan. Mitigated by the write-then-insert / delete-then-unlink
   ordering.
@@ -237,8 +239,8 @@ mismatch rather than editing the scores is the point of keeping it.
 
 `srcs/backend/test/files.test.ts` is the fitness function. It must cover: happy-path
 upload; oversize (`413`); a disallowed declared type such as `image/svg+xml` (`415`);
-text sent as `image/png` accepted, then served with `Content-Type: image/png` **and**
-`nosniff` — the documented hole, asserted so nobody silently drops the header;
+text sent as `image/png` refused `415`, and a genuine image served with
+`Content-Type: image/png` **and** `nosniff`, asserted so nobody silently drops the header;
 `GET /api/files/:id` for another user's private file → `404`, not `403`; **`GET
 /api/files` as another user omits that file's id** — the single control protecting private
 files; delete by a non-owner (`403`) and by the owner (`204`, then `404`); a Range

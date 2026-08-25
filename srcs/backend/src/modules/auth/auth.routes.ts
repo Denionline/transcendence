@@ -13,6 +13,14 @@ import { rateLimit } from "../../middlewares/rate.limit.middleware.js";
 import crypto from "node:crypto";
 import { FT_UID, FT_CALLBACK_URL, FRONTEND_URL } from "../../lib/env.js";
 import { loginBody, registerBody } from "./auth.schema.js";
+import {
+	OAUTH_STATE_COOKIE,
+	REFRESH_COOKIE,
+	clearOauthStateCookie,
+	clearSessionCookies,
+	setOauthStateCookie,
+	setSessionCookies,
+} from "../../lib/cookies.js";
 
 const router = Router();
 
@@ -30,13 +38,7 @@ const registerLimiter = rateLimit({
 
 router.get("/42", (req, res) => {
 	const state = crypto.randomBytes(16).toString("hex");
-	res.cookie("oauth_state", state, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "lax",
-		path: "/api/auth",
-		maxAge: 10 * 60 * 1000,
-	});
+	setOauthStateCookie(req, res, state);
 	const params = new URLSearchParams({
 		client_id: FT_UID,
 		redirect_uri: FT_CALLBACK_URL,
@@ -53,28 +55,15 @@ router.get("/42", (req, res) => {
 router.get("/42/callback", async (req, res) => {
 	try {
 		const { code, state } = req.query;
-		const storedState = req.cookies.oauth_state;
-		res.clearCookie("oauth_state", { path: "/api/auth" });
+		const storedState = req.cookies[OAUTH_STATE_COOKIE];
+		clearOauthStateCookie(req, res);
 
 		if (typeof code !== "string" || typeof state !== "string")
 			throwError(400, "OAUTH_INVALID_REQUEST", "missing code or state");
 		if (state !== storedState) throwError(400, "OAUTH_STATE_INVALID", "invalid oauth state");
 
 		const { refreshToken } = await loginWith42(code);
-		res.cookie("refreshToken", refreshToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			path: "/api/auth",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-		});
-		res.cookie("hasSession", "1", {
-			httpOnly: false,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			path: "/",
-			maxAge: 7 * 24 * 60 * 60 * 1000,
-		});
+		setSessionCookies(req, res, refreshToken);
 		res.redirect(FRONTEND_URL);
 	} catch (error) {
 		// eslint-disable-next-line no-console
@@ -92,32 +81,18 @@ router.post("/register", registerLimiter, async (req, res) => {
 router.post("/login", loginLimiter, async (req, res) => {
 	const { email, password } = loginBody.parse(req.body);
 	const { refreshToken, ...user } = await userLogin(email, password, req.ip);
-	res.cookie("refreshToken", refreshToken, {
-		httpOnly: true,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "strict",
-		path: "/api/auth",
-		maxAge: 7 * 24 * 60 * 60 * 1000,
-	});
-	res.cookie("hasSession", "1", {
-		httpOnly: false,
-		secure: process.env.NODE_ENV === "production",
-		sameSite: "strict",
-		path: "/",
-		maxAge: 7 * 24 * 60 * 60 * 1000,
-	});
+	setSessionCookies(req, res, refreshToken);
 	res.status(200).json(user);
 });
 
 router.post("/logout", async (req, res) => {
-	await logoutUser(req.cookies.refreshToken);
-	res.clearCookie("refreshToken", { path: "/api/auth" });
-	res.clearCookie("hasSession", { path: "/" });
+	await logoutUser(req.cookies[REFRESH_COOKIE]);
+	clearSessionCookies(req, res);
 	res.status(204).send();
 });
 
 router.post("/refresh", async (req, res) => {
-	const result = await refreshAccessToken(req.cookies.refreshToken);
+	const result = await refreshAccessToken(req.cookies[REFRESH_COOKIE]);
 	res.status(200).json(result);
 });
 

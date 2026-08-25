@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { prisma } from "../../lib/prisma.js";
 import { throwError } from "../../lib/http-error.js";
+import { matchesDeclaredMime } from "../../lib/file-signature.js";
 import { FileVisibility, Prisma } from "../../../generated/prisma/client.js";
 import { maxBytesFor, typeForMime } from "../../lib/file-limits.js";
 import { buildLocation, deleteFile, ensureUploadDir, resolveKey } from "../../lib/storage.js";
@@ -48,8 +49,6 @@ export interface CreateFileInput {
 }
 
 export async function createFile(input: CreateFileInput) {
-	//	Input validation only: nothing here inspects what the bytes actually
-	//	are. See docs/mad/20260819-file-uploads.md.
 	const type = typeForMime(input.declaredMime);
 	if (type === null)
 		throwError(415, "UNSUPPORTED_FILE_TYPE", `${input.declaredMime} is not an accepted file type`);
@@ -61,6 +60,13 @@ export async function createFile(input: CreateFileInput) {
 			"FILE_TOO_LARGE",
 			`${type} files are limited to ${Math.floor(maxBytes / (1024 * 1024))} MB`,
 		);
+
+	//	After the size check, so a huge file is still answered "too large"
+	//	rather than "wrong type", and before a byte is written: the declared MIME
+	//	comes from the browser, which takes it from the extension, which is
+	//	whatever the uploader renamed the file to.
+	if (!matchesDeclaredMime(input.buffer, input.declaredMime))
+		throwError(415, "FILE_CONTENT_MISMATCH", `the file's contents are not ${input.declaredMime}`);
 
 	await ensureUploadDir();
 	const location = buildLocation(input.declaredMime);

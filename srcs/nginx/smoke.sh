@@ -167,5 +167,14 @@ validation="$("${CURL[@]}" -X POST -H "Content-Type: application/json" \
 check_contains "a validation failure carries per-field details" '"details":' "$validation"
 check_contains "the details name the field that failed" '"path":"email"' "$validation"
 
+section "Session cookies through the proxy"
+
+# /api/auth/42 needs no credentials and sets a cookie, so it is the cheapest
+# proof that nginx's X-Forwarded-Proto reaches req.secure through trust proxy.
+state_cookie="$("${CURL[@]}" -o /dev/null -D - "$BASE/api/auth/42" | grep -i '^set-cookie: oauth_state')"
+check_contains "a cookie set behind the proxy is marked Secure" "Secure" "$state_cookie"
+check_contains "the oauth state cookie is HttpOnly" "HttpOnly" "$state_cookie"
+check_contains "the oauth state cookie is SameSite=Lax" "SameSite=Lax" "$state_cookie"
+
 printf '\n\033[1m%d passed, %d failed\033[0m\n' "$passed" "$failed"
 [ "$failed" -eq 0 ] || exit 1

@@ -114,8 +114,9 @@ router.get("/:id/raw", rawRateLimit, async (req: Request, res, next: NextFunctio
 	//	The stored MIME, never one re-derived from the extension. Set before
 	//	sendFile, which only guesses a type when Content-Type is unset.
 	res.setHeader("Content-Type", file.mimeType);
-	//	Nothing validated what these bytes actually are, so this is what stops
-	//	a browser sniffing HTML out of something declared as image/png.
+	//	The second line of defence: createFile refuses bytes that disagree with
+	//	their declared type, and this stops a browser sniffing its own answer
+	//	out of whatever did get stored.
 	res.setHeader("X-Content-Type-Options", "nosniff");
 	const scope = file.visibility === FileVisibility.public ? "public" : "private";
 	res.setHeader("Cache-Control", `${scope}, max-age=86400, immutable`);
