@@ -15,6 +15,13 @@ interface PublicProfileViewProps {
 export default function PublicProfileView({ profile, friendSlot }: PublicProfileViewProps) {
 	const username = profileDisplayName(profile);
 	const categoryLabel = profile.categories.map((category) => category.label).join(", ") || "";
+	// The avatar above already shows this photo — an artist can upload the
+	// same file both as their avatar and into their portfolio, so without
+	// this it would render a second time in the grid below.
+	const avatarUrl = profile.user?.avatarUrl;
+	const portfolioFiles = avatarUrl
+		? profile.portfolio.filter((file) => file.url !== avatarUrl)
+		: profile.portfolio;
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -55,13 +62,13 @@ export default function PublicProfileView({ profile, friendSlot }: PublicProfile
 				<p className="text-sm text-base-content/40 italic">No bio provided.</p>
 			)}
 
-			{profile.portfolio && profile.portfolio.length > 0 && (
+			{portfolioFiles.length > 0 && (
 				<div className="flex flex-col gap-2">
 					<h3 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 						Portfolio
 					</h3>
 					{/* Read-only: no `onDelete`. These are someone else's files. */}
-					<FileGallery files={profile.portfolio} />
+					<FileGallery files={portfolioFiles} />
 				</div>
 			)}
 		</div>

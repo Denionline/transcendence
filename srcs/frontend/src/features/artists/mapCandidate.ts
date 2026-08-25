@@ -5,10 +5,13 @@ export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artis
 	const photoUrl = candidate.user?.avatarUrl ?? null;
 
 	// The same gallery the artist sees on their own profile: the avatar first
-	// (if set), then every public portfolio file, newest first — nothing
-	// synthesized. See docs/mad/20260819-file-uploads.md.
+	// (if set), then every public portfolio file, newest first. Skipped when
+	// the avatar is itself one of those portfolio files (a real case — an
+	// artist can upload the same photo both as their avatar and into their
+	// portfolio) — otherwise that photo would render twice.
 	const media: ProfileMediaItem[] = [];
-	if (photoUrl)
+	const avatarAlreadyInPortfolio = candidate.portfolio.some((file) => file.url === photoUrl);
+	if (photoUrl && !avatarAlreadyInPortfolio)
 		media.push({
 			id: `${candidate.id}-avatar`,
 			type: "image",
