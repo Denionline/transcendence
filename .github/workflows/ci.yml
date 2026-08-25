@@ -44,6 +44,10 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install backend dependencies
+        working-directory: srcs/backend
+        run: npm ci --no-audit --no-fund
+
       # Frontend: produce the production Vite bundle.
       - name: Install frontend dependencies
         working-directory: srcs/frontend
@@ -53,9 +57,6 @@ jobs:
         run: npm run build
 
       # Backend: no bundler, so validate that the entrypoint at least parses.
-      - name: Install backend dependencies
-        working-directory: srcs/backend
-        run: npm ci --no-audit --no-fund
       - name: validate Prisma schema
         working-directory: srcs/backend
         env:
@@ -75,6 +76,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Provide an env file
+        run: cp .env.example .env
       - name: Validate the compose file
         run: docker compose -f srcs/docker-compose.yml --env-file .env.example config --quiet
       - name: Build the nginx image
@@ -90,11 +93,6 @@ jobs:
             --entrypoint /bin/sh proxy-check \
             -c '/docker-entrypoint.sh nginx -t'
 
-  # The frontend suite: the client-side schemas, the shared form-validation
-  # plumbing, and the parity checks that compare those schemas against the
-  # backend's. No database and no browser — it imports the backend's schema
-  # modules directly, and none of them touch Prisma, so this job needs neither
-  # a service container nor `prisma generate`.
   test-frontend:
     name: Test (frontend)
     runs-on: ubuntu-latest
@@ -106,6 +104,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install backend dependencies
+        working-directory: srcs/backend
+        run: npm ci --no-audit --no-fund
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
       - name: Run tests
