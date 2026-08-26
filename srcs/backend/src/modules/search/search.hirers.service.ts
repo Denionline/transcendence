@@ -1,0 +1,147 @@
+import { Prisma } from "../../../generated/prisma/client.js";
+import { prisma } from "../../lib/prisma.js";
+import { buildMeta } from "../../lib/pagination.js";
+import { HirerSort } from "./search.params.js";
+import { fetchBucketPage } from "./search.relevance.js";
+import { publicCategorySelect, toSlug } from "../categories/categories.service.js";
+import { flattenCategories } from "../profile/profile.service.js";
+
+const searchHirerSelect = {
+	id: true,
+	userId: true,
+	organizationName: true,
+	bio: true,
+	location: true,
+	availability: true,
+	createdAt: true,
+	categories: { select: { category: { select: publicCategorySelect } } },
+	user: { select: { username: true, avatarUrl: true } },
+} satisfies Prisma.HirerProfileSelect;
+
+const NEWEST_ORDER: Prisma.HirerProfileOrderByWithRelationInput[] = [
+	{ createdAt: "desc" },
+	{ id: "asc" },
+];
+
+export interface SearchHirersOptions {
+	callerId: string;
+	page: number;
+	pageSize: number;
+	q?: string;
+	categories?: string[];
+	location?: string;
+	availability?: boolean;
+	sort: HirerSort;
+}
+
+function buildHirerFilters(options: SearchHirersOptions): Prisma.HirerProfileWhereInput {
+	//	Searching hirers must never surface the caller themselves.
+	const where: Prisma.HirerProfileWhereInput = { NOT: { userId: options.callerId } };
+
+	if (options.categories !== undefined) {
+		where.categories = { some: { category: { slug: { in: options.categories.map(toSlug) } } } };
+	}
+	if (options.location !== undefined) {
+		where.location = { contains: options.location, mode: "insensitive" };
+	}
+	if (options.availability !== undefined) where.availability = options.availability;
+
+	return where;
+}
+
+function usernameMatches(q: string): Prisma.HirerProfileWhereInput {
+	return { user: { username: { contains: q, mode: "insensitive" } } };
+}
+
+//	The navbar's quick-search box is a *name* search — an artist looking for a
+//	hirer they know by their business name should find them too, not only by
+//	the account username.
+function organizationNameMatches(q: string): Prisma.HirerProfileWhereInput {
+	return { organizationName: { contains: q, mode: "insensitive" } };
+}
+
+function bioMatches(q: string): Prisma.HirerProfileWhereInput {
+	return { bio: { contains: q, mode: "insensitive" } };
+}
+
+function nameMatches(q: string): Prisma.HirerProfileWhereInput {
+	return { OR: [usernameMatches(q), organizationNameMatches(q)] };
+}
+
+function withTextSearch(
+	filters: Prisma.HirerProfileWhereInput,
+	q?: string,
+): Prisma.HirerProfileWhereInput {
+	if (q === undefined) return filters;
+	return {
+		AND: [filters, { OR: [usernameMatches(q), organizationNameMatches(q), bioMatches(q)] }],
+	};
+}
+
+function buildHirerOrderBy(sort: HirerSort): Prisma.HirerProfileOrderByWithRelationInput[] {
+	if (sort === "oldest") return [{ createdAt: "asc" }, { id: "asc" }];
+	return NEWEST_ORDER;
+}
+
+function hirerBucket(where: Prisma.HirerProfileWhereInput) {
+	return (skip: number, take: number) =>
+		prisma.hirerProfile.findMany({
+			where,
+			skip,
+			take,
+			orderBy: NEWEST_ORDER,
+			select: searchHirerSelect,
+		});
+}
+
+async function searchHirersByRelevance(
+	filters: Prisma.HirerProfileWhereInput,
+	q: string,
+	page: number,
+	pageSize: number,
+) {
+	//	AND composition, never a spread: filters already carries its own NOT.
+	//	Bucket A is a name match (username or organization name), bucket B is bio-only.
+	const whereA: Prisma.HirerProfileWhereInput = { AND: [filters, nameMatches(q)] };
+	const whereB: Prisma.HirerProfileWhereInput = {
+		AND: [filters, { NOT: nameMatches(q) }, bioMatches(q)],
+	};
+
+	const [countA, countB] = await prisma.$transaction([
+		prisma.hirerProfile.count({ where: whereA }),
+		prisma.hirerProfile.count({ where: whereB }),
+	]);
+
+	const items = await fetchBucketPage(
+		page,
+		pageSize,
+		countA,
+		hirerBucket(whereA),
+		hirerBucket(whereB),
+	);
+
+	return { items: items.map(flattenCategories), ...buildMeta(page, pageSize, countA + countB) };
+}
+
+export async function searchHirers(options: SearchHirersOptions) {
+	const { page, pageSize } = options;
+	const filters = buildHirerFilters(options);
+
+	if (options.sort === "relevance" && options.q !== undefined) {
+		return searchHirersByRelevance(filters, options.q, page, pageSize);
+	}
+
+	const where = withTextSearch(filters, options.q);
+	const [items, total] = await prisma.$transaction([
+		prisma.hirerProfile.findMany({
+			where,
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+			orderBy: buildHirerOrderBy(options.sort),
+			select: searchHirerSelect,
+		}),
+		prisma.hirerProfile.count({ where }),
+	]);
+
+	return { items: items.map(flattenCategories), ...buildMeta(page, pageSize, total) };
+}

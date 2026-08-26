@@ -4,6 +4,7 @@ import {
 	upsertArtistProfile,
 	upsertHirerProfile,
 	getCallerProfile,
+	getMyProfile,
 	deleteProfile,
 } from "./profile.service.js";
 import { UserRole } from "../../../generated/prisma/enums.js";
@@ -35,6 +36,12 @@ router.patch("/me", requireAuth, async (req, res) => {
 					availability: body.availability,
 				});
 	res.status(200).json(profile);
+});
+
+router.get("/me", requireAuth, async (req, res) => {
+	const caller = req.user!;
+	const result = await getMyProfile(caller);
+	res.status(200).json(result);
 });
 
 router.get("/:id", requireAuth, async (req, res) => {

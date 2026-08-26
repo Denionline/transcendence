@@ -3,6 +3,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { CheckIcon, Undo2Icon, XIcon } from "lucide-react";
 import ArtistCard from "./ArtistCard";
 import ArtistDetailsModal from "./ArtistDetailsModal";
+import DiscreetFriendAction from "../../friends/components/DiscreetFriendAction";
 import type { Artist } from "../types";
 
 const EXIT_MS = 260;
@@ -219,6 +220,11 @@ export default function MobileArtistStack({
 				onInterested={() => {
 					if (detailArtist && detailArtist.id === front?.id) commitSwipe(1);
 				}}
+				friendSlot={
+					detailArtist && (
+						<DiscreetFriendAction key={detailArtist.userId} userId={detailArtist.userId} />
+					)
+				}
 			/>
 		</div>
 	);

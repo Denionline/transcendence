@@ -66,6 +66,75 @@ async function makeUser(role: UserRole = UserRole.artist, username = "friends-te
 	return user;
 }
 
+test("GET /api/friends/:id reports 'none' with no relation either way", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", `/api/friends/${b.id}`, {
+			token: tokenFor(a),
+		});
+		assert.equal(status, 200);
+		assert.equal(body?.status, "none");
+	});
+});
+
+test("GET /api/friends/:id reports 'pending_sent' for the sender, 'pending_received' for the recipient", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", `/api/friends/${b.id}`, { token: tokenFor(a) });
+
+		const forSender = await api(baseUrl, "GET", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		assert.equal(forSender.body?.status, "pending_sent");
+
+		const forRecipient = await api(baseUrl, "GET", `/api/friends/${a.id}`, { token: tokenFor(b) });
+		assert.equal(forRecipient.body?.status, "pending_received");
+	});
+});
+
+test("GET /api/friends/:id reports 'accepted' once the request is accepted, from either side", async () => {
+	const a = await makeUser();
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		await api(baseUrl, "POST", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		await api(baseUrl, "PATCH", `/api/friends/${a.id}`, {
+			token: tokenFor(b),
+			body: { accepted: true },
+		});
+
+		const forA = await api(baseUrl, "GET", `/api/friends/${b.id}`, { token: tokenFor(a) });
+		assert.equal(forA.body?.status, "accepted");
+
+		const forB = await api(baseUrl, "GET", `/api/friends/${a.id}`, { token: tokenFor(b) });
+		assert.equal(forB.body?.status, "accepted");
+	});
+});
+
+test("GET /api/friends/:id rejects an admin caller (403 FORBIDDEN)", async () => {
+	const admin = await makeUser(UserRole.admin);
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", `/api/friends/${b.id}`, {
+			token: tokenFor(admin),
+		});
+		assert.equal(status, 403);
+		assert.equal(body?.error, "FORBIDDEN");
+	});
+});
+
+test("GET /api/friends/:id requires authentication (401 without a token)", async () => {
+	const b = await makeUser();
+
+	await withServer(async (baseUrl) => {
+		const { status } = await api(baseUrl, "GET", `/api/friends/${b.id}`);
+		assert.equal(status, 401);
+	});
+});
+
 test("POST /api/friends/:id sends a request", async () => {
 	const a = await makeUser();
 	const b = await makeUser();

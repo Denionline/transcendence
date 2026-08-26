@@ -21,6 +21,8 @@ interface ProfileMediaGalleryProps {
 	name: string;
 	/** Rendered above the viewport's top-left corner — the caller's own availability badge. */
 	topLeftSlot?: ReactNode;
+	/** Placeholder text shown in the empty-media state, e.g. "Hirer photo / reel". */
+	emptyLabel?: string;
 }
 
 /**
@@ -33,6 +35,7 @@ export default function ProfileMediaGallery({
 	media,
 	name,
 	topLeftSlot,
+	emptyLabel = "Artist photo / reel",
 }: ProfileMediaGalleryProps) {
 	const [index, setIndex] = useState(0);
 	const [dragX, setDragX] = useState(0);
@@ -92,8 +95,9 @@ export default function ProfileMediaGallery({
 	if (!current) {
 		return (
 			<div className="relative aspect-16/9 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
+				{topLeftSlot && <div className="absolute top-3 left-3 z-10">{topLeftSlot}</div>}
 				<span className="absolute inset-0 flex items-center justify-center text-xs tracking-wide text-base-content/40 uppercase">
-					Artist photo / reel
+					{emptyLabel}
 				</span>
 			</div>
 		);

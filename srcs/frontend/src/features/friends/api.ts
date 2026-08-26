@@ -1,5 +1,5 @@
 import { apiRequest } from "../../lib/apiClient";
-import type { FriendSummary } from "./types";
+import type { FriendshipStatus, FriendSummary } from "./types";
 
 interface PaginatedResponse<T> {
 	items: T[];
@@ -8,6 +8,13 @@ interface PaginatedResponse<T> {
 
 export function listFriends(page = 1, pageSize = 30): Promise<PaginatedResponse<FriendSummary>> {
 	return apiRequest<PaginatedResponse<FriendSummary>>(`/friends?page=${page}&pageSize=${pageSize}`);
+}
+
+//	For a caller that already has a userId but no friendshipStatus of its own
+//	— a swipe candidate, e.g., unlike GET /profile/:id's result — without
+//	paying for a full profile fetch just to read one field.
+export function fetchFriendshipStatus(userId: string): Promise<FriendshipStatus> {
+	return apiRequest<{ status: FriendshipStatus }>(`/friends/${userId}`).then((res) => res.status);
 }
 
 export function sendFriendRequest(userId: string): Promise<unknown> {

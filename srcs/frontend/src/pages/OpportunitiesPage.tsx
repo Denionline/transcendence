@@ -109,18 +109,28 @@ export default function OpportunitiesPage() {
 		});
 	}
 
+	// Whether the artist has a profile yet at all — null until the check
+	// below resolves. GET /swipes/next 404s without one (see
+	// getNextGigForArtist), so the gig-loading effect further down waits on
+	// this rather than firing a doomed request the moment the page mounts,
+	// which for a brand-new account (the ordinary case right after
+	// onboarding starts) is every single time.
+	const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+
 	// Load the artist's own categories/location to mark the filters with
 	// them — the backend widens the feed to every category the artist
 	// holds, so that's the sensible starting selection here.
 	useEffect(() => {
 		if (!user) return;
 		let cancelled = false;
-		fetchMyProfile(user.id)
-			.then((profile) => {
+		fetchMyProfile()
+			.then((status) => {
 				if (cancelled) return;
-				setMyCategories(profile.categories);
-				setDisciplines(new Set(profile.categories.map((category) => category.slug)));
-				setLocationQuery(profile.location ?? "");
+				setHasProfile(status.exists);
+				if (!status.exists) return;
+				setMyCategories(status.categories);
+				setDisciplines(new Set(status.categories.map((category) => category.slug)));
+				setLocationQuery(status.location ?? "");
 			})
 			.catch(() => {
 				// Filters just stay at their defaults (empty) — the gig feed
@@ -163,6 +173,12 @@ export default function OpportunitiesPage() {
 	}
 
 	useEffect(() => {
+		// Still checking, or confirmed there isn't one yet (GET /swipes/next
+		// 404s without one — see getNextGigForArtist): nothing to fetch. Stays
+		// on "loading", which is accurate — the mandatory onboarding modal is
+		// covering this page regardless, and hasProfile flips true (retriggering
+		// this effect) the moment it's done.
+		if (hasProfile !== true) return;
 		generationRef.current += 1;
 		const generation = generationRef.current;
 		seenIds.current = new Set();
@@ -196,7 +212,7 @@ export default function OpportunitiesPage() {
 			cancelled = true;
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [disciplines, locationQuery, appliedMinRateInput, retryToken]);
+	}, [disciplines, locationQuery, appliedMinRateInput, retryToken, hasProfile]);
 
 	const hasPendingFilterChanges = minRateInput !== appliedMinRateInput;
 
