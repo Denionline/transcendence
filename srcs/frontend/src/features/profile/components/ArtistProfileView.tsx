@@ -53,15 +53,18 @@ export default function ArtistProfileView() {
 
 	useEffect(() => {
 		if (!user) return;
-		fetchMyProfile(user.id)
-			.then((profile) => {
-				setSelectedSlugs(profile.categories.map((category) => category.slug));
-				setBio(profile.bio ?? "");
-				setLocation(profile.location ?? "");
-				setAvailability(profile.availability);
-				setFiles(profile.portfolio);
+		fetchMyProfile()
+			.then((status) => {
+				// No profile yet (a brand-new account) — leave the form blank,
+				// same as it starts. ProfileOnboardingGate is what actually
+				// creates the first one; this just previews whatever exists.
+				if (!status.exists) return;
+				setSelectedSlugs(status.categories.map((category) => category.slug));
+				setBio(status.bio ?? "");
+				setLocation(status.location ?? "");
+				setAvailability(status.availability);
+				setFiles(status.portfolio);
 			})
-			// TODO: distinguish "no profile yet" (expected, leave form blank) from real errors
 			.catch(() => {});
 	}, [user]);
 

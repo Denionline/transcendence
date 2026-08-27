@@ -3,7 +3,13 @@ import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { friendIdParams, updateFriendshipBody } from "./friends.schema.js";
 import { throwError } from "../../lib/http-error.js";
 import { NotificationType, UserRole } from "../../../generated/prisma/enums.js";
-import { sendInvite, updateStatus, deleteFriend, getFriendsList } from "./friends.service.js";
+import {
+	sendInvite,
+	updateStatus,
+	deleteFriend,
+	getFriendsList,
+	getFriendshipStatus,
+} from "./friends.service.js";
 import { authEvents } from "../../lib/auth-events.js";
 import { prisma } from "../../lib/prisma.js";
 import { parsePagination } from "../../lib/pagination.js";
@@ -24,6 +30,19 @@ router.get("/", requireAuth, async (req, res) => {
 
 	const items = await getFriendsList(caller.id, page, pageSize);
 	res.status(200).json(items);
+});
+
+//	Lets a caller who already has the target's id — a swipe candidate, say,
+//	which carries no friendshipStatus of its own — check it without paying
+//	for a full GET /profile/:id (portfolio, categories, and all).
+router.get("/:id", requireAuth, async (req, res) => {
+	const caller = req.user!;
+	const { id: otherId } = friendIdParams.parse(req.params);
+
+	if (caller.role === UserRole.admin) throwError(403, "FORBIDDEN", "admins do not have friends");
+
+	const status = await getFriendshipStatus(caller.id, otherId);
+	res.status(200).json({ status });
 });
 
 router.post("/:id", requireAuth, async (req, res) => {

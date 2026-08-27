@@ -57,6 +57,9 @@ const GIG_SCOPE = `category=${CAT_A},${CAT_B}`;
 const ACAT_A = `${MARKER}-art-a`;
 const ACAT_B = `${MARKER}-art-b`;
 const ARTIST_SCOPE = `category=${ACAT_A},${ACAT_B}`;
+const HCAT_A = `${MARKER}-hir-a`;
+const HCAT_B = `${MARKER}-hir-b`;
+const HIRER_SCOPE = `category=${HCAT_A},${HCAT_B}`;
 const TERM = `trm${crypto.randomUUID().slice(0, 8)}`;
 const BASE_TIME = new Date("2026-01-01T00:00:00.000Z").getTime();
 
@@ -235,9 +238,90 @@ const ARTIST_SPECS: ArtistSpec[] = [
 	},
 ];
 
+interface HirerSpec {
+	key: string;
+	username: string;
+	organizationName: string;
+	bio: string | null;
+	category: string;
+	location: string | null;
+	availability: boolean;
+}
+
+//	`me` is the caller and matches TERM in username, organization name and bio
+//	— without that row, "the caller never sees themselves" would pass vacuously.
+//	h1/h2/h5 match TERM by name (username or organization name), h3/h4 by bio
+//	only, h6 doesn't match at all.
+const HIRER_SPECS: HirerSpec[] = [
+	{
+		key: "h1",
+		username: `${TERM}alice`,
+		organizationName: "Alice Co",
+		bio: null,
+		category: HCAT_A,
+		location: "Lisbon",
+		availability: true,
+	},
+	{
+		key: "h2",
+		username: "bruno",
+		organizationName: `${TERM} Studio`,
+		bio: `also ${TERM}`,
+		category: HCAT_B,
+		location: "Porto",
+		availability: true,
+	},
+	{
+		key: "h3",
+		username: "carla",
+		organizationName: "Carla Crafts",
+		bio: `needs ${TERM}`,
+		category: HCAT_A,
+		location: "Porto",
+		availability: false,
+	},
+	{
+		key: "h4",
+		username: "diogo",
+		organizationName: "Diogo Works",
+		bio: `needs ${TERM}`,
+		category: HCAT_B,
+		location: "Lisbon",
+		availability: true,
+	},
+	{
+		key: "h5",
+		username: `${TERM}elsa`,
+		organizationName: "Elsa Art",
+		bio: "no match here",
+		category: HCAT_A,
+		location: "PORTO",
+		availability: true,
+	},
+	{
+		key: "h6",
+		username: "unrelated",
+		organizationName: "Random Co",
+		bio: "unrelated",
+		category: HCAT_A,
+		location: "Lisbon",
+		availability: true,
+	},
+	{
+		key: "me",
+		username: `${TERM}caller`,
+		organizationName: `${TERM} Org`,
+		bio: `${TERM} self`,
+		category: HCAT_A,
+		location: "Porto",
+		availability: true,
+	},
+];
+
 interface Corpus {
 	hirer: { id: string; role: UserRole };
 	caller: { id: string; role: UserRole };
+	hirerCaller: { id: string; role: UserRole };
 }
 
 async function seedGigs(hirer: { id: string }) {
@@ -295,6 +379,40 @@ async function seedArtists(): Promise<{ id: string; role: UserRole }> {
 	return caller!;
 }
 
+async function seedHirers(): Promise<{ id: string; role: UserRole }> {
+	let caller: { id: string; role: UserRole } | undefined;
+
+	let index = 0;
+	while (index < HIRER_SPECS.length) {
+		const spec = HIRER_SPECS[index];
+		const user = await prisma.user.create({
+			data: {
+				email: `${MARKER}-${crypto.randomUUID()}@test.local`,
+				username: spec.username,
+				role: UserRole.hirer,
+				avatarUrl: `https://cdn.test/${spec.key}.png`,
+				hirerProfile: {
+					create: {
+						categories: { create: { categoryId: await categoryIdFor(spec.category) } },
+						organizationName: spec.organizationName,
+						bio: spec.bio,
+						location: spec.location,
+						availability: spec.availability,
+						createdAt: new Date(BASE_TIME + index * 60_000),
+					},
+				},
+			},
+			include: { hirerProfile: true },
+		});
+		createdUserIds.push(user.id);
+		label.set(user.hirerProfile!.id, spec.key);
+		if (spec.key === "me") caller = { id: user.id, role: user.role };
+		index += 1;
+	}
+
+	return caller!;
+}
+
 let corpus: Promise<Corpus> | undefined;
 
 //	Seeded once and awaited by every test, as the suite's assertions all read the
@@ -305,7 +423,8 @@ function setup(): Promise<Corpus> {
 			const hirer = await makeUser(UserRole.hirer, `${MARKER}-hirer`);
 			await seedGigs(hirer);
 			const caller = await seedArtists();
-			return { hirer, caller };
+			const hirerCaller = await seedHirers();
+			return { hirer, caller, hirerCaller };
 		})();
 	}
 	return corpus;
@@ -318,6 +437,11 @@ async function searchGigs(baseUrl: string, token: string, query: string) {
 
 async function searchArtists(baseUrl: string, token: string, query: string) {
 	const { status, body } = await api(baseUrl, "GET", `/api/search/artists?${query}`, { token });
+	return { status, body, env: envelope(body) };
+}
+
+async function searchHirers(baseUrl: string, token: string, query: string) {
+	const { status, body } = await api(baseUrl, "GET", `/api/search/hirers?${query}`, { token });
 	return { status, body, env: envelope(body) };
 }
 
@@ -374,6 +498,15 @@ test("GET /api/search/gigs requires authentication (401 without a token)", async
 test("GET /api/search/artists requires authentication (401 without a token)", async () => {
 	await withServer(async (baseUrl) => {
 		const { status, body } = await api(baseUrl, "GET", "/api/search/artists");
+
+		assert.equal(status, 401);
+		assert.equal(body?.error, "MISSING_TOKEN");
+	});
+});
+
+test("GET /api/search/hirers requires authentication (401 without a token)", async () => {
+	await withServer(async (baseUrl) => {
+		const { status, body } = await api(baseUrl, "GET", "/api/search/hirers");
 
 		assert.equal(status, 401);
 		assert.equal(body?.error, "MISSING_TOKEN");
@@ -951,6 +1084,207 @@ test("artist ?minRate= is ignored rather than rejected", async () => {
 			`${ARTIST_SCOPE}&minRate=999&maxRate=1&pageSize=50`,
 		);
 		const without = await searchArtists(baseUrl, token, `${ARTIST_SCOPE}&pageSize=50`);
+
+		//	minRate > maxRate would be a 400 on gig search; here both are unread.
+		assert.equal(withRate.status, 200);
+		assert.deepEqual(labelsOf(withRate.env.items), labelsOf(without.env.items));
+	});
+});
+
+/* ------------------------------------------------------------------ */
+/* Hirer search                                                        */
+/* ------------------------------------------------------------------ */
+
+test("a hirer item carries user{username, avatarUrl} and never an email", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { env } = await searchHirers(baseUrl, tokenFor(hirerCaller), `${HIRER_SCOPE}&pageSize=1`);
+		const item = env.items[0];
+
+		assert.deepEqual(Object.keys(item).sort(), [
+			"availability",
+			"bio",
+			"categories",
+			"createdAt",
+			"id",
+			"location",
+			"organizationName",
+			"user",
+			"userId",
+		]);
+		assert.deepEqual(Object.keys(item.user as object).sort(), ["avatarUrl", "username"]);
+	});
+});
+
+test("hirer ?category=, ?location= and ?availability= each filter", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirerCaller);
+
+		const byCategory = await searchHirers(baseUrl, token, `category=${HCAT_B}&pageSize=50`);
+		assert.deepEqual(labelsOf(byCategory.env.items).sort(), ["h2", "h4"]);
+
+		const byLocation = await searchHirers(baseUrl, token, `${HIRER_SCOPE}&location=porto`);
+		assert.deepEqual(labelsOf(byLocation.env.items).sort(), ["h2", "h3", "h5"]);
+
+		const unavailable = await searchHirers(
+			baseUrl,
+			token,
+			`${HIRER_SCOPE}&availability=false&pageSize=50`,
+		);
+		assert.deepEqual(labelsOf(unavailable.env.items), ["h3"]);
+	});
+});
+
+test("hirer ?availability=maybe is a 400 VALIDATION_ERROR", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await searchHirers(
+			baseUrl,
+			tokenFor(hirerCaller),
+			`${HIRER_SCOPE}&availability=maybe`,
+		);
+
+		assert.equal(status, 400);
+		assert.equal(body?.error, "VALIDATION_ERROR");
+	});
+});
+
+test("hirer ?q= matches the username, organization name or bio", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { env } = await searchHirers(
+			baseUrl,
+			tokenFor(hirerCaller),
+			`${HIRER_SCOPE}&q=${TERM}&pageSize=50`,
+		);
+
+		//	h1/h2/h5 match by name, h3/h4 by bio only, h6 doesn't match; `me` is
+		//	the caller and is excluded even though it matches every field.
+		assert.deepEqual(labelsOf(env.items).sort(), ["h1", "h2", "h3", "h4", "h5"]);
+	});
+});
+
+//	This is the bug the caller reported: a brand-new hirer with zero gigs must
+//	still be findable by name — nothing here depends on the Gig table at all.
+test("a hirer with no gigs still appears in hirer search", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { env } = await searchHirers(
+			baseUrl,
+			tokenFor(hirerCaller),
+			`${HIRER_SCOPE}&q=${TERM}alice&pageSize=50`,
+		);
+
+		assert.deepEqual(labelsOf(env.items), ["h1"]);
+	});
+});
+
+test("the caller never appears in hirer results, even matching q in every field", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirerCaller);
+
+		const unfiltered = await searchHirers(baseUrl, token, `${HIRER_SCOPE}&pageSize=50`);
+		assert.equal(labelsOf(unfiltered.env.items).includes("me"), false);
+
+		const matching = await searchHirers(
+			baseUrl,
+			token,
+			`${HIRER_SCOPE}&q=${TERM}&sort=relevance&pageSize=50`,
+		);
+		assert.equal(labelsOf(matching.env.items).includes("me"), false);
+
+		//	Another caller does see them, so the exclusion is per-request, not a
+		//	filter on the row itself.
+		const other = await searchHirers(
+			baseUrl,
+			tokenFor({ id: crypto.randomUUID(), role: UserRole.artist }),
+			`${HIRER_SCOPE}&pageSize=50`,
+		);
+		assert.equal(labelsOf(other.env.items).includes("me"), true);
+	});
+});
+
+test("hirer ?sort=relevance buckets name matches before bio-only matches", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { env } = await searchHirers(
+			baseUrl,
+			tokenFor(hirerCaller),
+			`${HIRER_SCOPE}&q=${TERM}&sort=relevance&pageSize=50`,
+		);
+
+		assert.deepEqual(labelsOf(env.items), ["h5", "h2", "h1", "h4", "h3"]);
+	});
+});
+
+test("hirer relevance returns the same total as newest — bucket B drops nothing", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirerCaller);
+		const relevance = await searchHirers(
+			baseUrl,
+			token,
+			`${HIRER_SCOPE}&q=${TERM}&sort=relevance&pageSize=50`,
+		);
+		const newest = await searchHirers(baseUrl, token, `${HIRER_SCOPE}&q=${TERM}&pageSize=50`);
+
+		assert.equal(relevance.env.total, newest.env.total);
+		assert.deepEqual(labelsOf(relevance.env.items).sort(), labelsOf(newest.env.items).sort());
+	});
+});
+
+test("hirer ?sort=popular is a 400 naming gig search", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await searchHirers(
+			baseUrl,
+			tokenFor(hirerCaller),
+			`${HIRER_SCOPE}&sort=popular`,
+		);
+
+		assert.equal(status, 400);
+		assert.equal(body?.error, "VALIDATION_ERROR");
+		assert.match(String(body?.message), /gig/i);
+	});
+});
+
+test("hirer ?sort=rate_desc is a 400 listing only the hirer sorts", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const { status, body } = await searchHirers(
+			baseUrl,
+			tokenFor(hirerCaller),
+			`${HIRER_SCOPE}&sort=rate_desc`,
+		);
+
+		assert.equal(status, 400);
+		assert.equal(String(body?.message), "sort must be one of: newest, oldest, relevance");
+	});
+});
+
+test("hirer ?minRate= is ignored rather than rejected", async () => {
+	const { hirerCaller } = await setup();
+
+	await withServer(async (baseUrl) => {
+		const token = tokenFor(hirerCaller);
+		const withRate = await searchHirers(
+			baseUrl,
+			token,
+			`${HIRER_SCOPE}&minRate=999&maxRate=1&pageSize=50`,
+		);
+		const without = await searchHirers(baseUrl, token, `${HIRER_SCOPE}&pageSize=50`);
 
 		//	minRate > maxRate would be a 400 on gig search; here both are unread.
 		assert.equal(withRate.status, 200);

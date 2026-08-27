@@ -14,9 +14,11 @@ export const GIG_SORTS = [
 	"relevance",
 ] as const;
 export const ARTIST_SORTS = ["newest", "oldest", "relevance"] as const;
+export const HIRER_SORTS = ARTIST_SORTS;
 
 export type GigSort = (typeof GIG_SORTS)[number];
 export type ArtistSort = (typeof ARTIST_SORTS)[number];
+export type HirerSort = (typeof HIRER_SORTS)[number];
 
 const LIKE_SPECIALS = /[\\%_]/g;
 
@@ -168,4 +170,12 @@ export function parseArtistSort(value: unknown): ArtistSort {
 		throwError(400, "VALIDATION_ERROR", "sort=popular is available for gig search only");
 	}
 	return parseSort(value, ARTIST_SORTS);
+}
+
+//	HIRER_SORTS already excludes popular; this only explains why.
+export function parseHirerSort(value: unknown): HirerSort {
+	if (value === "popular") {
+		throwError(400, "VALIDATION_ERROR", "sort=popular is available for gig search only");
+	}
+	return parseSort(value, HIRER_SORTS);
 }

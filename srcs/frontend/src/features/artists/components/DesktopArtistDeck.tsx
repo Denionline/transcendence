@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import ArtistCard from "./ArtistCard";
 import ArtistDetailsModal from "./ArtistDetailsModal";
+import DiscreetFriendAction from "../../friends/components/DiscreetFriendAction";
 import type { Artist } from "../types";
 
 const SLOT_COUNT = 3;
@@ -141,6 +142,11 @@ export default function DesktopArtistDeck({
 				onClose={() => setDetail(null)}
 				onPass={() => detail && decide(detail.index, -1)}
 				onInterested={() => detail && decide(detail.index, 1)}
+				friendSlot={
+					detail && (
+						<DiscreetFriendAction key={detail.artist.userId} userId={detail.artist.userId} />
+					)
+				}
 			/>
 		</>
 	);
