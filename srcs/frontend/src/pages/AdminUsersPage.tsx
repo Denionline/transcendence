@@ -80,6 +80,7 @@ export default function AdminUsersPage() {
 							setSearch(e.target.value);
 							setPage(1);
 						}}
+						maxLength={120}
 					/>
 				</label>
 			</div>

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { parseId } from "../gigs/gigs.routes.js";
+import { friendIdParams, updateFriendshipBody } from "./friends.schema.js";
 import { throwError } from "../../lib/http-error.js";
 import { NotificationType, UserRole } from "../../../generated/prisma/enums.js";
 import {
@@ -37,7 +37,7 @@ router.get("/", requireAuth, async (req, res) => {
 //	for a full GET /profile/:id (portfolio, categories, and all).
 router.get("/:id", requireAuth, async (req, res) => {
 	const caller = req.user!;
-	const otherId = parseId(req.params.id);
+	const { id: otherId } = friendIdParams.parse(req.params);
 
 	if (caller.role === UserRole.admin) throwError(403, "FORBIDDEN", "admins do not have friends");
 
@@ -47,7 +47,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 
 router.post("/:id", requireAuth, async (req, res) => {
 	const caller = req.user!;
-	const friendId = parseId(req.params.id);
+	const { id: friendId } = friendIdParams.parse(req.params);
 
 	if (caller.role === UserRole.admin) throwError(403, "FORBIDDEN", "admins do not have friends");
 	if (caller.id === friendId) throwError(400, "VALIDATION_ERROR", "you cannot friend yourself");
@@ -66,12 +66,10 @@ router.post("/:id", requireAuth, async (req, res) => {
 
 router.patch("/:id", requireAuth, async (req, res) => {
 	const caller = req.user!;
-	const requestedId = parseId(req.params.id);
-	const accepted = req.body.accepted;
+	const { id: requestedId } = friendIdParams.parse(req.params);
 
 	if (caller.role === UserRole.admin) throwError(403, "FORBIDDEN", "admins do not have friends");
-	if (typeof accepted !== "boolean")
-		throwError(400, "VALIDATION_ERROR", "accepted must be a boolean");
+	const { accepted } = updateFriendshipBody.parse(req.body ?? {});
 	const updated = await updateStatus(caller.id, requestedId, accepted);
 	if (accepted) {
 		await createNotification({
@@ -90,7 +88,7 @@ router.patch("/:id", requireAuth, async (req, res) => {
 
 router.delete("/:id", requireAuth, async (req, res) => {
 	const caller = req.user!;
-	const friendId = parseId(req.params.id);
+	const { id: friendId } = friendIdParams.parse(req.params);
 
 	if (caller.role === UserRole.admin) throwError(403, "FORBIDDEN", "admins do not have friends");
 	await deleteFriend(caller.id, friendId);

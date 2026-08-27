@@ -18,10 +18,14 @@ import { fetchMyProfile, saveMyProfile, type ProfileUpdate } from "../api";
 import { notifyProfileUpdated } from "../profileEvents";
 import PortfolioManager from "./PortfolioManager";
 import LabeledField from "./LabeledField";
-
-// Mirrors MAX_PROFILE_CATEGORIES in the backend's categories service.
-const MAX_CATEGORIES = 10;
-const MAX_BIO_LENGTH = 280;
+import FieldError from "../../../components/FieldError";
+import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
+import {
+	MAX_BIO_LENGTH,
+	MAX_CATEGORIES,
+	artistDetailsSchema,
+	type ArtistDetailsValues,
+} from "../schemas";
 
 type Status = { type: "success" | "error"; text: string } | null;
 
@@ -40,6 +44,7 @@ export default function ArtistProfileView() {
 	const [location, setLocation] = useState("");
 	const [availability, setAvailability] = useState(true);
 	const [status, setStatus] = useState<Status>(null);
+	const [errors, setErrors] = useState<FieldErrors<ArtistDetailsValues>>({});
 	const [isSaving, setIsSaving] = useState(false);
 
 	// The caller's own public files — real uploads via /api/files, fetched
@@ -95,23 +100,39 @@ export default function ArtistProfileView() {
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
+
+		const checked = validateForm(artistDetailsSchema, {
+			categories: selectedSlugs,
+			bio,
+			location,
+			availability,
+		});
+		if (!checked.ok) {
+			setErrors(checked.errors);
+			return;
+		}
+
 		setStatus(null);
+		setErrors({});
 		setIsSaving(true);
 		try {
+			//	Empty means "cleared", which the API spells null rather than "".
 			const payload: ProfileUpdate = {
-				bio: bio.trim() || null,
-				location: location.trim() || null,
-				categories: selectedSlugs,
-				availability,
+				...checked.data,
+				bio: checked.data.bio || null,
+				location: checked.data.location || null,
 			};
 			await saveMyProfile(payload);
 			notifyProfileUpdated();
 			setStatus({ type: "success", text: "Profile updated successfully." });
 		} catch (err) {
-			setStatus({
-				type: "error",
-				text: err instanceof Error ? err.message : "Update failed.",
-			});
+			const fromServer = fieldErrorsFromApi<ArtistDetailsValues>(err);
+			if (fromServer) setErrors(fromServer);
+			else
+				setStatus({
+					type: "error",
+					text: err instanceof Error ? err.message : "Update failed.",
+				});
 		} finally {
 			setIsSaving(false);
 		}
@@ -246,6 +267,7 @@ export default function ArtistProfileView() {
 								})}
 							</div>
 						)}
+						<FieldError message={errors.categories} />
 					</fieldset>
 
 					<LabeledField label="Bio" hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
@@ -256,7 +278,9 @@ export default function ArtistProfileView() {
 							placeholder="Tell hirers what you make and how you work."
 							value={bio}
 							onChange={(e) => setBio(e.target.value)}
+							aria-invalid={errors.bio ? "true" : undefined}
 						/>
+						<FieldError message={errors.bio} />
 					</LabeledField>
 
 					<LabeledField label="Location" icon={MapPinIcon}>
@@ -266,7 +290,9 @@ export default function ArtistProfileView() {
 							placeholder="City, country"
 							value={location}
 							onChange={(e) => setLocation(e.target.value)}
+							aria-invalid={errors.location ? "true" : undefined}
 						/>
+						<FieldError message={errors.location} />
 					</LabeledField>
 
 					<label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-200/40 p-3 transition-colors has-checked:border-primary/30 has-checked:bg-primary/5">

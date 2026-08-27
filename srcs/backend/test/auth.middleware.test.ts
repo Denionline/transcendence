@@ -6,7 +6,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 
 import { SECRET } from "../src/lib/env.js";
-import { requireAuth } from "../src/middlewares/auth.middleware.js";
+import { requireAuth, requireRole } from "../src/middlewares/auth.middleware.js";
 import { errorHandler } from "../src/middlewares/error.middleware.js";
 import { UserRole } from "../generated/prisma/client.js";
 
@@ -15,16 +15,19 @@ function makeTestApp() {
 	app.get("/protected", requireAuth, (req, res) => {
 		res.json({ userId: req.user?.id });
 	});
+	app.get("/admin-only", requireAuth, requireRole(UserRole.admin), (_req, res) => {
+		res.json({ ok: true });
+	});
 	app.use(errorHandler);
 	return app;
 }
 
-async function requestProtected(headers: Record<string, string> = {}) {
+async function request(path: string, headers: Record<string, string> = {}) {
 	const app = makeTestApp();
 	const server = app.listen(0);
 	const { port } = server.address() as AddressInfo;
 	try {
-		const res = await fetch(`http://localhost:${port}/protected`, { headers });
+		const res = await fetch(`http://localhost:${port}${path}`, { headers });
 		return {
 			status: res.status,
 			body: (await res.json()) as { error?: string; message?: string; userId?: number },
@@ -33,6 +36,15 @@ async function requestProtected(headers: Record<string, string> = {}) {
 		server.close();
 	}
 }
+
+const requestProtected = (headers: Record<string, string> = {}) => request("/protected", headers);
+
+const bearer = (role: UserRole) => ({
+	Authorization: `Bearer ${jwt.sign({ userId: 42, role }, SECRET, {
+		algorithm: "HS256",
+		expiresIn: "15m",
+	})}`,
+});
 
 test("requireAuth rejects missing Authorization header", async () => {
 	const { status, body } = await requestProtected();
@@ -72,4 +84,22 @@ test("requireAuth accepts a valid token and attaches req.user", async () => {
 	const { status, body } = await requestProtected({ Authorization: `Bearer ${token}` });
 	assert.equal(status, 200);
 	assert.deepEqual(body, { userId: 42 });
+});
+
+test("requireRole rejects an unauthenticated caller with the standard error shape", async () => {
+	const { status, body } = await request("/admin-only");
+	assert.equal(status, 401);
+	assert.equal(body.error, "MISSING_TOKEN");
+});
+
+test("requireRole rejects a caller whose role is not allowed", async () => {
+	const { status, body } = await request("/admin-only", bearer(UserRole.artist));
+	assert.equal(status, 403);
+	assert.equal(body.error, "FORBIDDEN");
+	assert.equal(body.message, "insufficient permissions");
+});
+
+test("requireRole admits a caller whose role is allowed", async () => {
+	const { status } = await request("/admin-only", bearer(UserRole.admin));
+	assert.equal(status, 200);
 });

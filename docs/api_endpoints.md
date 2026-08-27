@@ -3,7 +3,25 @@
 All protected endpoints require an `Authorization: Bearer <token>` header (JWT access token) except `/api/auth/*`.
 The refresh token (also a JWT) is never exposed to JS — it travels only as an httpOnly cookie, scoped to `/api/auth`.
 Errors always have the shape `{ "error": "CODE", "message": "..." }`.
-`error` is a machine-readable code (see table below); `message` is human-readable.
+`error` is a machine-readable code (see table below); `message` is human-readable
+and may be reworded at any time — branch on `error`, never on `message`.
+A validation failure adds a third key, `details`, with one entry per rejected field:
+
+```json
+{
+  "error": "VALIDATION_ERROR",
+  "message": "request failed validation",
+  "details": [
+    { "path": "email", "message": "invalid email format" },
+    { "path": "password", "message": "password is required" }
+  ]
+}
+```
+
+`details` appears **only** on `VALIDATION_ERROR`; `path` is `""` for a problem
+with the payload as a whole. Every other failure — including an unmatched route
+(`404 NOT_FOUND`), a malformed JSON body (`400 MALFORMED_JSON`) and a body over
+the 100 kB parser limit (`413 PAYLOAD_TOO_LARGE`) — uses the two-key shape.
 Paginated lists accept `?page=1&pageSize=20` and return `{ items, page, pageSize, total }`.
 `/api/search/*` returns a **superset** of that envelope, adding `totalPages` and `hasMore`; `/api/users` and `/api/gigs` still return the four-field version.
 
@@ -158,17 +176,20 @@ accepts one match.
 
 ## Search `/api/search`
 
-Read-only discovery over gigs and artists: filtering, sorting and pagination on
-top of the same rows the Gigs module writes. Every route requires a valid access
-token (`requireAuth`) — there is no anonymous search. Nothing here mutates.
+Read-only discovery over gigs, artists and hirers: filtering, sorting and
+pagination on top of the same rows the Gigs and Profiles modules write. Every
+route requires a valid access token (`requireAuth`) — there is no anonymous
+search. Nothing here mutates.
 
 | Method | Path | Who | Returns |
 |---|---|---|---|
 | GET | `/gigs` | any logged-in | Gigs matching the filters, in the requested order |
 | GET | `/artists` | any logged-in | Artist profiles matching the filters, **never including the caller's own** |
+| GET | `/hirers` | any logged-in | Hirer profiles matching the filters, **never including the caller's own** |
 
-> Artist **discovery** lives here, at `GET /api/search/artists` — not under
-> `/api/profile` (see the caveat on that section below).
+> Artist and hirer **discovery** live here, at `GET /api/search/artists` and
+> `GET /api/search/hirers` — not under `/api/profile` (see the caveat on that
+> section below).
 
 ### Query parameters
 
@@ -181,13 +202,19 @@ and `pageSize`, which silently fall back to their defaults instead.
 |---|---|---|---|---|
 | `page` | both | integer ≥ 1 | `1` | Below 1 or unparseable → `1`. No upper bound; a page past the end returns `items: []` |
 | `pageSize` | both | integer 1–100 | `20` | Above 100 → **capped at 100**; below 1 or unparseable → `20`. Never an error |
-| `q` | both | string ≤ 100 chars | — | Case-insensitive **substring** match. Gigs: `title` **or** `description`. Artists: `username` **or** `bio`. Longer than 100 → `400`. Empty or whitespace-only is treated as absent |
+| `q` | both | string ≤ 100 chars | — | Case-insensitive **substring** match. Gigs: `title` **or** `description`. Artists: `username` **or** `bio`. Hirers: `username`, `organizationName` **or** `bio` — three fields, not two. Longer than 100 → `400`. Empty or whitespace-only is treated as absent |
 | `category` | both | string, CSV, and/or repeated | — | `?category=Painter,Muralist` and `?category=Painter&category=Muralist` are equivalent. Entries are trimmed, empties dropped, duplicates removed. Matched against `Category.slug` after normalization, so **case and spacing do not matter** and a label works as well as a slug. An unknown value matches nothing rather than erroring. For artists this is a **set intersection** — a profile matches if *any* of its categories is named. More than 25 distinct → `400`; any entry over 100 chars → `400` |
 | `location` | both | string ≤ 100 chars | — | Case-insensitive substring, same rules as `q`. Rows with a `NULL` location never match |
 | `sort` | both | see the sort table | `newest` | Unknown value → `400` |
 | `status` | gigs | `open` \| `closed` \| `all` | **`open`** | ⚠️ Not the same default as `GET /api/gigs` — see the callout below. Anything else → `400` |
 | `minRate` / `maxRate` | gigs | integer ≥ 0 | — | Inclusive bounds. Non-integer or negative → `400`; `minRate > maxRate` → `400`. An empty value (`?minRate=`) is ignored. Gigs with a `NULL` rate are excluded once either bound is given |
-| `availability` | artists | `true` \| `false` | — | Absent means **both**. Anything else (including `1`/`0`) → `400` |
+| `availability` | artists, hirers | `true` \| `false` | — | Absent means **both**. Anything else (including `1`/`0`) → `400` |
+
+**`/hirers` takes exactly the `/artists` parameter set** — `page`, `pageSize`,
+`q`, `category`, `location`, `availability`, `sort` — with the same values,
+defaults and errors. In the `Applies to` column above, "both" means gigs and
+artists; wherever a row applies to artists it applies to hirers too. The one
+difference is what `q` searches, covered under `sort=relevance` below.
 
 ⚠️ **`?category` does not behave like `GET /api/gigs?category=`**, which takes a
 single exact value. Here it is a multi-value OR filter. Same name, different
@@ -197,34 +224,37 @@ contract.
 returns every status.** A search with no `status` param silently hides closed
 gigs. Pass `?status=all` to disable the filter.
 
-⚠️ **`?minRate` / `?maxRate` on `/artists` are silently ignored, not rejected.**
-`ArtistProfile` has no `rate` column, so the route never reads them and no error
-is raised. Do not build a rate slider for artist search.
+⚠️ **`?minRate` / `?maxRate` on `/artists` and `/hirers` are silently ignored,
+not rejected.** Neither `ArtistProfile` nor `HirerProfile` has a `rate` column,
+so the route never reads them and no error is raised. Do not build a rate slider
+for artist or hirer search.
 
-⚠️ **The caller is always excluded from `/artists`**, unconditionally
-(`NOT: { userId: <caller> }`) — there is no parameter to include yourself. A
-user searching their own category will not find their own profile.
+⚠️ **The caller is always excluded from `/artists` and `/hirers`**,
+unconditionally (`NOT: { userId: <caller> }`) — there is no parameter to include
+yourself. A user searching their own category will not find their own profile.
 
 ### Sorting
 
 | `sort` | Applies to | Order |
 |---|---|---|
-| `newest` | both | `createdAt` descending — **the default** |
-| `oldest` | both | `createdAt` ascending |
+| `newest` | all three | `createdAt` descending — **the default** |
+| `oldest` | all three | `createdAt` ascending |
 | `rate_desc` | gigs only | Highest rate first, **`NULL` rates last** |
 | `rate_asc` | gigs only | Lowest rate first, **`NULL` rates last** (not first) |
 | `popular` | gigs only | Most-swiped first |
-| `relevance` | both | Two-bucket ordering — see below |
+| `relevance` | all three | Two-bucket ordering — see below |
 
 Every ordering ends with `id` ascending as a tiebreaker. That is a **contract**,
 not an implementation detail: without it, rows sharing a `createdAt` could
 reorder between page requests and a paging client would see duplicates and gaps.
 Offset pagination over a stable dataset is safe.
 
-`sort=rate_desc`, `rate_asc` and `popular` are **gigs-only**; on `/artists` they
-are rejected. `popular` gets its own message — `"sort=popular is available for
-gig search only"` — while the other two fall into the generic
-`"sort must be one of: newest, oldest, relevance"`.
+`sort=rate_desc`, `rate_asc` and `popular` are **gigs-only**; on `/artists` and
+`/hirers` they are rejected. `popular` gets its own message — `"sort=popular is
+available for gig search only"` — while the other two fall into the generic
+`"sort must be one of: newest, oldest, relevance"`. Hirers accept exactly the
+artist sort set (`HIRER_SORTS = ARTIST_SORTS` in `search.params.ts`), so the two
+endpoints cannot drift apart.
 
 > **`popular` counts *all* swipes on the gig — likes *and* skips.** It measures
 > how much traffic a gig has seen, not how well it was received. A heavily
@@ -236,10 +266,16 @@ gig search only"` — while the other two fall into the generic
 Not a relevance *score* — there is no full-text index, no ranking function and
 no `pg_trgm`. It is a deterministic two-bucket ordering:
 
-| Bucket | Gigs | Artists |
-|---|---|---|
-| **A** (first) | `q` matches the `title` | `q` matches the `username` |
-| **B** (second) | `q` matches the `description` **and not** the title | `q` matches the `bio` **and not** the username |
+| Bucket | Gigs | Artists | Hirers |
+|---|---|---|---|
+| **A** (first) | `q` matches the `title` | `q` matches the `username` | `q` matches the `username` **or** the `organizationName` |
+| **B** (second) | `q` matches the `description` **and not** the title | `q` matches the `bio` **and not** the username | `q` matches the `bio` **and not** either name |
+
+⚠️ **Bucket A for hirers spans two fields**, the only place in search where it
+does. A hirer is findable by their account username *or* their business name,
+and either one is a first-class match — an artist who knows a venue by its
+trading name ranks it as highly as one who knows the account. A hirer whose
+`bio` mentions a term already in either name still appears **once**, in A.
 
 Every bucket-A row precedes every bucket-B row. A row matching both fields
 appears **once**, in bucket A. Within each bucket the order is the usual
@@ -257,7 +293,7 @@ sign, not everything.
 
 ### Response shape
 
-Both endpoints return the **six-field** envelope:
+All three endpoints return the **six-field** envelope:
 
 ```json
 {
@@ -300,6 +336,23 @@ An `/artists` item is the artist profile plus its owner:
 }
 ```
 
+A `/hirers` item is the same shape with `organizationName` added:
+
+```json
+{
+  "id": "…", "userId": "…", "organizationName": "…",
+  "categories": [{ "id": "…", "slug": "muralist", "label": "Muralist" }],
+  "bio": "…", "location": "Porto", "availability": true,
+  "createdAt": "2026-08-06T22:34:15.725Z",
+  "user": { "username": "…", "avatarUrl": "…" }
+}
+```
+
+For a hirer the **display name is `organizationName`**, not `user.username` —
+the same split `PublicProfileDto` makes (see Profiles below). `username` is
+still returned because it is what `q` also matches against, but it is not what
+the UI should show.
+
 The nested object carries **only** `username` and `avatarUrl`. No email, no
 role, no id — search results are not a user directory.
 
@@ -312,10 +365,12 @@ unmatched filter is an empty `items` array, not an error.
 
 ### Rate limit
 
-Both search endpoints share **120 requests per minute per user**, keyed by the
-authenticated user id rather than by IP. Exceeding it returns
+All three search endpoints share **120 requests per minute per user**, keyed by
+the authenticated user id rather than by IP. Exceeding it returns
 `429 TOO_MANY_REQUESTS` with a `Retry-After` header giving the seconds until the
-window resets. The two endpoints draw on one shared budget.
+window resets. It is a single `searchLimiter` instance mounted on every route,
+so the three draw on **one shared budget** — a navbar that live-searches hirers
+spends the same allowance as gig browsing.
 
 ⚠️ The limiter is an in-process `Map`, so the budget is **per backend
 container**. That matches the current single-backend `docker-compose.yml`; a
@@ -329,20 +384,30 @@ Indexed: `Gig(status, createdAt)`, `Gig(status, categoryId)`, `Gig(categoryId)`,
 the `status`, `category` and `availability` filters and the default date
 ordering are index-backed. Artist category filtering now goes through
 `ArtistCategory`, which the `categoryId` index and the composite PK cover from
-both directions.
+both directions. Hirer category filtering mirrors it through `HirerCategory`.
+
+⚠️ **`HirerProfile.availability` carries no index**, unlike
+`ArtistProfile(availability)`. `?availability=` on `/hirers` therefore scans
+where the same filter on `/artists` does not. Harmless at current row counts and
+easy to fix later with one `@@index([availability])`, but do not assume the two
+endpoints perform alike.
 
 **Not indexed, and not indexable with a B-tree:** `q` and `location`. Both
 compile to `ILIKE '%…%'`, which no B-tree can serve, so they always scan —
-`title`, `description`, `bio` and both `location` columns alike. A trigram index
-(`pg_trgm`) would fix this and is deliberately out of scope. Artist `q` matching
-on `username` is worse still: it resolves through a **join** to `User`, so no
-index on `ArtistProfile` touches that path at all.
+`title`, `description`, `bio`, `organizationName` and every `location` column
+alike. A trigram index (`pg_trgm`) would fix this and is deliberately out of
+scope. Artist `q` matching on `username` is worse still: it resolves through a
+**join** to `User`, so no index on `ArtistProfile` touches that path at all.
+Hirer relevance splits the difference — `organizationName` lives on
+`HirerProfile` itself, but `username` still crosses the join, so bucket A pays
+the join cost regardless.
 
 ## Profiles `/api/profile`
 
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | PATCH | `/me` | logged-in artist/hirer | Upsert — creates the profile on the first call, updates it on every call after. Non-artist/hirer (e.g. `admin`) → `403 FORBIDDEN` |
+| GET | `/me` | logged-in artist/hirer | The caller's **own** profile. **Never `404`s** — with no profile row yet it returns `200 { "exists": false, "role": … }`. Non-artist/hirer (e.g. `admin`) → `403 FORBIDDEN` |
 | GET | `/:id` | any logged-in | Any user's artist/hirer profile, by their `User.id`. Unknown id → `404 USER_NOT_FOUND`. Target is an `admin` (no profile) → `404 PROFILE_NOT_FOUND` |
 | DELETE | `/:id` | owner or admin | Deletes just the artist/hirer profile row — the account itself is untouched (use `DELETE /api/users/:id` to remove the whole account). Non-owner non-admin → `403 FORBIDDEN`. No profile row to delete → `404 PROFILE_NOT_FOUND` |
 
@@ -359,6 +424,30 @@ index on `ArtistProfile` touches that path at all.
   CATEGORY_NOT_FOUND`.
 
 Responses carry `categories` as a flat array of `{ id, slug, label }`.
+
+`GET /me` is the caller's own view of their profile, and it is **not** `GET
+/:id` pointed at yourself. Two differences matter:
+
+- **It never `404`s.** A user who has registered but not yet filled in a profile
+  gets `200 { "exists": false, "role": "artist" | "hirer" }` rather than
+  `404 PROFILE_NOT_FOUND`. That discriminator is the whole point of the
+  endpoint: it lets the frontend tell "no profile yet, show the create form"
+  apart from a genuine error, without treating a `404` as a normal state. Once a
+  row exists the response is `{ "exists": true, "role", "categories", "bio",
+  "location", "availability", "portfolio", … }` — plus `organizationName` for a
+  hirer.
+- **No `friendshipStatus`.** You are not your own friend, and `GET /:id` already
+  omits the field when the caller is the target.
+
+⚠️ **`portfolio` on `GET /me` lists your `public` files only.** It calls the
+same `listPublicFilesFor(<caller>)` as `GET /:id`, which filters
+`visibility: public` — so **your own private uploads do not appear in your own
+profile response**. Use `GET /api/files` to see everything you own. A settings
+screen built on `GET /me` will silently under-report the user's library.
+
+> The route order in `profile.routes.ts` is load-bearing: `GET /me` is declared
+> **before** `GET /:id`. Reversed, Express would match `/me` as `:id` and every
+> request would 404 with `USER_NOT_FOUND` on the literal string `"me"`.
 
 `GET /:id` also embeds **`portfolio`**: the owner's `public` files, newest
 first, each with its `url`. It never lists a `private` one. That filter is not
@@ -602,50 +691,109 @@ hold friend requests.
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | GET | `/` | logged-in | The caller's confirmed friends (`status: accepted`), paginated. Each item is normalized to `{ id, displayName, avatarUrl, status }` for the **other** user, regardless of which side originally sent the request |
+| GET | `/:id` | logged-in | The caller's relationship with `:id`, as `200 { "status": … }` — one of `"none"`, `"pending_sent"`, `"pending_received"`, `"accepted"`, resolved regardless of which side sent the request. **Never `404`s** — see the callout below. Admin caller → `403 FORBIDDEN` |
 | POST | `/:id` | logged-in | Send a friend request to `:id`. Self-invite → `400 VALIDATION_ERROR`. Unknown `:id` → `404 USER_NOT_FOUND`. A request already exists in **either** direction (the caller already invited `:id`, or `:id` already invited the caller) → `409 FRIEND_REQUEST_EXISTS`. Returns `201` with `{ userId, friendId, status: "pending" }` |
 | PATCH | `/:id` | recipient | Respond to a pending request **sent by** `:id`. Body: `{ "accepted": boolean }` — missing/wrong type → `400 VALIDATION_ERROR`. No pending request from `:id` to the caller → `404 FRIEND_REQUEST_NOT_FOUND`. Returns `200` with the updated row (`status: "accepted"` or `"declined"`). Fires a `"new_notification"` event for `:id` only when accepted — declines aren't notified. A decline **deletes the row** rather than persisting it as `declined` — the response still reports `status: "declined"` for the caller, but the deletion is what lets either side send a fresh request afterwards; otherwise the unique constraint / reverse-row check in `POST` would block them forever |
 | DELETE | `/:id` | either side | End the relationship with `:id` — cancels a pending request or unfriends an accepted one, whichever direction it was created in. No relation exists between the two → `404 FRIEND_NOT_FOUND`. Returns `204` |
 
+`GET /:id` exists so a caller who already holds a user's id — a swipe candidate,
+say, which carries no `friendshipStatus` of its own — can check the relationship
+without paying for a full `GET /api/profile/:id` and its portfolio, categories
+and joins. The `status` values are exactly those `GET /api/profile/:id` embeds
+as `friendshipStatus`, computed by the same helper, so the two can never
+disagree.
+
+⚠️ **`GET /:id` never returns `404`, unlike every other route on this path.** It
+queries only the `Friend` table and never checks that `:id` names a real user,
+so an unknown, deleted or nonsense id answers `200 { "status": "none" }` — the
+same response as a real user you simply have no relationship with. It is **not**
+an existence probe; `POST /:id` is the route that reports `404 USER_NOT_FOUND`.
+Do not branch on it to decide whether an account exists.
+
 ---
+
+## Where validation happens
+
+Body, query and param shapes are zod schemas living next to the routes that use
+them (`srcs/backend/src/modules/*/*.schema.ts`), built from shared primitives in
+`srcs/backend/src/lib/schemas.ts` — which is also where every bound this API
+enforces is written down. Two modules keep hand-written validators instead:
+`search` (`search.params.ts`, which also escapes `\`, `%` and `_` before
+Prisma's `contains` — a raw `?q=%` would otherwise match everything) and
+`categories`, both of which were already bounded and are covered by tests that
+assert their exact messages.
+
+Text fields are sanitized before they are measured (`lib/sanitize.ts`):
+Unicode-normalized to NFC, with control characters, zero-width characters and
+bidi overrides removed. Single-line fields also lose line breaks; prose fields
+keep them. A field of nothing but invisible characters is therefore empty, and
+fails a "required" rule rather than satisfying it.
+
+Unknown keys are **stripped, not rejected** — the client already sends fields
+this API has no column for, and dropping them keeps mass assignment impossible
+without breaking those forms.
+
+The same bounds are enforced again in the browser, so a typo is answered in the
+form instead of by a round trip. `srcs/frontend/src/test/parity.test.ts` imports
+both sides' schemas and fails if a client rule is ever looser than the server
+rule it mirrors; the server stays the authority either way.
 
 ## Error codes used above
 
+Every code below is thrown somewhere in `srcs/backend/src`; the table is the
+whole set. Codes are grouped by status, with a param-validation code kept
+beside the not-found code it precedes.
+
 | Code | Status | Meaning |
 |---|---|---|
-| `VALIDATION_ERROR` | 400 | Zod rejected body/query/params (also used by auth for missing/invalid fields) |
-| `SELF_SWIPE` | 400 | Tried to swipe on yourself |
+| `VALIDATION_ERROR` | 400 | A schema rejected the body, query or params — carries `details` |
+| `MALFORMED_JSON` | 400 | Body was not valid JSON |
+| `REQUEST_ABORTED` | 400 | Caller hung up before the body finished arriving |
+| `WEAK_PASSWORD` | 400 | Password failed the policy in `lib/password.ts` — on registration **and** on password change |
+| `INVALID_CONTENT` | 400 | Message content outside 1–2000 characters after sanitizing |
+| `INVALID_PATH` | 400 | A stored file location resolved outside the upload directory — the path-traversal guard |
+| `CATEGORY_MISMATCH` | 400 | The swiping (or targeted) artist holds none of the gig's category |
+| `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
+| `OAUTH_INVALID_REQUEST` | 400 | 42 redirected back to the callback without a `code` or `state` |
+| `OAUTH_STATE_INVALID` | 400 | The `state` in the callback does not match the cookie set when the flow started — a CSRF guard |
 | `INVALID_CREDENTIALS` | 401 | Wrong email or password on login |
 | `MISSING_TOKEN` | 401 | Authorization header missing/malformed, or refresh cookie missing |
 | `INVALID_TOKEN` | 401 | Access token signature invalid or malformed |
 | `TOKEN_EXPIRED` | 401 | Access token expired |
 | `INVALID_REFRESH_TOKEN` | 401 | Refresh token invalid, expired, or revoked |
+| `UNAUTHENTICATED` | 401 | A route that requires a signed-in caller was reached without one |
 | `FORBIDDEN` | 403 | Logged in, but not allowed (wrong owner/role/side) |
-| `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence |
-| `FILE_NOT_FOUND` | 404 | No file with that id — also returned instead of 403 for another user's `private` file, and when the row exists but its bytes do not |
+| `NOT_FOUND` | 404 | Resource missing — also returned instead of 403 when hiding existence, and by the catch-all for an unmatched `/api` route |
 | `USER_NOT_FOUND` | 404 | No user with that id (get/update/delete) |
 | `GIG_NOT_FOUND` | 404 | No gig with that id (get/update/delete) |
+| `FILE_NOT_FOUND` | 404 | No file with that id — also returned instead of 403 for another user's `private` file, and when the row exists but its bytes do not |
+| `PROFILE_NOT_FOUND` | 404 | The artist/hirer profile a request needs does not exist (admins never have one) |
+| `INVALID_MATCH_ID` | 400 | `:matchId` in a messages route was not a single string value |
 | `MATCH_NOT_FOUND` | 404 | No match with that id (get/delete) |
-| `INVALID_MESSAGE_ID` | 400 | `:messageId` param on `DELETE /matches/:matchId/messages/:messageId` was not a single string value |
+| `INVALID_MESSAGE_ID` | 400 | `:messageId` on `DELETE /matches/:matchId/messages/:messageId` was not a single string value |
 | `MESSAGE_NOT_FOUND` | 404 | No message with that id in that match — deleting it, or a mismatched matchId in the URL |
 | `INVALID_NOTIFICATION_ID` | 400 | `:id` param on a notifications route was not a single string value |
 | `NOTIFICATION_NOT_FOUND` | 404 | No notification with that id belonging to the caller |
+| `FRIEND_REQUEST_NOT_FOUND` | 404 | No pending friend request from `:id` to the caller (`PATCH /api/friends/:id`) |
+| `FRIEND_NOT_FOUND` | 404 | No friend request/friendship exists between the caller and `:id` (`DELETE /api/friends/:id`) |
 | `EMAIL_EXISTS` | 409 | Email already registered |
-| `PROFILE_EXISTS` | 409 | User already has a profile |
 | `SWIPE_EXISTS` | 409 | A swipe already exists for this (swiper, swiped, gig) combination |
 | `GIG_CLOSED` | 409 | Tried to swipe on a gig that is no longer `open` |
-| `PROFILE_NOT_FOUND` | 404 | Hirer's swipe target has no artist profile |
-| `CATEGORY_MISMATCH` | 400 | The swiping (or targeted) artist holds none of the gig's category |
-| `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
 | `CATEGORY_EXISTS` | 409 | Creating or re-slugging a category onto a slug another category already owns |
 | `ARTIST_UNAVAILABLE` | 409 | Hirer tried to swipe an artist whose profile is marked unavailable |
 | `FRIEND_REQUEST_EXISTS` | 409 | A friend request already exists between the two users, in either direction |
-| `FRIEND_REQUEST_NOT_FOUND` | 404 | No pending friend request from `:id` to the caller (`PATCH /api/friends/:id`) |
-| `FRIEND_NOT_FOUND` | 404 | No friend request/friendship exists between the caller and `:id` (`DELETE /api/friends/:id`) |
 | `SELF_DEMOTE` | 409 | Admin tried to change or remove their own admin role |
 | `SELF_DELETE` | 409 | Admin tried to delete their own account |
 | `FILE_TOO_LARGE` | 413 | Upload exceeded the per-type cap, or the global `MAX_UPLOAD_MB` mid-stream |
+| `PAYLOAD_TOO_LARGE` | 413 | JSON body over the 100 kB parser limit (uploads use `FILE_TOO_LARGE`) |
 | `UNSUPPORTED_FILE_TYPE` | 415 | Declared `Content-Type` is not in the upload allow-list |
-| `INVALID_PATH` | 400 | A stored file location resolved outside the upload directory — the path-traversal guard |
+| `FILE_CONTENT_MISMATCH` | 415 | The bytes are not the type the upload declared — checked against the file's own signature, before anything is written |
+| `UNSUPPORTED_ENCODING` | 415 | Body used a `Content-Encoding` the parser cannot read |
+| `RANGE_NOT_SATISFIABLE` | 416 | `Range` header asks for bytes outside the file |
 | `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
-| `TOO_MANY_REQUESTS` | 429 | Per-IP rate limit hit — see the `Retry-After` header |
-| `INTERNAL_ERROR` | 500 | Unhandled — never leaks internals |
+| `TOO_MANY_REQUESTS` | 429 | Per-caller rate limit hit — see the `Retry-After` header |
+| `REQUEST_FAILED` | 4xx | A library rejected the request; its status is kept, its message is not |
+| `MESSAGE_FAILED` | 500 | The message passed validation but could not be saved |
+| `INTERNAL_ERROR` | 500 | Unhandled failure — logged server-side, never detailed to the caller |
+| `FT_EXCHANGE_FAILED` | 502 | 42 refused to exchange the authorization code for a token |
+| `FT_PROFILE_FAILED` | 502 | 42 issued a token but would not return the profile behind it |

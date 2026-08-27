@@ -4,21 +4,14 @@ import { Prisma, UserRole } from "../../../generated/prisma/client.js";
 import { publicCategorySelect, resolveCategoryIds } from "../categories/categories.service.js";
 import { listPublicFilesFor } from "../files/files.service.js";
 import { getFriendshipStatus } from "../friends/friends.service.js";
+import type { UpdateProfileBody } from "./profile.schema.js";
 
-export interface ArtistProfileInput {
-	categories?: unknown;
-	bio?: unknown;
-	location?: unknown;
-	availability?: unknown;
-}
+export type ArtistProfileInput = Pick<
+	UpdateProfileBody,
+	"categories" | "bio" | "location" | "availability"
+>;
 
-export interface HirerProfileInput {
-	categories?: unknown;
-	bio?: unknown;
-	organizationName?: unknown;
-	location?: unknown;
-	availability?: unknown;
-}
+export type HirerProfileInput = ArtistProfileInput & Pick<UpdateProfileBody, "organizationName">;
 
 const categoriesSelect = {
 	select: { category: { select: publicCategorySelect } },
@@ -62,26 +55,10 @@ interface ProfileFields {
 	organizationName?: string;
 }
 
-//	Shared by both profile types: the fields whose validation never differed.
-function applyCommonFields(
-	data: ProfileFields,
-	input: { bio?: unknown; location?: unknown; availability?: unknown },
-) {
-	if (input.bio !== undefined) {
-		if (input.bio !== null && typeof input.bio !== "string")
-			throwError(400, "VALIDATION_ERROR", "bio must be a string or null");
-		data.bio = input.bio as string | null;
-	}
-	if (input.location !== undefined) {
-		if (input.location !== null && typeof input.location !== "string")
-			throwError(400, "VALIDATION_ERROR", "location must be a string or null");
-		data.location = input.location as string | null;
-	}
-	if (input.availability !== undefined) {
-		if (typeof input.availability !== "boolean")
-			throwError(400, "VALIDATION_ERROR", "availability must be a boolean");
-		data.availability = input.availability;
-	}
+function applyCommonFields(data: ProfileFields, input: ArtistProfileInput) {
+	if (input.bio !== undefined) data.bio = input.bio;
+	if (input.location !== undefined) data.location = input.location;
+	if (input.availability !== undefined) data.availability = input.availability;
 }
 
 function requireCategoriesOnCreate(exists: boolean, categoryIds: string[] | undefined) {
@@ -127,14 +104,7 @@ export async function upsertHirerProfile(userId: string, input: HirerProfileInpu
 	let categoryIds: string[] | undefined;
 
 	if (input.categories !== undefined) categoryIds = await resolveCategoryIds(input.categories);
-	if (input.organizationName !== undefined) {
-		if (typeof input.organizationName !== "string")
-			throwError(400, "VALIDATION_ERROR", "organizationName must be a string");
-		const organizationName = input.organizationName.trim();
-		if (organizationName.length === 0)
-			throwError(400, "VALIDATION_ERROR", "organizationName cannot be empty");
-		data.organizationName = organizationName;
-	}
+	if (input.organizationName !== undefined) data.organizationName = input.organizationName;
 	applyCommonFields(data, input);
 
 	const existing = await prisma.hirerProfile.findUnique({

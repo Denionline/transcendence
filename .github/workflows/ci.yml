@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: "22"
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Run ESLint
         run: npm run lint
 
@@ -44,18 +44,19 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install backend dependencies
+        working-directory: srcs/backend
+        run: npm ci --no-audit --no-fund
+
       # Frontend: produce the production Vite bundle.
       - name: Install frontend dependencies
         working-directory: srcs/frontend
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Build frontend
         working-directory: srcs/frontend
         run: npm run build
 
       # Backend: no bundler, so validate that the entrypoint at least parses.
-      - name: Install backend dependencies
-        working-directory: srcs/backend
-        run: npm install --no-audit --no-fund
       - name: validate Prisma schema
         working-directory: srcs/backend
         env:
@@ -70,8 +71,49 @@ jobs:
         working-directory: srcs/backend
         run: npx tsc --noEmit
 
+  proxy:
+    name: Proxy config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Provide an env file
+        run: cp .env.example .env
+      - name: Validate the compose file
+        run: docker compose -f srcs/docker-compose.yml --env-file .env.example config --quiet
+      - name: Build the nginx image
+        run: docker build -t proxy-check srcs/nginx
+      - name: Check the rendered nginx config (upstream names must resolve)
+        run: |
+          docker run --rm \
+            -e NGINX_ENVSUBST_FILTER='^NGINX_' \
+            -e NGINX_HTTPS_PORT=8443 \
+            -e NGINX_MAX_BODY_SIZE=50m \
+            --add-host backend:127.0.0.1 \
+            --add-host frontend:127.0.0.1 \
+            --entrypoint /bin/sh proxy-check \
+            -c '/docker-entrypoint.sh nginx -t'
+
+  test-frontend:
+    name: Test (frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: srcs/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install backend dependencies
+        working-directory: srcs/backend
+        run: npm ci --no-audit --no-fund
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run tests
+        run: npm test
+
   test:
-    name: Test
+    name: Test (backend)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -108,7 +150,7 @@ jobs:
       - name: Point UPLOAD_DIR at the runner's temp directory
         run: echo "UPLOAD_DIR=$RUNNER_TEMP/uploads" >> "$GITHUB_ENV"
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Generate Prisma Client
         run: npx prisma generate
       - name: Apply database migrations

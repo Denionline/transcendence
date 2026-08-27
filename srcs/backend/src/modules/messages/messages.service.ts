@@ -15,13 +15,6 @@ interface CreateMessageData {
 	content: string;
 }
 
-export function parseMessageContent(content: unknown) {
-	if (typeof content !== "string" || content.length < 1 || content.length > 2000) {
-		return false;
-	}
-	return true;
-}
-
 export async function createMessage(data: CreateMessageData) {
 	try {
 		const message = await prisma.chatMessage.create({

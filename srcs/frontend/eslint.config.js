@@ -19,6 +19,9 @@ export default tseslint.config(
 			"prettier/prettier": "error", // uses the shared .prettierrc at the repo root
 			"arrow-body-style": "off",
 			"prefer-arrow-callback": "off",
+			// React's escaping is what makes stored XSS a non-issue across every
+			// profile, gig and chat message; this keeps that true by construction.
+			"react/no-danger": "error",
 		},
 		settings: {
 			react: { version: "detect" },

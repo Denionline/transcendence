@@ -16,7 +16,7 @@ import {
 	parseVisibility,
 	toPublic,
 } from "./files.service.js";
-import { parseId } from "../gigs/gigs.routes.js";
+import { id } from "../../lib/schemas.js";
 
 const router = Router();
 
@@ -61,9 +61,7 @@ const uploadRateLimit = rateLimit({
 //	GET /:id/raw has no requireAuth, so there is no user id to key on.
 //	Generous on purpose: a gallery fetches every thumbnail at once and a
 //	<video> scrub fires a burst of Range requests. This is a ceiling on
-//	abuse, not a quota. Note the dev-server proxy does not forward
-//	X-Forwarded-For, so in the container setup this bucket is shared by all
-//	callers rather than per-client.
+//	abuse, not a quota.
 export const RAW_MAX_PER_MINUTE = 600;
 
 const rawRateLimit = rateLimit({
@@ -99,7 +97,7 @@ router.get("/", requireAuth, async (req: Request, res) => {
 
 //	404 rather than 403 for someone else's file, so ids stay unenumerable.
 router.get("/:id", requireAuth, async (req: Request, res) => {
-	const fileId = parseId(req.params.id);
+	const fileId = id.parse(req.params.id);
 	const file = await getFileForViewer(fileId, req.user!.id);
 	res.status(200).json(toPublic(file));
 });
@@ -110,14 +108,15 @@ router.get("/:id", requireAuth, async (req: Request, res) => {
 //	enforced where it is enforceable — in the endpoints that decide which
 //	ids a caller learns.
 router.get("/:id/raw", rawRateLimit, async (req: Request, res, next: NextFunction) => {
-	const fileId = parseId(req.params.id);
+	const fileId = id.parse(req.params.id);
 	const file = await getFileOrThrow(fileId);
 
 	//	The stored MIME, never one re-derived from the extension. Set before
 	//	sendFile, which only guesses a type when Content-Type is unset.
 	res.setHeader("Content-Type", file.mimeType);
-	//	Nothing validated what these bytes actually are, so this is what stops
-	//	a browser sniffing HTML out of something declared as image/png.
+	//	The second line of defence: createFile refuses bytes that disagree with
+	//	their declared type, and this stops a browser sniffing its own answer
+	//	out of whatever did get stored.
 	res.setHeader("X-Content-Type-Options", "nosniff");
 	const scope = file.visibility === FileVisibility.public ? "public" : "private";
 	res.setHeader("Cache-Control", `${scope}, max-age=86400, immutable`);
@@ -154,7 +153,7 @@ router.get("/:id/raw", rawRateLimit, async (req: Request, res, next: NextFunctio
 //	Owner or admin, as in profile.routes.ts. A 403 is safe here in a way it
 //	is not on GET: the caller already proved they hold the id.
 router.delete("/:id", requireAuth, async (req: Request, res) => {
-	const fileId = parseId(req.params.id);
+	const fileId = id.parse(req.params.id);
 	const caller = req.user!;
 
 	const file = await getFileOrThrow(fileId);

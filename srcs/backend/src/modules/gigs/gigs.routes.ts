@@ -1,24 +1,12 @@
 import { Router, Request } from "express";
 import { throwError } from "../../lib/http-error.js";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
-import { GigStatus, UserRole } from "../../../generated/prisma/client.js";
+import { UserRole } from "../../../generated/prisma/client.js";
 import { parsePagination } from "../../lib/pagination.js";
 import { createGig, deleteGig, getGigById, listGigs, updateGig } from "./gigs.service.js";
+import { createGigBody, gigIdParams, listGigsQuery, updateGigBody } from "./gigs.schema.js";
 
 const router = Router();
-
-export function parseId(value: unknown): string {
-	if (typeof value !== "string") {
-		throwError(400, "VALIDATION_ERROR", "invalid id parameter");
-	}
-	return value;
-}
-
-function parseStatus(value: unknown): GigStatus | undefined {
-	return typeof value === "string" && (Object.values(GigStatus) as string[]).includes(value)
-		? (value as GigStatus)
-		: undefined;
-}
 
 router.post("/", requireAuth, async (req: Request, res) => {
 	const caller = req.user!;
@@ -31,29 +19,16 @@ router.post("/", requireAuth, async (req: Request, res) => {
 		throwError(403, "FORBIDDEN", "only hirers can create gigs");
 	}
 
-	const body = req.body ?? {};
-	const gig = await createGig(caller.id, {
-		title: body.title,
-		description: body.description,
-		category: body.category,
-		location: body.location,
-		rate: body.rate,
-		status: body.status,
-	});
+	const gig = await createGig(caller.id, createGigBody.parse(req.body ?? {}));
 	res.status(201).json(gig);
 });
 
 router.get("/", requireAuth, async (req: Request, res) => {
 	const { page, pageSize } = parsePagination(req.query);
-	const status = parseStatus(req.query.status);
-	const category = typeof req.query.category === "string" ? req.query.category : undefined;
+	const { status, category, mine } = listGigsQuery.parse(req.query);
 
 	let hirerId: string | undefined;
-	let wantsMine = false;
-	if (typeof req.query.mine === "string") {
-		wantsMine = true;
-	}
-	if (wantsMine === true) {
+	if (mine !== undefined) {
 		hirerId = req.user!.id;
 	}
 
@@ -64,13 +39,13 @@ router.get("/", requireAuth, async (req: Request, res) => {
 // Reading a gig needs no ownership check — gigs are browsable by any logged-in
 // user. Just prove who you are.
 router.get("/:id", requireAuth, async (req: Request, res) => {
-	const gigId = parseId(req.params.id);
+	const { id: gigId } = gigIdParams.parse(req.params);
 	const gig = await getGigById(gigId);
 	res.status(200).json(gig);
 });
 
 router.put("/:id", requireAuth, async (req: Request, res) => {
-	const gigId = parseId(req.params.id);
+	const { id: gigId } = gigIdParams.parse(req.params);
 	const caller = req.user!;
 
 	const gig = await getGigById(gigId);
@@ -87,20 +62,12 @@ router.put("/:id", requireAuth, async (req: Request, res) => {
 		throwError(403, "FORBIDDEN", "you cannot update this gig");
 	}
 
-	const body = req.body ?? {};
-	const updated = await updateGig(gigId, {
-		title: body.title,
-		description: body.description,
-		category: body.category,
-		location: body.location,
-		rate: body.rate,
-		status: body.status,
-	});
+	const updated = await updateGig(gigId, updateGigBody.parse(req.body ?? {}));
 	res.status(200).json(updated);
 });
 
 router.delete("/:id", requireAuth, async (req: Request, res) => {
-	const gigId = parseId(req.params.id);
+	const { id: gigId } = gigIdParams.parse(req.params);
 	const caller = req.user!;
 
 	const gig = await getGigById(gigId);

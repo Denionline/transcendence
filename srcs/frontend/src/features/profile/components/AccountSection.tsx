@@ -5,6 +5,9 @@ import Avatar from "../../../components/Avatar";
 import { uploadFile } from "../../files/api";
 import { FILE_RULES } from "../../files/constants";
 import { validationErrorFor } from "../../files/schemas";
+import FieldError from "../../../components/FieldError";
+import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
+import { accountSchema, type AccountValues } from "../schemas";
 import LabeledField from "./LabeledField";
 
 type Status = { type: "success" | "error"; text: string } | null;
@@ -20,6 +23,7 @@ export default function AccountSection() {
 	const [email, setEmail] = useState(user?.email ?? "");
 	const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? "");
 	const [status, setStatus] = useState<Status>(null);
+	const [errors, setErrors] = useState<FieldErrors<AccountValues>>({});
 	const [isSaving, setIsSaving] = useState(false);
 
 	const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -54,20 +58,30 @@ export default function AccountSection() {
 
 	async function handleSubmit(e: FormEvent) {
 		e.preventDefault();
+
+		const checked = validateForm(accountSchema, { username, email, avatarUrl });
+		if (!checked.ok) {
+			setErrors(checked.errors);
+			return;
+		}
+
 		setStatus(null);
+		setErrors({});
 		setIsSaving(true);
 		try {
-			await updateProfile({
-				username: username.trim(),
-				email: email.trim(),
-				avatarUrl: avatarUrl.trim() || null,
-			});
+			//	"" is this form's way of saying "no avatar"; the API wants null.
+			await updateProfile({ ...checked.data, avatarUrl: checked.data.avatarUrl || null });
 			setStatus({ type: "success", text: "Account updated successfully." });
 		} catch (err) {
-			setStatus({
-				type: "error",
-				text: err instanceof Error ? err.message : "Update failed.",
-			});
+			//	A rule only the server knows — this email already belongs to
+			//	someone — belongs under its input, not in the banner.
+			const fromServer = fieldErrorsFromApi<AccountValues>(err);
+			if (fromServer) setErrors(fromServer);
+			else
+				setStatus({
+					type: "error",
+					text: err instanceof Error ? err.message : "Update failed.",
+				});
 		} finally {
 			setIsSaving(false);
 		}
@@ -134,8 +148,9 @@ export default function AccountSection() {
 						className="input w-full pl-9"
 						value={username}
 						onChange={(e) => setUsername(e.target.value)}
-						required
+						aria-invalid={errors.username ? "true" : undefined}
 					/>
+					<FieldError message={errors.username} />
 				</LabeledField>
 
 				<LabeledField label="Email" icon={MailIcon} className="max-w-sm">
@@ -144,8 +159,9 @@ export default function AccountSection() {
 						className="input w-full pl-9"
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
-						required
+						aria-invalid={errors.email ? "true" : undefined}
 					/>
+					<FieldError message={errors.email} />
 				</LabeledField>
 
 				<LabeledField label="Avatar URL" icon={LinkIcon} hint="optional" className="max-w-sm">
@@ -158,7 +174,9 @@ export default function AccountSection() {
 						placeholder="https://..."
 						value={avatarUrl}
 						onChange={(e) => setAvatarUrl(e.target.value)}
+						aria-invalid={errors.avatarUrl ? "true" : undefined}
 					/>
+					<FieldError message={errors.avatarUrl} />
 				</LabeledField>
 
 				<div>

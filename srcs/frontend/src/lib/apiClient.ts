@@ -1,14 +1,24 @@
 import { getAccessToken, hasSessionMarker, refreshAccessToken } from "../features/auth/api";
 import { notifySessionExpired } from "../features/auth/sessionEvents";
 
+//	One problem with one field, as the backend's error middleware sends them.
+export interface ApiErrorDetail {
+	path: string;
+	message: string;
+}
+
 export class ApiError extends Error {
 	status: number;
 	code?: string;
+	//	Present only on a 400 VALIDATION_ERROR. lib/formValidation.ts turns it
+	//	into per-field messages; everything else can ignore it.
+	details?: ApiErrorDetail[];
 
-	constructor(status: number, message: string, code?: string) {
+	constructor(status: number, message: string, code?: string, details?: ApiErrorDetail[]) {
 		super(message);
 		this.status = status;
 		this.code = code;
+		this.details = details;
 	}
 }
 
@@ -70,7 +80,12 @@ export async function apiRequest<T>(
 
 	if (!res.ok) {
 		const body = await res.json().catch(() => ({}));
-		throw new ApiError(res.status, body.message ?? `Request failed (${res.status})`, body.error);
+		throw new ApiError(
+			res.status,
+			body.message ?? `Request failed (${res.status})`,
+			body.error,
+			body.details,
+		);
 	}
 	return res.status === 204 ? (null as T) : res.json();
 }

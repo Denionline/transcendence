@@ -1,5 +1,8 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { User, UserRole } from "../../auth/types";
+import FieldError from "../../../components/FieldError";
+import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
+import { editUserSchema, type EditUserValues } from "../schemas";
 
 const ROLES: UserRole[] = ["artist", "hirer", "admin"];
 
@@ -19,6 +22,7 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 	const [email, setEmail] = useState("");
 	const [role, setRole] = useState<UserRole>("artist");
 	const [error, setError] = useState<string | null>(null);
+	const [errors, setErrors] = useState<FieldErrors<EditUserValues>>({});
 	const [isSaving, setIsSaving] = useState(false);
 
 	const [dialogUser, setDialogUser] = useState<User | null>(null);
@@ -29,6 +33,7 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 			setEmail(user.email);
 			setRole(user.role);
 			setError(null);
+			setErrors({});
 		}
 	}
 
@@ -44,13 +49,24 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 		e.preventDefault();
 		if (!user) return;
 
+		const checked = validateForm(editUserSchema, { username, email, role });
+		if (!checked.ok) {
+			setErrors(checked.errors);
+			return;
+		}
+
 		setError(null);
+		setErrors({});
 		setIsSaving(true);
 		try {
-			await onSave(user.id, { username: username.trim(), email: email.trim(), role });
+			await onSave(user.id, checked.data);
 			onClose();
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Update failed.");
+			//	A rule only the server knows — this email already belongs to
+			//	someone — belongs under its input, not in the banner.
+			const fromServer = fieldErrorsFromApi<EditUserValues>(err);
+			if (fromServer) setErrors(fromServer);
+			else setError(err instanceof Error ? err.message : "Update failed.");
 		} finally {
 			setIsSaving(false);
 		}
@@ -75,8 +91,9 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 							className="input w-full"
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
-							required
+							aria-invalid={errors.username ? "true" : undefined}
 						/>
+						<FieldError message={errors.username} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -86,8 +103,9 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 							className="input w-full"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
-							required
+							aria-invalid={errors.email ? "true" : undefined}
 						/>
+						<FieldError message={errors.email} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">

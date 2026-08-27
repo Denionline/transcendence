@@ -12,7 +12,9 @@ export const openApiDocument = {
 			"httpOnly `refreshToken` cookie set at login.\n\n" +
 			"**Errors.** All failures share one shape: `{ error, message }`, where `error` " +
 			"is a stable machine-readable code (`VALIDATION_ERROR`, `GIG_NOT_FOUND`, …) and " +
-			"`message` is a human-readable explanation. Match on `error`, never on `message`.",
+			"`message` is a human-readable explanation. Match on `error`, never on `message`. " +
+			"A `VALIDATION_ERROR` also carries a `details` array naming each field that failed; " +
+			"a problem with the payload as a whole reports an empty `path`.",
 	},
 	servers: [{ url: "/api", description: "Current host" }],
 	tags: [
@@ -47,7 +49,21 @@ export const openApiDocument = {
 					message: {
 						type: "string",
 						description: "Human-readable explanation. Wording may change; do not parse it.",
-						examples: ["title is required and must be a string"],
+						examples: ["request failed validation"],
+					},
+					details: {
+						type: "array",
+						description:
+							"Present on VALIDATION_ERROR only: one entry per field that failed. " +
+							"`path` is empty when the payload as a whole is at fault.",
+						items: {
+							type: "object",
+							required: ["path", "message"],
+							properties: {
+								path: { type: "string", examples: ["title"] },
+								message: { type: "string", examples: ["title must be a string"] },
+							},
+						},
 					},
 				},
 			},
@@ -397,14 +413,16 @@ export const openApiDocument = {
 										summary: "title absent or not a string",
 										value: {
 											error: "VALIDATION_ERROR",
-											message: "title is required and must be a string",
+											message: "request failed validation",
+											details: [{ path: "title", message: "title must be a string" }],
 										},
 									},
 									badRate: {
 										summary: "rate not a non-negative integer",
 										value: {
 											error: "VALIDATION_ERROR",
-											message: "rate must be a non-negative integer",
+											message: "request failed validation",
+											details: [{ path: "rate", message: "rate cannot be negative" }],
 										},
 									},
 								},

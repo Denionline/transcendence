@@ -7,8 +7,8 @@ import {
 import { buildMeta, parsePagination } from "../../lib/pagination.js";
 import { getMatchMessages, markMessagesAsRead, deleteMessage } from "./messages.service.js";
 import { authEvents } from "../../lib/auth-events.js";
-import { parseMessageContent } from "./messages.service.js";
 import { throwError } from "../../lib/http-error.js";
+import { createMessageBody } from "./messages.schema.js";
 import { createMessage } from "./messages.service.js";
 
 const router = Router({ mergeParams: true });
@@ -24,11 +24,10 @@ router.get("/", requireAuth, requireMatchParticipant, async (req, res) => {
 router.post("/", requireAuth, requireMatchParticipant, async (req, res) => {
 	const caller = req.user!;
 	const matchId = req.params.matchId;
-	const content = req.body.content;
+	const parsed = createMessageBody.safeParse(req.body ?? {});
+	if (!parsed.success) throwError(400, "INVALID_CONTENT", "content must be 1-2000 characters");
+	const { content } = parsed.data;
 
-	if (!parseMessageContent(content)) {
-		throwError(400, "INVALID_CONTENT", "content must be 1-2000 characters");
-	}
 	const result = await createMessage({
 		matchId: matchId as string,
 		senderId: caller.id,
