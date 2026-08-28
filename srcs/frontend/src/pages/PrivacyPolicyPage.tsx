@@ -60,10 +60,9 @@ export default function PrivacyPolicyPage() {
 			<LegalSection heading="What other users can see">
 				<p>
 					Artmate is a matching platform, so some information is meant to be seen by others. Your
-					profile, display name, avatar, disciplines, location, availability and any portfolio
-					files you add is visible to the users you can be matched with. Messages you send are
-					visible to the user you matched with. Your email address and password are never shown to
-					other users.
+					profile, display name, avatar, disciplines, location, availability and any portfolio files
+					you add is visible to the users you can be matched with. Messages you send are visible to
+					the user you matched with. Your email address and password are never shown to other users.
 				</p>
 			</LegalSection>
 
