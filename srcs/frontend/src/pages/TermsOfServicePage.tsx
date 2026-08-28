@@ -37,7 +37,7 @@ export default function TermsOfServicePage() {
 
 			<LegalSection heading="Content you provide">
 				<p>
-					You keep ownership of the content you add to Artmate — your profile information, portfolio
+					You keep ownership of the content you add to Artmate, your profile information, portfolio
 					files, opportunities and messages. By posting content, you grant Artmate the limited
 					permission needed to store and display it for the purpose of operating the platform (for
 					example, showing your profile to users you can be matched with). You are responsible for
