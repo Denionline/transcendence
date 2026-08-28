@@ -74,14 +74,6 @@ export default function TermsOfServicePage() {
 				</p>
 			</LegalSection>
 
-			<LegalSection heading="The public API">
-				<p>
-					Artmate offers a documented public API. If you use it, you must stay within its published
-					rate limits and use it only in ways consistent with these Terms. We may change, limit, or
-					withdraw API access to protect the platform.
-				</p>
-			</LegalSection>
-
 			<LegalSection heading="Service availability">
 				<p>
 					Artmate is a student project provided on an &ldquo;as is&rdquo; and &ldquo;as
