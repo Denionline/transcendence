@@ -23,6 +23,8 @@ import OpportunityDetailPage from "./pages/OpportunityDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import FriendsPage from "./pages/FriendsPage";
 import ProfilePage from "./pages/ProfilePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
 
 export function defaultPathForRole(role: UserRole): string {
 	if (role === "admin") return "/admin";
@@ -39,6 +41,11 @@ function RootRedirect() {
 
 export const router = createBrowserRouter([
 	{ path: "/", element: <RootRedirect /> },
+	// Legal pages are intentionally outside ProtectedRoute/PublicRoute: they
+	// must open for anyone — signed out, signed in, or an evaluator with no
+	// account — which is the whole point of Privacy/Terms being "accessible".
+	{ path: "/privacy", element: <PrivacyPolicyPage /> },
+	{ path: "/terms", element: <TermsOfServicePage /> },
 	{
 		element: (
 			<PublicRoute>
