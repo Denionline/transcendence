@@ -41,9 +41,6 @@ function RootRedirect() {
 
 export const router = createBrowserRouter([
 	{ path: "/", element: <RootRedirect /> },
-	// Legal pages are intentionally outside ProtectedRoute/PublicRoute: they
-	// must open for anyone — signed out, signed in, or an evaluator with no
-	// account — which is the whole point of Privacy/Terms being "accessible".
 	{ path: "/privacy", element: <PrivacyPolicyPage /> },
 	{ path: "/terms", element: <TermsOfServicePage /> },
 	{
