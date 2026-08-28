@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import Logo from "../components/Logo";
 import Welcome from "../components/Welcome";
 
@@ -12,6 +12,17 @@ export default function AuthLayout() {
 						<Logo />
 					</div>
 					<Outlet />
+					<nav
+						aria-label="Legal"
+						className="mt-8 flex justify-center gap-4 text-xs text-base-content/50"
+					>
+						<Link to="/privacy" className="transition-colors hover:text-base-content">
+							Privacy Policy
+						</Link>
+						<Link to="/terms" className="transition-colors hover:text-base-content">
+							Terms of Service
+						</Link>
+					</nav>
 				</div>
 			</div>
 		</div>
