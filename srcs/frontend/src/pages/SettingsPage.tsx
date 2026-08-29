@@ -12,17 +12,19 @@ import { useTheme } from "../features/theme/hooks/useTheme";
 import { THEMES } from "../features/theme/constants";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
 import AccountSection from "../features/profile/components/AccountSection";
+import { useTranslation } from "react-i18next";
 
 type Section = "account" | "preferences" | "notifications" | "appearance";
 
-const SECTIONS: { id: Section; label: string; icon: typeof UserRoundIcon }[] = [
-	{ id: "account", label: "Account", icon: UserRoundIcon },
-	// { id: "preferences", label: "Preferences", icon: SlidersHorizontalIcon },
-	// { id: "notifications", label: "Notifications", icon: BellIcon },
-	{ id: "appearance", label: "Appearance", icon: PaletteIcon },
+const SECTIONS: { id: Section; labelKey: string; icon: typeof UserRoundIcon }[] = [
+	{ id: "account", labelKey: "settings.account", icon: UserRoundIcon },
+	// { id: "preferences", labelKey: "settings.preferences", icon: SlidersHorizontalIcon },
+	// { id: "notifications", labelKey: "settings.notifications", icon: BellIcon },
+	{ id: "appearance", labelKey: "settings.appearance", icon: PaletteIcon },
 ];
 
 export default function SettingsPage() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [activeSection, setActiveSection] = useState<Section>("account");
 
@@ -34,17 +36,17 @@ export default function SettingsPage() {
 						type="button"
 						onClick={() => navigate(-1)}
 						className="btn btn-ghost btn-circle btn-sm"
-						aria-label="Go back"
+						aria-label={t("profile.goBack")}
 					>
 						<ArrowLeft className="size-4" />
 					</button>
-					<h1 className="truncate font-bold">Settings</h1>
+					<h1 className="truncate font-bold">{t("settings.title")}</h1>
 				</div>
 			</header>
 
 			<div className="mx-auto grid max-w-5xl gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[220px_1fr]">
 				<nav className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
-					{SECTIONS.map(({ id, label, icon: Icon }) => (
+					{SECTIONS.map(({ id, labelKey, icon: Icon }) => (
 						<button
 							key={id}
 							type="button"
@@ -56,7 +58,7 @@ export default function SettingsPage() {
 							}`}
 						>
 							<Icon className="size-4" />
-							{label}
+							{t(labelKey)}
 						</button>
 					))}
 				</nav>
@@ -67,16 +69,16 @@ export default function SettingsPage() {
 					{activeSection === "preferences" && (
 						<EmptySection
 							icon={SlidersHorizontalIcon}
-							title="Preferences"
-							description="Nothing to configure here yet — check back soon."
+							title={t("settings.preferences")}
+							description={t("settings.nothingToConfigure")}
 						/>
 					)}
 
 					{activeSection === "notifications" && (
 						<EmptySection
 							icon={BellIcon}
-							title="Notifications"
-							description="Notification settings aren't available yet — check back soon."
+							title={t("settings.notifications")}
+							description={t("settings.notificationsSoon")}
 						/>
 					)}
 
@@ -112,6 +114,7 @@ function EmptySection({
 }
 
 function AppearanceSection() {
+	const { t } = useTranslation();
 	const { theme, setTheme } = useTheme();
 
 	return (
@@ -119,11 +122,9 @@ function AppearanceSection() {
 			<div className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
 				<div className="border-b border-base-content/10 p-4">
 					<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-						Theme
+						{t("settings.theme")}
 					</h2>
-					<p className="mt-1 text-sm text-base-content/60">
-						Pick a theme for the whole application. Changes apply instantly.
-					</p>
+					<p className="mt-1 text-sm text-base-content/60">{t("settings.themeHint")}</p>
 				</div>
 
 				<div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -162,7 +163,7 @@ function AppearanceSection() {
 
 			<div>
 				<p className="mb-2 text-xs tracking-wide text-base-content/50 uppercase">
-					Live preview · how this theme looks in your feed
+					{t("settings.livePreview")}
 				</p>
 				<div className="max-w-xs">
 					<OpportunityCard
