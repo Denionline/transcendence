@@ -18,8 +18,6 @@ export default function AuthLayout() {
 					{/* Signed-out visitors live here, so the legal pages have to be
 					    reachable from the auth screens too — kept understated so they
 					    don't compete with the form. */}
-					{/* Language has to be reachable before signing in — the Settings
-					    page that normally hosts it is behind auth. */}
 					<div className="mt-8 flex justify-center">
 						<LanguageSwitcher />
 					</div>
