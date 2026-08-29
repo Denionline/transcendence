@@ -5,7 +5,6 @@ import en from "./locales/en.json";
 import pt from "./locales/pt.json";
 import es from "./locales/es.json";
 
-
 export const SUPPORTED_LANGUAGES = [
 	{ code: "en", label: "English" },
 	{ code: "pt", label: "Português" },
