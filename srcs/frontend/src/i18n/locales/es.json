@@ -28,11 +28,50 @@
 		"forgot": "¿Olvidaste?",
 		"logIn": "Iniciar sesión",
 		"loggingIn": "Iniciando sesión…",
-		"loginFailed": "No se pudo iniciar sesión"
+		"loginFailed": "No se pudo iniciar sesión",
+		"welcomeBack": "Bienvenido de nuevo",
+		"logInToArtmate": "Inicia sesión en Artmate",
+		"sessionExpired": "Tu sesión ha expirado. Vuelve a iniciar sesión para continuar.",
+		"continueWith42": "Continuar con 42",
+		"or": "O",
+		"newToArtmate": "¿Nuevo en Artmate?",
+		"createAccount": "Crear cuenta",
+		"joinArtmate": "Únete a Artmate",
+		"createYourAccount": "Crea tu cuenta",
+		"alreadyOnArtmate": "¿Ya tienes cuenta en Artmate?",
+		"name": "Nombre",
+		"namePlaceholder": "Juana Pérez",
+		"signingUpAs": "Me registro como",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"creatingAccount": "Creando cuenta…",
+		"createAccountAsArtist": "Crear cuenta como artista",
+		"createAccountAsHirer": "Crear cuenta como contratante",
+		"registerFailed": "No se pudo crear la cuenta",
+		"agreeToTerms": "Al continuar, aceptas nuestros <terms>Términos</terms> y la <privacy>Política de Privacidad</privacy>."
 	},
 	"legal": {
 		"privacyPolicy": "Política de Privacidad",
 		"termsOfService": "Términos del Servicio",
 		"legalNavLabel": "Legal"
+	},
+	"password": {
+		"minLength": "Al menos 12 caracteres",
+		"lowercase": "Una letra minúscula",
+		"uppercase": "Una letra mayúscula",
+		"digit": "Un dígito",
+		"symbol": "Un símbolo",
+		"notCommon": "No es una contraseña común",
+		"notPersonal": "No contiene tu nombre ni tu correo"
+	},
+	"welcome": {
+		"headline": "Donde el buen trabajo encuentra",
+		"headlineAccent": "a las personas adecuadas.",
+		"subtitle": "El hogar de muralistas, ilustradores y escenógrafos — y de quienes los contratan.",
+		"tagMural": "mural / lisboa",
+		"tagLettering": "lettering",
+		"tagSetDesign": "escenografía",
+		"quote": "“Conseguí tres murales en mi primer mes aquí.”",
+		"quoteAuthor": "Nélida R. · muralista, Oporto"
 	}
 }
