@@ -2,6 +2,7 @@ import { BadgeCheckIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import Avatar from "../../../components/Avatar";
 import type { GigListing } from "../gigTypes";
+import { useTranslation } from "react-i18next";
 
 interface GigCardProps {
 	gig: GigListing;
@@ -21,6 +22,7 @@ export default function GigCard({
 	onInterested,
 	onOpenDetails,
 }: GigCardProps) {
+	const { t } = useTranslation();
 	function handlePassClick(e: MouseEvent) {
 		e.stopPropagation();
 		onPass?.();
@@ -93,7 +95,7 @@ export default function GigCard({
 							)}
 						</div>
 						<div className="truncate text-xs text-base-content/50">
-							Verified hirer · {remoteOk ? "Remote OK" : location}
+							{t("deck.verifiedHirer")} · {remoteOk ? t("deck.remoteOk") : location}
 						</div>
 					</div>
 				</div>
@@ -110,7 +112,7 @@ export default function GigCard({
 					</span>
 					<span className="badge badge-sm badge-outline border-base-content/15">{duration}</span>
 					<span className="badge badge-sm badge-outline border-base-content/15">
-						{remoteOk ? "Remote" : "On-site"}
+						{remoteOk ? t("deck.remote") : t("deck.onSite")}
 					</span>
 				</div>
 
