@@ -1,7 +1,7 @@
 import { ArrowRight, Pencil, Search } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
@@ -151,13 +151,13 @@ export default function RegisterForm() {
 			</button>
 			<span className="text-center opacity-80">
 				By continuing you agree to our{" "}
-				<a href="" className="underline">
+				<Link to="/terms" className="underline">
 					Terms
-				</a>{" "}
+				</Link>{" "}
 				&{" "}
-				<a href="" className="underline">
+				<Link to="/privacy" className="underline">
 					Privacy Policy
-				</a>
+				</Link>
 				.
 			</span>
 		</form>

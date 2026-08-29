@@ -23,6 +23,8 @@ import OpportunityDetailPage from "./pages/OpportunityDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import FriendsPage from "./pages/FriendsPage";
 import ProfilePage from "./pages/ProfilePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
 
 export function defaultPathForRole(role: UserRole): string {
 	if (role === "admin") return "/admin";
@@ -39,6 +41,8 @@ function RootRedirect() {
 
 export const router = createBrowserRouter([
 	{ path: "/", element: <RootRedirect /> },
+	{ path: "/privacy", element: <PrivacyPolicyPage /> },
+	{ path: "/terms", element: <TermsOfServicePage /> },
 	{
 		element: (
 			<PublicRoute>
