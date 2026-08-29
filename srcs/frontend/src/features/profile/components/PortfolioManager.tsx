@@ -13,19 +13,20 @@ import { deleteFile, uploadFile } from "../../files/api";
 import { FILE_RULES } from "../../files/constants";
 import { validationErrorFor } from "../../files/schemas";
 import type { FileDto, FileType } from "../../files/types";
+import { useTranslation } from "react-i18next";
 
 type UploadableType = Exclude<FileType, "document">;
 
 interface AddTileConfig {
 	type: UploadableType;
-	label: string;
+	labelKey: string;
 	icon: typeof ImageIcon;
 }
 
 const ADD_TILES: AddTileConfig[] = [
-	{ type: "image", label: "Photo", icon: ImageIcon },
-	{ type: "video", label: "Video", icon: VideoIcon },
-	{ type: "audio", label: "Audio", icon: Music2Icon },
+	{ type: "image", labelKey: "portfolio.photo", icon: ImageIcon },
+	{ type: "video", labelKey: "portfolio.video", icon: VideoIcon },
+	{ type: "audio", labelKey: "portfolio.audio", icon: Music2Icon },
 ];
 
 interface PortfolioManagerProps {
@@ -42,6 +43,7 @@ interface PortfolioManagerProps {
  * `/api/files` endpoints — see docs/mad/20260819-file-uploads.md.
  */
 export default function PortfolioManager({ files, onUploaded, onDeleted }: PortfolioManagerProps) {
+	const { t } = useTranslation();
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -55,8 +57,9 @@ export default function PortfolioManager({ files, onUploaded, onDeleted }: Portf
 			// list was the stale party, so it still comes off locally below.
 			if (!(err instanceof ApiError && err.status === 404)) {
 				setDeleteError(
-					`Couldn't delete ${file.originalName}. ` +
-						(err instanceof Error ? err.message : "Please try again."),
+					t("portfolio.deleteFailed", { name: file.originalName }) +
+						" " +
+						(err instanceof Error ? err.message : t("portfolio.tryAgain")),
 				);
 				setDeletingId(null);
 				return;
@@ -74,7 +77,7 @@ export default function PortfolioManager({ files, onUploaded, onDeleted }: Portf
 				</span>
 				<div>
 					<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-						Portfolio
+						{t("portfolio.title")}
 					</h2>
 					<p className="mt-0.5 text-sm text-base-content/60">
 						Add photos, a reel or a voice note — they show up in the preview above instantly, and on
@@ -108,10 +111,11 @@ export default function PortfolioManager({ files, onUploaded, onDeleted }: Portf
 
 function AddTile({
 	type,
-	label,
+	labelKey,
 	icon: Icon,
 	onUploaded,
 }: AddTileConfig & { onUploaded: (file: FileDto) => void }) {
+	const { t } = useTranslation();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [progress, setProgress] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -137,7 +141,7 @@ function AddTile({
 		uploadFile(file, { visibility: "public", onProgress: setProgress })
 			.then((uploaded) => onUploaded(uploaded))
 			.catch((err: unknown) => {
-				setError(err instanceof Error ? err.message : "Upload failed");
+				setError(err instanceof Error ? err.message : t("portfolio.uploadFailed"));
 			})
 			.finally(() => setProgress(null));
 	}
@@ -155,7 +159,7 @@ function AddTile({
 				type="button"
 				disabled={isBusy}
 				onClick={() => inputRef.current?.click()}
-				aria-label={`Add ${label.toLowerCase()}`}
+				aria-label={t("portfolio.add", { type: t(labelKey).toLowerCase() })}
 				className="flex h-full w-full flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-base-content/15 bg-base-200/30 text-base-content/50 transition-colors duration-150 hover:border-primary/40 hover:bg-primary/5 hover:text-primary disabled:opacity-70"
 			>
 				{isBusy ? (
@@ -164,7 +168,7 @@ function AddTile({
 					<Icon className="size-5" aria-hidden="true" />
 				)}
 				<span className="px-1 text-center text-[11px] leading-tight font-medium">
-					{isBusy ? `${progress}%` : `Add ${label.toLowerCase()}`}
+					{isBusy ? `${progress}%` : t("portfolio.add", { type: t(labelKey).toLowerCase() })}
 				</span>
 			</button>
 			{error && (
@@ -185,6 +189,7 @@ function MediaTile({
 	isDeleting: boolean;
 	onRemove: () => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<li className="group relative aspect-square animate-[fade-in_200ms_ease-out] overflow-hidden rounded-xl border border-base-content/10 bg-base-200 shadow-sm transition-shadow duration-150 hover:shadow-md">
 			{file.type === "image" && (
@@ -230,7 +235,7 @@ function MediaTile({
 				type="button"
 				onClick={onRemove}
 				disabled={isDeleting}
-				aria-label={`Remove ${file.originalName}`}
+				aria-label={t("portfolio.remove", { name: file.originalName })}
 				className="absolute top-1 right-1 rounded-full bg-black/60 p-1 text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 hover:bg-error focus-visible:opacity-100 disabled:opacity-100"
 			>
 				{isDeleting ? (
