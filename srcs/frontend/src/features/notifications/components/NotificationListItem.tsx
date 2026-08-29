@@ -6,6 +6,7 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import RespondRequestModal from "../../friends/components/RespondRequestModal";
 import { NOTIFICATION_META } from "../utils";
 import type { NotificationDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface NotificationListItemProps {
 	notification: NotificationDto;
@@ -16,6 +17,7 @@ export default function NotificationListItem({
 	notification,
 	onMarkRead,
 }: NotificationListItemProps) {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const isHirer = user?.role === "hirer";
 	const meta = NOTIFICATION_META[notification.type];
@@ -88,7 +90,7 @@ export default function NotificationListItem({
 			{!notification.isRead && (
 				<button
 					type="button"
-					aria-label="Mark as read"
+					aria-label={t("notifications.markAsRead")}
 					onClick={() => onMarkRead(notification.id)}
 					className="btn btn-circle btn-ghost btn-xs shrink-0"
 				>
