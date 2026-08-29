@@ -474,7 +474,9 @@
 		"updateFailed": "La actualización ha fallado.",
 		"chooseImage": "Elige una imagen JPEG, PNG o WebP.",
 		"uploadFailed": "La subida ha fallado",
-		"notificationsSoon": "Los ajustes de notificaciones aún no están disponibles — vuelve pronto."
+		"notificationsSoon": "Los ajustes de notificaciones aún no están disponibles — vuelve pronto.",
+		"language": "Idioma",
+		"languageHint": "Elige el idioma de toda la aplicación. Los cambios se aplican al instante."
 	},
 	"portfolio": {
 		"title": "Portafolio",

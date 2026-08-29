@@ -474,7 +474,9 @@
 		"updateFailed": "Update failed.",
 		"chooseImage": "Choose a JPEG, PNG or WebP image.",
 		"uploadFailed": "Upload failed",
-		"notificationsSoon": "Notification settings aren't available yet — check back soon."
+		"notificationsSoon": "Notification settings aren't available yet — check back soon.",
+		"language": "Language",
+		"languageHint": "Choose the language for the whole application. Changes apply instantly."
 	},
 	"portfolio": {
 		"title": "Portfolio",

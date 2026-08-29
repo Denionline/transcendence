@@ -474,7 +474,9 @@
 		"updateFailed": "A atualização falhou.",
 		"chooseImage": "Escolhe uma imagem JPEG, PNG ou WebP.",
 		"uploadFailed": "O carregamento falhou",
-		"notificationsSoon": "As definições de notificações ainda não estão disponíveis — volta em breve."
+		"notificationsSoon": "As definições de notificações ainda não estão disponíveis — volta em breve.",
+		"language": "Idioma",
+		"languageHint": "Escolhe o idioma de toda a aplicação. As alterações aplicam-se de imediato."
 	},
 	"portfolio": {
 		"title": "Portfólio",
