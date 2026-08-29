@@ -5,14 +5,7 @@ import en from "./locales/en.json";
 import pt from "./locales/pt.json";
 import es from "./locales/es.json";
 
-/**
- * Supported languages, in the order they appear in the switcher.
- *
- * English is the reference locale: every key must exist in en.json first, and
- * the other files mirror it. `scripts/check-translations.mjs` enforces that,
- * so a missing translation fails CI instead of silently rendering a raw key
- * like "nav.discover" to the user.
- */
+
 export const SUPPORTED_LANGUAGES = [
 	{ code: "en", label: "English" },
 	{ code: "pt", label: "Português" },
