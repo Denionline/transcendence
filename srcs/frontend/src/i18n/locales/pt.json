@@ -644,12 +644,6 @@
 		"daysAgo": "há {{count}} d"
 	},
 	"categories": {
-		"musician": "Músico",
-		"dj": "DJ",
-		"photographer": "Fotógrafo",
-		"videographer": "Videógrafo",
-		"painter": "Pintor",
-		"illustrator": "Ilustrador",
 		"couldNotLoad": "Não foi possível carregar as categorias."
 	}
 }

@@ -644,12 +644,6 @@
 		"daysAgo": "{{count}}d ago"
 	},
 	"categories": {
-		"musician": "Musician",
-		"dj": "DJ",
-		"photographer": "Photographer",
-		"videographer": "Videographer",
-		"painter": "Painter",
-		"illustrator": "Illustrator",
 		"couldNotLoad": "Could not load categories."
 	}
 }

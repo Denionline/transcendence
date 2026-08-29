@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fetchCategories } from "../api";
 import type { CategoryDto } from "../types";
@@ -38,14 +38,5 @@ export function useCategories() {
 		};
 	}, []);
 
-	const translated = useMemo(
-		() =>
-			categories.map((category) => ({
-				...category,
-				label: t(`categories.${category.slug}`, { defaultValue: category.label }),
-			})),
-		[categories, t],
-	);
-
-	return { categories: translated, isLoading, error: error ? t(error) : null };
+	return { categories, isLoading, error: error ? t(error) : null };
 }
