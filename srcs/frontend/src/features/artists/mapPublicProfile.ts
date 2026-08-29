@@ -16,7 +16,7 @@ export function mapPublicProfileToArtist(profile: PublicArtistProfileDto): Artis
 		name: profile.user?.username ?? "Unnamed artist",
 		discipline: profile.categories[0]?.label ?? "Discipline TBD",
 		categorySlugs: profile.categories.map((category) => category.slug),
-		location: profile.location ?? "Location TBD",
+		location: profile.location ?? "",
 		remoteOk: false,
 		availabilityLabel: profile.availability ? "Available" : "Unavailable",
 		availabilityTone: profile.availability ? "available" : "soon",
