@@ -1,0 +1,38 @@
+{
+	"common": {
+		"appName": "Artmate",
+		"language": "Idioma"
+	},
+	"nav": {
+		"discover": "Descobrir",
+		"myOpportunities": "As minhas oportunidades",
+		"opportunities": "Oportunidades",
+		"matches": "Correspondências",
+		"friends": "Amigos",
+		"postOpportunity": "Publicar oportunidade",
+		"profile": "Perfil",
+		"settings": "Definições",
+		"logout": "Terminar sessão",
+		"openMenu": "Abrir menu",
+		"closeMenu": "Fechar menu",
+		"goToHomepage": "Ir para a página inicial",
+		"accountMenu": "Menu da conta",
+		"searchAsHirer": "Procurar artistas, competências, cidades...",
+		"searchAsArtist": "Procurar projetos, marcas, cidades..."
+	},
+	"auth": {
+		"email": "Email",
+		"emailPlaceholder": "tu@email.com",
+		"password": "Palavra-passe",
+		"passwordPlaceholder": "••••••••",
+		"forgot": "Esqueceste-te?",
+		"logIn": "Entrar",
+		"loggingIn": "A entrar…",
+		"loginFailed": "Não foi possível iniciar sessão"
+	},
+	"legal": {
+		"privacyPolicy": "Política de Privacidade",
+		"termsOfService": "Termos de Serviço",
+		"legalNavLabel": "Legal"
+	}
+}
