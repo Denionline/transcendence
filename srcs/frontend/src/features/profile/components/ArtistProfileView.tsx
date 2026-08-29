@@ -20,6 +20,7 @@ import PortfolioManager from "./PortfolioManager";
 import LabeledField from "./LabeledField";
 import FieldError from "../../../components/FieldError";
 import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
+import { useTranslation } from "react-i18next";
 import {
 	MAX_BIO_LENGTH,
 	MAX_CATEGORIES,
@@ -36,6 +37,7 @@ type Status = { type: "success" | "error"; text: string } | null;
  * immediately, no separate "how others see me" step needed.
  */
 export default function ArtistProfileView() {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const { categories: vocabulary, isLoading: isLoadingCategories } = useCategories();
 
@@ -124,14 +126,14 @@ export default function ArtistProfileView() {
 			};
 			await saveMyProfile(payload);
 			notifyProfileUpdated();
-			setStatus({ type: "success", text: "Profile updated successfully." });
+			setStatus({ type: "success", text: t("profile.updated") });
 		} catch (err) {
 			const fromServer = fieldErrorsFromApi<ArtistDetailsValues>(err);
 			if (fromServer) setErrors(fromServer);
 			else
 				setStatus({
 					type: "error",
-					text: err instanceof Error ? err.message : "Update failed.",
+					text: err instanceof Error ? err.message : t("profile.updateFailed"),
 				});
 		} finally {
 			setIsSaving(false);
@@ -142,7 +144,7 @@ export default function ArtistProfileView() {
 		<div className="flex flex-col gap-6">
 			<p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-base-content/40 uppercase">
 				<EyeIcon className="size-3.5" aria-hidden="true" />
-				Your public profile
+				{t("profile.yourPublicProfile")}
 			</p>
 
 			<section className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-shadow duration-200 hover:shadow-md">
@@ -159,7 +161,7 @@ export default function ArtistProfileView() {
 								availability ? "badge-primary" : "badge-warning"
 							}`}
 						>
-							{availability ? "Available" : "Unavailable"}
+							{availability ? t("profile.available") : t("profile.unavailable")}
 						</button>
 					}
 				/>
@@ -175,7 +177,7 @@ export default function ArtistProfileView() {
 						<div className="min-w-0">
 							<h2 className="truncate text-lg leading-snug font-semibold">{user.username}</h2>
 							<p className="truncate text-sm text-base-content/60">
-								{selectedCategories[0]?.label ?? "No category yet"}
+								{selectedCategories[0]?.label ?? t("profile.noCategoryYet")}
 								{location && ` · ${location}`}
 							</p>
 						</div>
@@ -193,7 +195,7 @@ export default function ArtistProfileView() {
 							))
 						) : (
 							<span className="text-sm text-base-content/40">
-								No categories selected yet — pick some below.
+								{t("profile.noCategoriesSelected")}
 							</span>
 						)}
 					</div>
@@ -220,7 +222,7 @@ export default function ArtistProfileView() {
 					</span>
 					<div>
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Edit artist details
+							{t("profile.editArtistDetails")}
 						</h2>
 						<p className="mt-0.5 text-sm text-base-content/60">
 							Changes above update the preview instantly — hit save to publish them.
@@ -239,7 +241,7 @@ export default function ArtistProfileView() {
 
 					<fieldset className="fieldset-label flex-col items-start gap-2">
 						<legend className="text-sm font-medium">
-							Categories
+							{t("profile.categories")}
 							<span className="ml-1 font-normal text-base-content/60">
 								(pick at least one, up to {MAX_CATEGORIES})
 							</span>
@@ -270,12 +272,12 @@ export default function ArtistProfileView() {
 						<FieldError message={errors.categories} />
 					</fieldset>
 
-					<LabeledField label="Bio" hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
+					<LabeledField label={t("profile.bio")} hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
 						<textarea
 							className="textarea w-full"
 							rows={3}
 							maxLength={MAX_BIO_LENGTH}
-							placeholder="Tell hirers what you make and how you work."
+							placeholder={t("profile.bioPlaceholderArtist")}
 							value={bio}
 							onChange={(e) => setBio(e.target.value)}
 							aria-invalid={errors.bio ? "true" : undefined}
@@ -283,11 +285,11 @@ export default function ArtistProfileView() {
 						<FieldError message={errors.bio} />
 					</LabeledField>
 
-					<LabeledField label="Location" icon={MapPinIcon}>
+					<LabeledField label={t("profile.location")} icon={MapPinIcon}>
 						<input
 							type="text"
 							className="input w-full max-w-sm pl-9"
-							placeholder="City, country"
+							placeholder={t("profile.locationPlaceholder")}
 							value={location}
 							onChange={(e) => setLocation(e.target.value)}
 							aria-invalid={errors.location ? "true" : undefined}
@@ -303,9 +305,9 @@ export default function ArtistProfileView() {
 								<CircleDashedIcon className="size-5 text-base-content/40" aria-hidden="true" />
 							)}
 							<span>
-								<span className="block text-sm font-medium">Available for work</span>
+								<span className="block text-sm font-medium">{t("profile.availableForWork")}</span>
 								<span className="block text-xs text-base-content/50">
-									Shown as a badge on your public profile.
+									{t("profile.availabilityHint")}
 								</span>
 							</span>
 						</span>
@@ -324,7 +326,7 @@ export default function ArtistProfileView() {
 							disabled={isSaving}
 						>
 							{isSaving && <span className="loading loading-spinner loading-xs" />}
-							Save changes
+							{t("profile.saveChanges")}
 						</button>
 					</div>
 				</form>
