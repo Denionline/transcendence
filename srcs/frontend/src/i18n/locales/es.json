@@ -1,7 +1,22 @@
 {
 	"common": {
 		"appName": "Artmate",
-		"language": "Idioma"
+		"language": "Idioma",
+		"viewAll": "Ver todo",
+		"viewProfile": "Ver perfil",
+		"coverPhoto": "Foto de portada",
+		"friendRequest": "Solicitud de amistad",
+		"noConversationsYet": "Aún sin conversaciones.",
+		"yourCategoriesHint": "Tus propias categorías — todas las ofertas aquí coinciden con al menos una. Añade más en Ajustes para ampliar esta lista.",
+		"currentPassword": "Contraseña actual",
+		"newPassword": "Nueva contraseña",
+		"confirmPassword": "Confirmar nueva contraseña",
+		"updatePassword": "Actualizar contraseña",
+		"passwordChanged": "Contraseña cambiada correctamente.",
+		"canvasBlank": "Este lienzo está en blanco.",
+		"notFoundBody": "La página que buscas se movió, cambió de nombre o nunca existió. Volvamos al trabajo.",
+		"backToDiscover": "Volver a Descubrir",
+		"goHome": "Ir al inicio"
 	},
 	"nav": {
 		"discover": "Descubrir",
@@ -350,5 +365,59 @@
 		"loadListFailed": "No se pudieron cargar tus oportunidades. Inténtalo de nuevo.",
 		"couldntLoadOne": "No se pudo cargar esta oportunidad",
 		"couldntLoadList": "No se pudieron cargar tus oportunidades"
+	},
+	"onboarding": {
+		"setUpProfile": "Configura tu perfil de {{role}}",
+		"roleHirer": "contratante",
+		"roleArtist": "artista",
+		"hirerIntro": "El nombre de la organización es obligatorio para empezar — todo lo demás es opcional y puedes rellenarlo cuando quieras desde Ajustes.",
+		"artistIntro": "La categoría es obligatoria para empezar — es como te conectamos con oportunidades. Todo lo demás es opcional y puedes rellenarlo cuando quieras desde Ajustes.",
+		"category": "Categoría",
+		"selectCategory": "Elegir categoría",
+		"organizationName": "Nombre de la organización",
+		"bio": "Biografía",
+		"location": "Ubicación",
+		"optionalSuffix": "(opcional)",
+		"availableForWork": "Disponible para trabajar",
+		"continue": "Continuar",
+		"saveFailed": "No se pudo guardar tu perfil. Inténtalo de nuevo.",
+		"pickATheme": "Elige un tema",
+		"themeIntro": "Totalmente opcional — los cambios se aplican al instante y siempre puedes cambiarlo luego en Ajustes.",
+		"maybeLater": "Quizá más tarde"
+	},
+	"admin": {
+		"welcomeBack": "Bienvenido de nuevo",
+		"whatsHappening": "Esto es lo que está pasando en la plataforma.",
+		"searchUsers": "Buscar por nombre, correo, rol o estado",
+		"selectAllOnPage": "Seleccionar todos los usuarios de esta página",
+		"selectedCount": "{{count}} seleccionados",
+		"delete": "Eliminar",
+		"clear": "Limpiar",
+		"cancel": "Cancelar",
+		"noUsersMatch": "Ningún usuario coincide con tu búsqueda.",
+		"user": "Usuario",
+		"role": "Rol",
+		"joined": "Se unió",
+		"editUser": "Editar usuario",
+		"deleteUser": "Eliminar usuario",
+		"cantDeleteSelf": "No puedes eliminar tu propia cuenta",
+		"deleteTitle_one": "¿Eliminar {{count}} usuario?",
+		"deleteTitle_other": "¿Eliminar {{count}} usuarios?",
+		"deleteBody": "Esta acción no se puede deshacer. Los usuarios seleccionados se eliminarán permanentemente.",
+		"updateFailed": "La actualización ha fallado.",
+		"saveChanges": "Guardar cambios",
+		"close": "cerrar"
+	},
+	"a11y": {
+		"close": "Cerrar",
+		"loading": "Cargando",
+		"logout": "Cerrar sesión",
+		"artmateHome": "Inicio de Artmate",
+		"legal": "Legal",
+		"previousMedia": "Medio anterior",
+		"nextMedia": "Medio siguiente",
+		"seek": "Buscar",
+		"uploadProgress": "Progreso de la subida",
+		"send": "Enviar"
 	}
 }
