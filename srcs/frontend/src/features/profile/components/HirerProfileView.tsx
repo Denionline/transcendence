@@ -10,12 +10,14 @@ import PortfolioManager from "./PortfolioManager";
 import FieldError from "../../../components/FieldError";
 import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
 import { MAX_BIO_LENGTH, hirerDetailsSchema, type HirerDetailsValues } from "../schemas";
+import { useTranslation } from "react-i18next";
 
 type Status = { type: "success" | "error"; text: string } | null;
 
 /** The hirer's own profile: a live preview card — mirroring how the artist
  *  profile mirrors the swipe deck — sitting above an editable form. */
 export default function HirerProfileView() {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 
 	const [organizationName, setOrganizationName] = useState("");
@@ -78,14 +80,14 @@ export default function HirerProfileView() {
 			};
 			await saveMyProfile(payload);
 			notifyProfileUpdated();
-			setStatus({ type: "success", text: "Profile updated successfully." });
+			setStatus({ type: "success", text: t("profile.updated") });
 		} catch (err) {
 			const fromServer = fieldErrorsFromApi<HirerDetailsValues>(err);
 			if (fromServer) setErrors(fromServer);
 			else
 				setStatus({
 					type: "error",
-					text: err instanceof Error ? err.message : "Update failed.",
+					text: err instanceof Error ? err.message : t("profile.updateFailed"),
 				});
 		} finally {
 			setIsSaving(false);
@@ -96,7 +98,7 @@ export default function HirerProfileView() {
 		<div className="flex flex-col gap-6">
 			<p className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-base-content/40 uppercase">
 				<EyeIcon className="size-3.5" aria-hidden="true" />
-				Your public profile
+				{t("profile.yourPublicProfile")}
 			</p>
 
 			<section className="overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-shadow duration-200 hover:shadow-md">
@@ -124,9 +126,7 @@ export default function HirerProfileView() {
 					{bio ? (
 						<p className="text-sm leading-relaxed text-base-content/70">{bio}</p>
 					) : (
-						<p className="text-sm text-base-content/40">
-							No bio yet — introduce your organization below.
-						</p>
+						<p className="text-sm text-base-content/40">{t("profile.noBioYet")}</p>
 					)}
 				</div>
 			</section>
@@ -140,7 +140,7 @@ export default function HirerProfileView() {
 					</span>
 					<div>
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Edit hirer details
+							{t("profile.editHirerDetails")}
 						</h2>
 						<p className="mt-0.5 text-sm text-base-content/60">
 							Shown to artists alongside your opportunities — changes above update instantly.
@@ -157,7 +157,7 @@ export default function HirerProfileView() {
 						</div>
 					)}
 
-					<LabeledField label="Organization name" icon={Building2Icon}>
+					<LabeledField label={t("profile.organizationName")} icon={Building2Icon}>
 						<input
 							type="text"
 							className="input w-full pl-9"
@@ -168,12 +168,12 @@ export default function HirerProfileView() {
 						<FieldError message={errors.organizationName} />
 					</LabeledField>
 
-					<LabeledField label="Bio" hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
+					<LabeledField label={t("profile.bio")} hint={`${bio.length}/${MAX_BIO_LENGTH}`}>
 						<textarea
 							className="textarea w-full"
 							rows={3}
 							maxLength={MAX_BIO_LENGTH}
-							placeholder="What does your organization do, and what are you looking for?"
+							placeholder={t("profile.bioPlaceholderHirer")}
 							value={bio}
 							onChange={(e) => setBio(e.target.value)}
 							aria-invalid={errors.bio ? "true" : undefined}
@@ -181,11 +181,11 @@ export default function HirerProfileView() {
 						<FieldError message={errors.bio} />
 					</LabeledField>
 
-					<LabeledField label="Location" icon={MapPinIcon}>
+					<LabeledField label={t("profile.location")} icon={MapPinIcon}>
 						<input
 							type="text"
 							className="input w-full pl-9"
-							placeholder="City, country"
+							placeholder={t("profile.locationPlaceholder")}
 							value={location}
 							onChange={(e) => setLocation(e.target.value)}
 							aria-invalid={errors.location ? "true" : undefined}
@@ -200,7 +200,7 @@ export default function HirerProfileView() {
 							disabled={isSaving}
 						>
 							{isSaving && <span className="loading loading-spinner loading-xs" />}
-							Save changes
+							{t("profile.saveChanges")}
 						</button>
 					</div>
 				</form>
