@@ -28,11 +28,50 @@
 		"forgot": "Forgot?",
 		"logIn": "Log in",
 		"loggingIn": "Logging in…",
-		"loginFailed": "Failed to log in"
+		"loginFailed": "Failed to log in",
+		"welcomeBack": "Welcome back",
+		"logInToArtmate": "Log in to Artmate",
+		"sessionExpired": "Your session expired. Log back in to keep going.",
+		"continueWith42": "Continue with 42",
+		"or": "OR",
+		"newToArtmate": "New to Artmate?",
+		"createAccount": "Create account",
+		"joinArtmate": "Join Artmate",
+		"createYourAccount": "Create your account",
+		"alreadyOnArtmate": "Already on Artmate?",
+		"name": "Name",
+		"namePlaceholder": "Jane Doe",
+		"signingUpAs": "I am signing up as",
+		"artist": "Artist",
+		"hirer": "Hirer",
+		"creatingAccount": "Creating account…",
+		"createAccountAsArtist": "Create account as artist",
+		"createAccountAsHirer": "Create account as hirer",
+		"registerFailed": "Failed to create account",
+		"agreeToTerms": "By continuing you agree to our <terms>Terms</terms> & <privacy>Privacy Policy</privacy>."
 	},
 	"legal": {
 		"privacyPolicy": "Privacy Policy",
 		"termsOfService": "Terms of Service",
 		"legalNavLabel": "Legal"
+	},
+	"password": {
+		"minLength": "At least 12 characters",
+		"lowercase": "A lowercase letter",
+		"uppercase": "An uppercase letter",
+		"digit": "A digit",
+		"symbol": "A symbol",
+		"notCommon": "Not a common password",
+		"notPersonal": "Doesn't contain your name or email"
+	},
+	"welcome": {
+		"headline": "Where good work finds",
+		"headlineAccent": "good people.",
+		"subtitle": "The home for muralists, illustrators and set-makers — and the people who commission them.",
+		"tagMural": "mural / lisbon",
+		"tagLettering": "lettering",
+		"tagSetDesign": "set design",
+		"quote": "“I booked three murals in my first month here.”",
+		"quoteAuthor": "Nélida R. · muralist, Porto"
 	}
 }
