@@ -18,6 +18,8 @@ export default function AuthLayout() {
 					{/* Signed-out visitors live here, so the legal pages have to be
 					    reachable from the auth screens too — kept understated so they
 					    don't compete with the form. */}
+					{/* Language has to be reachable before signing in — the Settings
+					    page that normally hosts it is behind auth. */}
 					<div className="mt-8 flex justify-center">
 						<LanguageSwitcher />
 					</div>
@@ -27,10 +29,10 @@ export default function AuthLayout() {
 						className="mt-3 flex justify-center gap-4 text-xs text-base-content/50"
 					>
 						<Link to="/privacy" className="transition-colors hover:text-base-content">
-							Privacy Policy
+							{t("legal.privacyPolicy")}
 						</Link>
 						<Link to="/terms" className="transition-colors hover:text-base-content">
-							Terms of Service
+							{t("legal.termsOfService")}
 						</Link>
 					</nav>
 				</div>
