@@ -40,7 +40,7 @@ export default function OpportunityCard({
 					<img src={coverPhotoUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
 				) : (
 					<span className="absolute inset-0 flex items-center justify-center text-[10px] tracking-wide text-base-content/40 uppercase">
-						Cover photo
+						{t("common.coverPhoto")}
 					</span>
 				)}
 			</div>

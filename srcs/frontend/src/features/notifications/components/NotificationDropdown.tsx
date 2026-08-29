@@ -20,7 +20,7 @@ export default function NotificationDropdown() {
 						onClick={markAllRead}
 						className="link text-xs font-medium link-primary"
 					>
-						Mark all as read
+						{t("notifications.markAllRead")}
 					</button>
 				)}
 			</div>
@@ -57,7 +57,7 @@ export default function NotificationDropdown() {
 
 			<div className="mt-2 border-t border-base-content/10 pt-2 text-center">
 				<Link to="/notifications" className="link text-sm font-medium link-primary">
-					View all
+					{t("common.viewAll")}
 				</Link>
 			</div>
 		</div>

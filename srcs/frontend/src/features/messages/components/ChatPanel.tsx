@@ -314,7 +314,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 				<button
 					type="submit"
 					disabled={sending || draft.trim() === ""}
-					aria-label="Send"
+					aria-label={t("a11y.send")}
 					className="btn btn-circle btn-primary disabled:opacity-30"
 				>
 					<SendIcon className="size-4" aria-hidden="true" />

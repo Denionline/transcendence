@@ -77,7 +77,7 @@ export default function ArtistCard({
 	const detailsHint = (
 		<span className="pointer-events-none absolute top-3 right-3 flex animate-[hint-pulse_2400ms_ease-in-out_infinite] items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur transition-transform duration-200 group-hover:animate-none group-hover:scale-110">
 			<EyeIcon className="size-3" aria-hidden="true" />
-			View profile
+			{t("common.viewProfile")}
 		</span>
 	);
 

@@ -7,6 +7,7 @@ import { mapPublicProfileToArtist } from "../../artists/mapPublicProfile";
 import HirerDetailsModal from "./HirerDetailsModal";
 import { fetchPublicProfile } from "../api";
 import type { PublicProfileDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface ProfileResultModalProps {
 	userId: string | null;
@@ -23,6 +24,7 @@ interface ProfileResultModalProps {
  * though there's no swipeable "hirer card" elsewhere to reuse.
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
+	const { t } = useTranslation();
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
 	const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>("none");
 	const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -85,7 +87,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 
 			{status === "loading" && (
 				<div className="flex h-48 items-center justify-center">
-					<span className="loading loading-spinner" aria-label="Loading" />
+					<span className="loading loading-spinner" aria-label={t("a11y.loading")} />
 				</div>
 			)}
 

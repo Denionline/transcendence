@@ -77,7 +77,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 		<Modal open={Boolean(actor)} onClose={onClose} labelledBy="respond-request-title">
 			<div className="flex flex-col items-center gap-4 p-6 text-center">
 				<h2 id="respond-request-title" className="text-lg font-semibold">
-					Friend request
+					{t("common.friendRequest")}
 				</h2>
 				{actor && (
 					<>
@@ -91,7 +91,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 						</Link>
 
 						{status === null ? (
-							<span className="loading loading-spinner loading-sm" aria-label="Loading" />
+							<span className="loading loading-spinner loading-sm" aria-label={t("a11y.loading")} />
 						) : isStillPending ? (
 							<>
 								<p className="text-sm text-base-content/60">wants to be your friend.</p>
