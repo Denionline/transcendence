@@ -269,5 +269,39 @@
 		"noBioYet": "No bio yet — introduce your organization below.",
 		"editHirerDetails": "Edit hirer details",
 		"title": "Profile"
+	},
+	"settings": {
+		"title": "Settings",
+		"account": "Account",
+		"appearance": "Appearance",
+		"preferences": "Preferences",
+		"notifications": "Notifications",
+		"nothingToConfigure": "Nothing to configure here yet — check back soon.",
+		"theme": "Theme",
+		"themeHint": "Pick a theme for the whole application. Changes apply instantly.",
+		"livePreview": "Live preview · how this theme looks in your feed",
+		"username": "Username",
+		"email": "Email",
+		"avatarUrl": "Avatar URL",
+		"optional": "optional",
+		"avatarUrlPlaceholder": "https://...",
+		"changePhoto": "Change photo",
+		"saveChanges": "Save changes",
+		"accountUpdated": "Account updated successfully.",
+		"updateFailed": "Update failed.",
+		"chooseImage": "Choose a JPEG, PNG or WebP image.",
+		"uploadFailed": "Upload failed",
+		"notificationsSoon": "Notification settings aren't available yet — check back soon."
+	},
+	"portfolio": {
+		"title": "Portfolio",
+		"photo": "Photo",
+		"video": "Video",
+		"audio": "Audio",
+		"add": "Add {{type}}",
+		"remove": "Remove {{name}}",
+		"uploadFailed": "Upload failed",
+		"deleteFailed": "Couldn't delete {{name}}.",
+		"tryAgain": "Please try again."
 	}
 }
