@@ -95,7 +95,7 @@ export default function AccountSection() {
 				<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-base-200 text-base-content/60">
 					<UserRound className="size-3.5" aria-hidden="true" />
 				</span>
-				<h2 className="font-semibold">Account</h2>
+				<h2 className="font-semibold">{t("profile.account")}</h2>
 			</div>
 
 			<form className="flex flex-col gap-5 p-4" onSubmit={handleSubmit}>
@@ -137,9 +137,7 @@ export default function AccountSection() {
 						</button>
 					</div>
 					<div className="flex flex-col gap-1">
-						<p className="text-sm text-base-content/60">
-							Click the camera to upload a photo, or paste an image URL below.
-						</p>
+						<p className="text-sm text-base-content/60">{t("profile.avatarHint")}</p>
 						{avatarError && <p className="text-xs text-error">{avatarError}</p>}
 					</div>
 				</div>

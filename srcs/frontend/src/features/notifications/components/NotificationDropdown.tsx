@@ -27,19 +27,19 @@ export default function NotificationDropdown() {
 
 			{status === "loading" && (
 				<div className="flex h-24 items-center justify-center text-sm text-base-content/50">
-					Loading…
+					{t("notifications.loading")}
 				</div>
 			)}
 
 			{status === "error" && (
 				<div className="flex h-24 items-center justify-center px-2 text-center text-sm text-error">
-					Couldn&rsquo;t load notifications.
+					{t("notifications.couldntLoadShort")}
 				</div>
 			)}
 
 			{status === "ready" && recent.length === 0 && (
 				<div className="flex h-24 items-center justify-center px-2 text-center text-sm text-base-content/50">
-					You&rsquo;re all caught up.
+					{t("notifications.allCaughtUp")}
 				</div>
 			)}
 

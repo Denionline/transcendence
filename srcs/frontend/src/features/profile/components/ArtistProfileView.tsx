@@ -224,9 +224,7 @@ export default function ArtistProfileView() {
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 							{t("profile.editArtistDetails")}
 						</h2>
-						<p className="mt-0.5 text-sm text-base-content/60">
-							Changes above update the preview instantly — hit save to publish them.
-						</p>
+						<p className="mt-0.5 text-sm text-base-content/60">{t("profile.artistEditHint")}</p>
 					</div>
 				</div>
 
@@ -243,7 +241,7 @@ export default function ArtistProfileView() {
 						<legend className="text-sm font-medium">
 							{t("profile.categories")}
 							<span className="ml-1 font-normal text-base-content/60">
-								(pick at least one, up to {MAX_CATEGORIES})
+								{t("profile.categoriesHint", { max: MAX_CATEGORIES })}
 							</span>
 						</legend>
 						{isLoadingCategories ? (

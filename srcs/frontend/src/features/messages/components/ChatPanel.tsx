@@ -248,13 +248,13 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			<div ref={listRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4">
 				{status === "loading" && (
 					<div className="flex h-full items-center justify-center text-sm text-base-content/50">
-						Loading messages…
+						{t("messages.loadingMessages")}
 					</div>
 				)}
 
 				{status === "error" && (
 					<div className="flex h-full items-center justify-center text-sm text-error">
-						Couldn&rsquo;t load this conversation.
+						{t("messages.couldntLoadConversation")}
 					</div>
 				)}
 
@@ -275,9 +275,9 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 
 						{messages.length === 0 ? (
 							<div className="flex h-full flex-col items-center justify-center gap-1 text-center text-base-content/50">
-								<p className="font-medium">Say hello 👋</p>
+								<p className="font-medium">{t("messages.sayHello")}</p>
 								<p className="text-sm">
-									You matched on {match.gig.title} — start the conversation.
+									{t("messages.startConversation", { title: match.gig.title })}
 								</p>
 							</div>
 						) : (

@@ -72,7 +72,7 @@ export default function GigCard({
 			onKeyDown={handleCardKeyDown}
 			role="button"
 			tabIndex={0}
-			aria-label={`View details for ${title}`}
+			aria-label={t("deck.viewDetailsFor", { name: title })}
 			className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 		>
 			<div className="relative min-h-0 flex-1 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
@@ -95,7 +95,8 @@ export default function GigCard({
 							)}
 						</div>
 						<div className="truncate text-xs text-base-content/50">
-							{t("deck.verifiedHirer")} · {remoteOk ? t("deck.remoteOk") : location}
+							{t("deck.verifiedHirer")} ·{" "}
+							{remoteOk ? t("deck.remoteOk") : location || t("preview.locationTbd")}
 						</div>
 					</div>
 				</div>
@@ -132,7 +133,7 @@ export default function GigCard({
 							<button
 								type="button"
 								onClick={handlePassClick}
-								aria-label={`Pass on ${title}`}
+								aria-label={t("deck.passOn", { name: title })}
 								className="btn btn-circle btn-sm border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-4" aria-hidden="true" />
@@ -142,7 +143,7 @@ export default function GigCard({
 								onClick={handleInterestedClick}
 								className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
 							>
-								Interested
+								{t("deck.interested")}
 							</button>
 						</div>
 					</div>

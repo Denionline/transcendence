@@ -118,7 +118,8 @@ export default function HirerProfileView() {
 							</h2>
 							<p className="flex items-center gap-1.5 truncate text-sm text-base-content/60">
 								<Briefcase className="size-3.5" aria-hidden="true" />
-								Hirer{location && ` · ${location}`}
+								{t("profile.hirer")}
+								{location && ` · ${location}`}
 							</p>
 						</div>
 					</div>
@@ -142,9 +143,7 @@ export default function HirerProfileView() {
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 							{t("profile.editHirerDetails")}
 						</h2>
-						<p className="mt-0.5 text-sm text-base-content/60">
-							Shown to artists alongside your opportunities — changes above update instantly.
-						</p>
+						<p className="mt-0.5 text-sm text-base-content/60">{t("profile.hirerEditHint")}</p>
 					</div>
 				</div>
 

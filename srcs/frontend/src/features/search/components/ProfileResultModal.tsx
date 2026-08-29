@@ -82,7 +82,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			{/* Kept in the DOM across every status so the modal always has a valid
 			    accessible name, not just once the profile has loaded. */}
 			<h2 id="profile-result-title" className="sr-only">
-				Profile
+				{t("profile.resultTitle")}
 			</h2>
 
 			{status === "loading" && (
@@ -92,9 +92,7 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			)}
 
 			{status === "error" && (
-				<div className="p-6 text-sm text-base-content/60">
-					Couldn&rsquo;t load this profile. Please try again.
-				</div>
+				<div className="p-6 text-sm text-base-content/60">{t("profile.couldntLoadRetry")}</div>
 			)}
 		</Modal>
 	);

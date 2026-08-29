@@ -79,10 +79,7 @@ export default function PortfolioManager({ files, onUploaded, onDeleted }: Portf
 					<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
 						{t("portfolio.title")}
 					</h2>
-					<p className="mt-0.5 text-sm text-base-content/60">
-						Add photos, a reel or a voice note — they show up in the preview above instantly, and on
-						your public profile.
-					</p>
+					<p className="mt-0.5 text-sm text-base-content/60">{t("profile.portfolioHint")}</p>
 				</div>
 			</div>
 

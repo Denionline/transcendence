@@ -33,7 +33,7 @@ export default function OpportunityCard({
 			<div className="relative aspect-4/3 bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-base-content)_6%,transparent)_0px,color-mix(in_oklab,var(--color-base-content)_6%,transparent)_10px,transparent_10px,transparent_20px)] bg-base-200">
 				{isNew && (
 					<span className="badge badge-sm badge-primary absolute top-3 left-3 font-medium">
-						New
+						{t("deck.new")}
 					</span>
 				)}
 				{coverPhotoUrl ? (

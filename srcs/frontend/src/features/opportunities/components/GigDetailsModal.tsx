@@ -60,7 +60,8 @@ export default function GigDetailsModal({
 									)}
 								</div>
 								<div className="truncate text-xs text-base-content/50">
-									{t("deck.verifiedHirer")} · {gig.remoteOk ? t("deck.remoteOk") : gig.location}
+									{t("deck.verifiedHirer")} ·{" "}
+									{gig.remoteOk ? t("deck.remoteOk") : gig.location || t("preview.locationTbd")}
 								</div>
 							</div>
 						</div>
@@ -104,7 +105,7 @@ export default function GigDetailsModal({
 									onPass();
 									onClose();
 								}}
-								aria-label={`Pass on ${gig.title}`}
+								aria-label={t("deck.passOn", { name: gig.title })}
 								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-5" aria-hidden="true" />
@@ -117,7 +118,7 @@ export default function GigDetailsModal({
 								}}
 								className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
 							>
-								Interested
+								{t("deck.interested")}
 							</button>
 						</div>
 					</div>

@@ -17,8 +17,8 @@ export default function ConversationList({
 	if (matches.length === 0) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-1 p-6 text-center text-base-content/50">
-				<p className="font-medium">No matches yet</p>
-				<p className="text-sm">Once you match with someone, they&rsquo;ll show up here.</p>
+				<p className="font-medium">{t("messages.noMatchesYet")}</p>
+				<p className="text-sm">{t("messages.onceYouMatch")}</p>
 			</div>
 		);
 	}

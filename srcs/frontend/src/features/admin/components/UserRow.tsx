@@ -27,7 +27,7 @@ export default function UserRow({
 				<input
 					type="checkbox"
 					className="checkbox"
-					aria-label={`Select ${user.username}`}
+					aria-label={t("admin.selectUser", { name: user.username })}
 					checked={selected}
 					disabled={isSelf}
 					onChange={onToggleSelect}

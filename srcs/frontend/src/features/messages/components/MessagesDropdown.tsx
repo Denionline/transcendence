@@ -18,13 +18,13 @@ export default function MessagesDropdown() {
 
 			{status === "loading" && (
 				<div className="flex h-24 items-center justify-center text-sm text-base-content/50">
-					Loading…
+					{t("messages.loading")}
 				</div>
 			)}
 
 			{status === "error" && (
 				<div className="flex h-24 items-center justify-center px-2 text-center text-sm text-error">
-					Couldn&rsquo;t load messages.
+					{t("messages.couldntLoadShort")}
 				</div>
 			)}
 

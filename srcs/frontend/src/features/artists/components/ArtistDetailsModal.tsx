@@ -61,7 +61,10 @@ export default function ArtistDetailsModal({
 									)}
 								</div>
 								<div className="truncate text-sm text-base-content/60">
-									{artist.discipline} · {artist.remoteOk ? t("deck.remoteOk") : artist.location}
+									{artist.discipline} ·{" "}
+									{artist.remoteOk
+										? t("deck.remoteOk")
+										: artist.location || t("preview.locationTbd")}
 								</div>
 							</div>
 							{friendSlot}
@@ -93,7 +96,7 @@ export default function ArtistDetailsModal({
 										onPass?.();
 										onClose();
 									}}
-									aria-label={`Pass on ${artist.name}`}
+									aria-label={t("deck.passOn", { name: artist.name })}
 									className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 								>
 									<XIcon className="size-5" aria-hidden="true" />
@@ -106,7 +109,7 @@ export default function ArtistDetailsModal({
 									}}
 									className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
 								>
-									Interested
+									{t("deck.interested")}
 								</button>
 							</div>
 						)}

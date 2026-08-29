@@ -102,7 +102,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 										onClick={() => handleRespond(false)}
 										className="btn rounded-full btn-outline disabled:opacity-40"
 									>
-										Decline
+										{t("friends.decline")}
 									</button>
 									<button
 										type="button"
@@ -110,7 +110,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 										onClick={() => handleRespond(true)}
 										className="btn rounded-full btn-primary disabled:opacity-40"
 									>
-										Accept
+										{t("friends.accept")}
 									</button>
 								</div>
 							</>
@@ -122,7 +122,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 										: t("friends.alreadyResponded")}
 								</p>
 								<button type="button" onClick={onClose} className="btn rounded-full btn-outline">
-									Close
+									{t("a11y.close")}
 								</button>
 							</>
 						)}

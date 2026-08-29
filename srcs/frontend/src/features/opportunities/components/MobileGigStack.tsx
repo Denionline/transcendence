@@ -148,13 +148,13 @@ export default function MobileGigStack({
 									style={{ opacity: interestedOpacity }}
 									className="pointer-events-none absolute top-10 left-6 -rotate-12 rounded-lg border-4 border-primary px-3 py-1 text-xl font-black tracking-wider text-primary"
 								>
-									Interested
+									{t("deck.interested")}
 								</div>
 								<div
 									style={{ opacity: passOpacity }}
 									className="pointer-events-none absolute top-10 right-6 rotate-12 rounded-lg border-4 border-error px-3 py-1 text-xl font-black tracking-wider text-error"
 								>
-									Pass
+									{t("deck.pass")}
 								</div>
 							</div>
 						);
