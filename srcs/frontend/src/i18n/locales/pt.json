@@ -90,5 +90,60 @@
 		"tagSetDesign": "cenografia",
 		"quote": "“Consegui três murais no meu primeiro mês aqui.”",
 		"quoteAuthor": "Nélida R. · muralista, Porto"
+	},
+	"filters": {
+		"discipline": "Disciplina",
+		"availability": "Disponibilidade",
+		"location": "Localização",
+		"minimumRate": "Valor mínimo",
+		"applyFilters": "Aplicar filtros",
+		"lockedToOpportunity": "Fixado a esta oportunidade.",
+		"lockedToProfile": "Fixado ao teu perfil.",
+		"notSpecified": "Não especificado",
+		"any": "Qualquer",
+		"availableNow": "Disponível agora",
+		"availableSoon": "Disponível em breve",
+		"ratePlaceholder": "ex.: 500"
+	},
+	"discover": {
+		"title": "Descobrir artistas",
+		"reviewingForOpportunity": "A rever para a oportunidade",
+		"reviewingFor": "A rever para",
+		"selectOpportunity": "Escolher oportunidade",
+		"postGigToStart": "Publica uma vaga para começares a descobrir artistas",
+		"newOpportunity": "Nova oportunidade",
+		"couldntLoadArtists": "Não foi possível carregar os artistas",
+		"loadingArtists": "A carregar artistas…",
+		"loadFailed": "Não foi possível carregar os artistas. Tenta novamente.",
+		"loadOpportunitiesFailed": "Não foi possível carregar as tuas oportunidades.",
+		"notEligible": "{{name}} não é elegível para a categoria desta oportunidade."
+	},
+	"opportunities": {
+		"title": "Oportunidades",
+		"noGigsRightNow": "Nenhuma vaga para mostrar de momento",
+		"tryAgainInAMoment": "Tenta novamente daqui a pouco.",
+		"tryAgain": "Tentar novamente",
+		"loadingGigs": "A carregar vagas…"
+	},
+	"deck": {
+		"noMoreMatches": "Não há mais correspondências",
+		"noMoreGigs": "Não há mais vagas",
+		"checkBackLater": "Volta mais tarde.",
+		"allCaughtUp": "Estás em dia",
+		"checkBackForArtists": "Volta mais tarde para veres novos artistas.",
+		"checkBackForGigs": "Volta mais tarde para veres novas vagas.",
+		"undo": "Anular",
+		"pass": "Passar",
+		"interested": "Interessado",
+		"remoteOk": "Remoto OK",
+		"remote": "Remoto",
+		"onSite": "Presencial",
+		"verifiedHirer": "Contratante verificado"
+	},
+	"preview": {
+		"yourBrand": "A tua marca",
+		"locationTbd": "Localização por definir",
+		"titlePlaceholder": "O título da tua oportunidade aparece aqui",
+		"durationTbd": "Duração por definir"
 	}
 }
