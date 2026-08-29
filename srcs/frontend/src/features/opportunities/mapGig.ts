@@ -22,7 +22,7 @@ export function mapGigToListing(gig: GigDto): GigListing {
 		// `??` alone misses an explicitly empty string (as opposed to a genuinely
 		// unset/null location) — both mean "nothing was specified" and should
 		// fall back the same way.
-		location: gig.location?.trim() ? gig.location : "Location TBD",
+		location: gig.location?.trim() ? gig.location : "",
 		rate: gig.rate,
 		remoteOk: false,
 		postedLabel: label,
