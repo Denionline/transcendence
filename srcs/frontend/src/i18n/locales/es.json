@@ -90,5 +90,60 @@
 		"tagSetDesign": "escenografía",
 		"quote": "“Conseguí tres murales en mi primer mes aquí.”",
 		"quoteAuthor": "Nélida R. · muralista, Oporto"
+	},
+	"filters": {
+		"discipline": "Disciplina",
+		"availability": "Disponibilidad",
+		"location": "Ubicación",
+		"minimumRate": "Tarifa mínima",
+		"applyFilters": "Aplicar filtros",
+		"lockedToOpportunity": "Fijado a esta oportunidad.",
+		"lockedToProfile": "Fijado a tu perfil.",
+		"notSpecified": "Sin especificar",
+		"any": "Cualquiera",
+		"availableNow": "Disponible ahora",
+		"availableSoon": "Disponible pronto",
+		"ratePlaceholder": "p. ej. 500"
+	},
+	"discover": {
+		"title": "Descubrir artistas",
+		"reviewingForOpportunity": "Revisando para la oportunidad",
+		"reviewingFor": "Revisando para",
+		"selectOpportunity": "Elegir oportunidad",
+		"postGigToStart": "Publica una oferta para empezar a descubrir artistas",
+		"newOpportunity": "Nueva oportunidad",
+		"couldntLoadArtists": "No se pudieron cargar los artistas",
+		"loadingArtists": "Cargando artistas…",
+		"loadFailed": "No se pudieron cargar los artistas. Inténtalo de nuevo.",
+		"loadOpportunitiesFailed": "No se pudieron cargar tus oportunidades.",
+		"notEligible": "{{name}} no es elegible para la categoría de esta oportunidad."
+	},
+	"opportunities": {
+		"title": "Oportunidades",
+		"noGigsRightNow": "No hay ofertas que mostrar ahora mismo",
+		"tryAgainInAMoment": "Vuelve a intentarlo en un momento.",
+		"tryAgain": "Intentar de nuevo",
+		"loadingGigs": "Cargando ofertas…"
+	},
+	"deck": {
+		"noMoreMatches": "No hay más coincidencias",
+		"noMoreGigs": "No hay más ofertas",
+		"checkBackLater": "Vuelve más tarde.",
+		"allCaughtUp": "Estás al día",
+		"checkBackForArtists": "Vuelve más tarde para ver nuevos artistas.",
+		"checkBackForGigs": "Vuelve más tarde para ver nuevas ofertas.",
+		"undo": "Deshacer",
+		"pass": "Pasar",
+		"interested": "Interesado",
+		"remoteOk": "Remoto OK",
+		"remote": "Remoto",
+		"onSite": "Presencial",
+		"verifiedHirer": "Contratante verificado"
+	},
+	"preview": {
+		"yourBrand": "Tu marca",
+		"locationTbd": "Ubicación por definir",
+		"titlePlaceholder": "El título de tu oportunidad aparece aquí",
+		"durationTbd": "Duración por definir"
 	}
 }
