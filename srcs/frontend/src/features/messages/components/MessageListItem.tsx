@@ -2,12 +2,14 @@ import { Link } from "react-router-dom";
 import Avatar from "../../../components/Avatar";
 import { formatRelativeTime } from "../../../lib/format";
 import type { MatchDto } from "../../matches/types";
+import { useTranslation } from "react-i18next";
 
 interface MessageListItemProps {
 	match: MatchDto;
 }
 
 export default function MessageListItem({ match }: MessageListItemProps) {
+	const { t } = useTranslation();
 	const hasUnread = match.unreadCount > 0;
 
 	return (
@@ -35,7 +37,7 @@ export default function MessageListItem({ match }: MessageListItemProps) {
 						)}
 					</p>
 					<p className="truncate text-xs text-base-content/50">
-						{match.lastMessage ? match.lastMessage.content : "Say hello 👋"}
+						{match.lastMessage ? match.lastMessage.content : t("messages.sayHello")}
 					</p>
 				</div>
 			</Link>
@@ -43,7 +45,7 @@ export default function MessageListItem({ match }: MessageListItemProps) {
 			{hasUnread && (
 				<span
 					className="size-2 shrink-0 rounded-full bg-primary"
-					aria-label={`${match.unreadCount} unread`}
+					aria-label={t("messages.unread", { count: match.unreadCount })}
 				/>
 			)}
 		</li>
