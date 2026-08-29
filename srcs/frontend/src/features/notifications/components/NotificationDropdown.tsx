@@ -1,17 +1,19 @@
 import { Link } from "react-router-dom";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationListItem from "./NotificationListItem";
+import { useTranslation } from "react-i18next";
 
 const RECENT_LIMIT = 6;
 
 export default function NotificationDropdown() {
+	const { t } = useTranslation();
 	const { notifications, unreadCount, status, markRead, markAllRead } = useNotifications();
 	const recent = notifications.slice(0, RECENT_LIMIT);
 
 	return (
 		<div className="flex max-h-[70vh] flex-col">
 			<div className="flex items-center justify-between px-2 pb-2">
-				<span className="menu-title px-0">Notifications</span>
+				<span className="menu-title px-0">{t("notifications.title")}</span>
 				{unreadCount > 0 && (
 					<button
 						type="button"
