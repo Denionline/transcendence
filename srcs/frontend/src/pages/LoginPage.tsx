@@ -1,20 +1,22 @@
 import { GraduationCap } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import LoginForm from "../features/auth/components/LoginForm";
 import { useAuth } from "../features/auth/hooks/useAuth";
 
 export default function LoginPage() {
+	const { t } = useTranslation();
 	const { sessionExpired } = useAuth();
 
 	return (
 		<>
 			<span className="text-xs font-['IBM_Plex_Mono',monospace] uppercase tracking-[0.08em] text-base-content/50">
-				Welcome back
+				{t("auth.welcomeBack")}
 			</span>
-			<h1 className="text-3xl font-extrabold mt-1">Log in to Artmate</h1>
+			<h1 className="text-3xl font-extrabold mt-1">{t("auth.logInToArtmate")}</h1>
 			{sessionExpired && (
 				<div className="alert alert-warning mt-4 py-2 text-sm">
-					<span>Your session expired. Log back in to keep going.</span>
+					<span>{t("auth.sessionExpired")}</span>
 				</div>
 			)}
 			<button
@@ -24,14 +26,14 @@ export default function LoginPage() {
 				}}
 			>
 				<GraduationCap />
-				Continue with 42
+				{t("auth.continueWith42")}
 			</button>
-			<div className="divider text-xs opacity-80">OR</div>
+			<div className="divider text-xs opacity-80">{t("auth.or")}</div>
 			<LoginForm />
 			<div className="text-sm text-center mt-8">
-				<span>New to Artmate? </span>
+				<span>{t("auth.newToArtmate")} </span>
 				<Link to="/register" className="text-primary hover:underline">
-					Create account
+					{t("auth.createAccount")}
 				</Link>
 			</div>
 		</>
