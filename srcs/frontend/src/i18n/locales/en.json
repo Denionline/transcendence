@@ -198,5 +198,43 @@
 		"messagePlaceholder": "Message {{name}}",
 		"sendFailed": "Couldn't send that message.",
 		"delete": "Delete"
+	},
+	"friends": {
+		"title": "Friends",
+		"count_zero": "No friends yet",
+		"count_one": "{{count}} friend",
+		"count_other": "{{count}} friends",
+		"loading": "Loading…",
+		"loadingFriends": "Loading friends…",
+		"loadFailed": "Couldn't load your friends.",
+		"noFriendsYet": "No friends yet",
+		"addFromProfile": "Add someone from their profile to see them here.",
+		"remove": "Remove {{name}}",
+		"locationTbd": "Location TBD",
+		"artist": "Artist",
+		"hirer": "Hirer",
+		"friends": "Friends",
+		"removeFriend": "Remove friend",
+		"requestSent": "Request Sent",
+		"addFriend": "Add Friend",
+		"sentYouRequest": "Sent you a friend request",
+		"declineRequest": "Decline friend request",
+		"acceptRequest": "Accept friend request",
+		"alreadyFriends": "You're already friends.",
+		"alreadyResponded": "You already responded to this request."
+	},
+	"notifications": {
+		"title": "Notifications",
+		"unread_zero": "No unread notifications",
+		"unread_one": "{{count}} unread",
+		"unread_other": "{{count}} unread",
+		"loading": "Loading…",
+		"markAllRead": "Mark all as read",
+		"markAsRead": "Mark as read",
+		"couldntLoad": "Couldn’t load notifications",
+		"tryAgain": "Try again",
+		"loadingNotifications": "Loading notifications…",
+		"noneYet": "No notifications yet",
+		"willShowHere": "Matches, messages, and updates will show up here."
 	}
 }
