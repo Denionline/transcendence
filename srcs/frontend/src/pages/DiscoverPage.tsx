@@ -299,10 +299,7 @@ export default function DiscoverPage() {
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 						{t("filters.discipline")}
 					</h3>
-					<p className="mb-2 text-xs text-base-content/40">
-						Starts on this opportunity&rsquo;s own category — check more to browse other disciplines
-						too. A like still only counts within the gig&rsquo;s real category.
-					</p>
+					<p className="mb-2 text-xs text-base-content/40">{t("deck.startsOnGigCategory")}</p>
 					<div className="flex flex-wrap gap-1.5">
 						{categories.map((category) => (
 							<button

@@ -26,9 +26,7 @@ export default function MatchesPage() {
 		<div className="mx-auto flex max-w-2xl flex-col gap-10">
 			<div>
 				<h1 className="text-2xl font-semibold">{t("matches.title")}</h1>
-				<p className="text-sm text-base-content/50">
-					People interested in you, and the matches you&rsquo;ve already made.
-				</p>
+				<p className="text-sm text-base-content/50">{t("matches.subtitle")}</p>
 			</div>
 
 			<PossibleMatchesSection />
@@ -389,8 +387,8 @@ function YourMatchesSection() {
 
 			{status === "ready" && matches.length === 0 && (
 				<div className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-					<p className="font-medium">No matches yet</p>
-					<p className="text-sm">Accept an interest above, or keep swiping to find one.</p>
+					<p className="font-medium">{t("matches.noMatchesYet")}</p>
+					<p className="text-sm">{t("matches.acceptOrSwipe")}</p>
 				</div>
 			)}
 

@@ -104,21 +104,19 @@ export default function MessagesPage() {
 		<div className="mx-auto max-w-5xl">
 			<div className="mb-6">
 				<h1 className="text-2xl font-semibold">{t("messages.title")}</h1>
-				<p className="text-sm text-base-content/50">
-					Chat with the people you&rsquo;ve matched with.
-				</p>
+				<p className="text-sm text-base-content/50">{t("messages.subtitle")}</p>
 			</div>
 
 			{status === "error" && (
 				<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					<p className="font-medium">Couldn&rsquo;t load your messages</p>
+					<p className="font-medium">{t("messages.couldntLoadMessages")}</p>
 					<p className="text-error/80">{error ? t(error) : null}</p>
 				</div>
 			)}
 
 			{status === "loading" && (
 				<div className="flex h-[calc(100vh-14rem)] min-h-100 items-center justify-center text-sm text-base-content/50">
-					Loading conversations…
+					{t("messages.loadingConversations")}
 				</div>
 			)}
 
@@ -153,7 +151,7 @@ export default function MessagesPage() {
 							// selectedMatch), so this is always the two-pane empty state.
 							<div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-center text-base-content/50">
 								<p className="font-medium">{t("messages.selectConversation")}</p>
-								<p className="text-sm">Pick someone from the left to see your messages.</p>
+								<p className="text-sm">{t("messages.pickFromLeft")}</p>
 							</div>
 						))}
 				</div>

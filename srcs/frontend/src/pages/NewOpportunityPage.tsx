@@ -294,10 +294,7 @@ export default function NewOpportunityPage() {
 						isNew
 						coverPhotoUrl={null}
 					/>
-					<p className="mt-3 text-xs text-base-content/40">
-						This is exactly how artists will see it in their feed — fill in the form and watch it
-						update here.
-					</p>
+					<p className="mt-3 text-xs text-base-content/40">{t("deck.previewHint")}</p>
 				</aside>
 			</div>
 		</div>
