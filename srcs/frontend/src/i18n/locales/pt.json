@@ -269,5 +269,39 @@
 		"noBioYet": "Ainda sem biografia — apresenta a tua organização abaixo.",
 		"editHirerDetails": "Editar detalhes de contratante",
 		"title": "Perfil"
+	},
+	"settings": {
+		"title": "Definições",
+		"account": "Conta",
+		"appearance": "Aparência",
+		"preferences": "Preferências",
+		"notifications": "Notificações",
+		"nothingToConfigure": "Ainda não há nada para configurar aqui — volta em breve.",
+		"theme": "Tema",
+		"themeHint": "Escolhe um tema para toda a aplicação. As alterações aplicam-se de imediato.",
+		"livePreview": "Pré-visualização · como este tema fica no teu feed",
+		"username": "Nome de utilizador",
+		"email": "Email",
+		"avatarUrl": "URL do avatar",
+		"optional": "opcional",
+		"avatarUrlPlaceholder": "https://...",
+		"changePhoto": "Mudar foto",
+		"saveChanges": "Guardar alterações",
+		"accountUpdated": "Conta atualizada com sucesso.",
+		"updateFailed": "A atualização falhou.",
+		"chooseImage": "Escolhe uma imagem JPEG, PNG ou WebP.",
+		"uploadFailed": "O carregamento falhou",
+		"notificationsSoon": "As definições de notificações ainda não estão disponíveis — volta em breve."
+	},
+	"portfolio": {
+		"title": "Portfólio",
+		"photo": "Foto",
+		"video": "Vídeo",
+		"audio": "Áudio",
+		"add": "Adicionar {{type}}",
+		"remove": "Remover {{name}}",
+		"uploadFailed": "O carregamento falhou",
+		"deleteFailed": "Não foi possível apagar {{name}}.",
+		"tryAgain": "Tenta novamente."
 	}
 }
