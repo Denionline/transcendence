@@ -48,7 +48,24 @@
 		"createAccountAsArtist": "Crear cuenta como artista",
 		"createAccountAsHirer": "Crear cuenta como contratante",
 		"registerFailed": "No se pudo crear la cuenta",
-		"agreeToTerms": "Al continuar, aceptas nuestros <terms>Términos</terms> y la <privacy>Política de Privacidad</privacy>."
+		"agreeToTerms": "Al continuar, aceptas nuestros <terms>Términos</terms> y la <privacy>Política de Privacidad</privacy>.",
+		"errors": {
+			"emailRequired": "El correo electrónico es obligatorio",
+			"emailInvalid": "Introduce un correo electrónico válido",
+			"emailTooLong": "Esa dirección de correo es demasiado larga",
+			"passwordRequired": "La contraseña es obligatoria",
+			"passwordTooShort": "La contraseña debe tener al menos {{passwordMin}} caracteres",
+			"passwordNeedsLowercase": "La contraseña debe contener una letra minúscula",
+			"passwordNeedsUppercase": "La contraseña debe contener una letra mayúscula",
+			"passwordNeedsDigit": "La contraseña debe contener un dígito",
+			"passwordNeedsSymbol": "La contraseña debe contener un símbolo",
+			"passwordTooLong": "La contraseña es demasiado larga",
+			"nameRequired": "El nombre es obligatorio",
+			"nameTooLong": "Mantén el nombre por debajo de {{usernameMax}} caracteres",
+			"currentPasswordRequired": "Introduce tu contraseña actual",
+			"confirmPasswordRequired": "Confirma la nueva contraseña",
+			"passwordsDoNotMatch": "Las contraseñas no coinciden"
+		}
 	},
 	"legal": {
 		"privacyPolicy": "Política de Privacidad",
