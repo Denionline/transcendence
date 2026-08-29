@@ -28,11 +28,50 @@
 		"forgot": "Esqueceste-te?",
 		"logIn": "Entrar",
 		"loggingIn": "A entrar…",
-		"loginFailed": "Não foi possível iniciar sessão"
+		"loginFailed": "Não foi possível iniciar sessão",
+		"welcomeBack": "Bem-vindo de volta",
+		"logInToArtmate": "Entrar no Artmate",
+		"sessionExpired": "A tua sessão expirou. Volta a entrar para continuares.",
+		"continueWith42": "Continuar com a 42",
+		"or": "OU",
+		"newToArtmate": "Novo no Artmate?",
+		"createAccount": "Criar conta",
+		"joinArtmate": "Junta-te ao Artmate",
+		"createYourAccount": "Cria a tua conta",
+		"alreadyOnArtmate": "Já tens conta no Artmate?",
+		"name": "Nome",
+		"namePlaceholder": "Joana Silva",
+		"signingUpAs": "Vou registar-me como",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"creatingAccount": "A criar conta…",
+		"createAccountAsArtist": "Criar conta como artista",
+		"createAccountAsHirer": "Criar conta como contratante",
+		"registerFailed": "Não foi possível criar a conta",
+		"agreeToTerms": "Ao continuares, aceitas os nossos <terms>Termos</terms> e a <privacy>Política de Privacidade</privacy>."
 	},
 	"legal": {
 		"privacyPolicy": "Política de Privacidade",
 		"termsOfService": "Termos de Serviço",
 		"legalNavLabel": "Legal"
+	},
+	"password": {
+		"minLength": "Pelo menos 12 caracteres",
+		"lowercase": "Uma letra minúscula",
+		"uppercase": "Uma letra maiúscula",
+		"digit": "Um algarismo",
+		"symbol": "Um símbolo",
+		"notCommon": "Não é uma palavra-passe comum",
+		"notPersonal": "Não contém o teu nome nem o teu email"
+	},
+	"welcome": {
+		"headline": "Onde o bom trabalho encontra",
+		"headlineAccent": "as pessoas certas.",
+		"subtitle": "A casa de muralistas, ilustradores e cenógrafos — e de quem os contrata.",
+		"tagMural": "mural / lisboa",
+		"tagLettering": "lettering",
+		"tagSetDesign": "cenografia",
+		"quote": "“Consegui três murais no meu primeiro mês aqui.”",
+		"quoteAuthor": "Nélida R. · muralista, Porto"
 	}
 }
