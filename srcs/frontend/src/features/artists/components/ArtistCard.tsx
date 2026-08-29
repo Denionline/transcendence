@@ -1,6 +1,7 @@
 import { BadgeCheckIcon, EyeIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import type { Artist } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface ArtistCardProps {
 	artist: Artist;
@@ -20,6 +21,7 @@ export default function ArtistCard({
 	onInterested,
 	onOpenDetails,
 }: ArtistCardProps) {
+	const { t } = useTranslation();
 	const {
 		name,
 		discipline,
@@ -120,7 +122,7 @@ export default function ArtistCard({
 							)}
 						</div>
 						<div className="truncate text-sm text-white/70">
-							{discipline} · {remoteOk ? "Remote OK" : location}
+							{discipline} · {remoteOk ? t("deck.remoteOk") : location}
 						</div>
 					</div>
 					{tagBadges}
@@ -153,7 +155,7 @@ export default function ArtistCard({
 						)}
 					</div>
 					<div className="truncate text-sm text-base-content/60">
-						{discipline} · {remoteOk ? "Remote OK" : location}
+						{discipline} · {remoteOk ? t("deck.remoteOk") : location}
 					</div>
 				</div>
 
