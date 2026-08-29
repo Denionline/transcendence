@@ -90,5 +90,60 @@
 		"tagSetDesign": "set design",
 		"quote": "“I booked three murals in my first month here.”",
 		"quoteAuthor": "Nélida R. · muralist, Porto"
+	},
+	"filters": {
+		"discipline": "Discipline",
+		"availability": "Availability",
+		"location": "Location",
+		"minimumRate": "Minimum rate",
+		"applyFilters": "Apply filters",
+		"lockedToOpportunity": "Locked to this opportunity.",
+		"lockedToProfile": "Locked to your profile.",
+		"notSpecified": "Not specified",
+		"any": "Any",
+		"availableNow": "Available now",
+		"availableSoon": "Available soon",
+		"ratePlaceholder": "e.g. 500"
+	},
+	"discover": {
+		"title": "Discover artists",
+		"reviewingForOpportunity": "Reviewing for opportunity",
+		"reviewingFor": "Reviewing for",
+		"selectOpportunity": "Select opportunity",
+		"postGigToStart": "Post a gig to start discovering artists",
+		"newOpportunity": "New opportunity",
+		"couldntLoadArtists": "Couldn't load artists",
+		"loadingArtists": "Loading artists…",
+		"loadFailed": "Couldn't load artists. Please try again.",
+		"loadOpportunitiesFailed": "Couldn't load your opportunities.",
+		"notEligible": "{{name}} isn't eligible for this opportunity's category."
+	},
+	"opportunities": {
+		"title": "Opportunities",
+		"noGigsRightNow": "No gigs to show right now",
+		"tryAgainInAMoment": "Give it another try in a moment.",
+		"tryAgain": "Try again",
+		"loadingGigs": "Loading gigs…"
+	},
+	"deck": {
+		"noMoreMatches": "No more matches",
+		"noMoreGigs": "No more gigs",
+		"checkBackLater": "Check back later.",
+		"allCaughtUp": "You’re all caught up",
+		"checkBackForArtists": "Check back later for new artists.",
+		"checkBackForGigs": "Check back later for new gigs.",
+		"undo": "Undo",
+		"pass": "Pass",
+		"interested": "Interested",
+		"remoteOk": "Remote OK",
+		"remote": "Remote",
+		"onSite": "On-site",
+		"verifiedHirer": "Verified hirer"
+	},
+	"preview": {
+		"yourBrand": "Your brand",
+		"locationTbd": "Location TBD",
+		"titlePlaceholder": "Your opportunity title goes here",
+		"durationTbd": "Duration TBD"
 	}
 }
