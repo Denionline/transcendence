@@ -10,6 +10,7 @@ import type { PublicProfileDto } from "../features/search/types";
 import FriendRequestButton from "../features/friends/components/FriendRequestButton";
 import type { FriendshipStatus } from "../features/friends/types";
 import { ApiError } from "../lib/apiClient";
+import { useTranslation } from "react-i18next";
 
 /**
  * Both `/profile` and `/profile/:id` render this page (see Router.tsx) — the
@@ -23,6 +24,7 @@ export default function ProfilePage() {
 }
 
 function OwnProfile() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user } = useAuth();
 
@@ -34,11 +36,11 @@ function OwnProfile() {
 						type="button"
 						onClick={() => navigate(-1)}
 						className="btn btn-ghost btn-circle btn-sm"
-						aria-label="Go back"
+						aria-label={t("profile.goBack")}
 					>
 						<ArrowLeft className="size-4" />
 					</button>
-					<h1 className="truncate font-bold">Profile</h1>
+					<h1 className="truncate font-bold">{t("profile.title")}</h1>
 				</div>
 			</header>
 
@@ -56,6 +58,7 @@ function OwnProfile() {
 }
 
 function PublicProfile({ id }: { id: string }) {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
 	const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>("none");
@@ -73,7 +76,7 @@ function PublicProfile({ id }: { id: string }) {
 			setStatus("ready");
 		})().catch((err: unknown) => {
 			if (cancelled) return;
-			setError(err instanceof ApiError ? err.message : "Couldn't load this profile.");
+			setError(err instanceof ApiError ? err.message : "profile.loadFailed");
 			setStatus("error");
 		});
 		return () => {
@@ -89,18 +92,18 @@ function PublicProfile({ id }: { id: string }) {
 				className="mb-4 inline-flex items-center gap-1.5 text-sm text-base-content/60 hover:text-base-content"
 			>
 				<ArrowLeftIcon className="size-4" aria-hidden="true" />
-				Back
+				{t("profile.back")}
 			</button>
 
 			{status === "loading" && (
 				<div className="flex h-64 items-center justify-center">
-					<span className="loading loading-spinner" aria-label="Loading" />
+					<span className="loading loading-spinner" aria-label={t("profile.loading")} />
 				</div>
 			)}
 
 			{status === "error" && (
 				<div className="rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					{error}
+					{error ? t(error) : null}
 				</div>
 			)}
 
