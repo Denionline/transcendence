@@ -8,6 +8,7 @@ import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
 import { defaultPathForRole } from "../../../Router";
 import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
+import { translateFieldError } from "../../../i18n/validation";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
@@ -73,7 +74,9 @@ export default function RegisterForm() {
 					onChange={handleChange}
 					aria-invalid={errors.name ? "true" : undefined}
 				/>
-				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>{errors.name}</p>
+				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>
+					{translateFieldError(t, errors.name)}
+				</p>
 			</fieldset>
 
 			<fieldset className="fieldset">
@@ -90,7 +93,9 @@ export default function RegisterForm() {
 					onChange={handleChange}
 					aria-invalid={errors.email ? "true" : undefined}
 				/>
-				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
+				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>
+					{translateFieldError(t, errors.email)}
+				</p>
 			</fieldset>
 
 			<fieldset className="fieldset">
@@ -108,7 +113,7 @@ export default function RegisterForm() {
 					aria-invalid={errors.password ? "true" : undefined}
 				/>
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
-					{errors.password}
+					{translateFieldError(t, errors.password)}
 				</span>
 				<PasswordStrengthChecklist
 					password={values.password}
