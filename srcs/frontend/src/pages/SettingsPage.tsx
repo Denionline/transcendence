@@ -3,6 +3,7 @@ import {
 	ArrowLeft,
 	BellIcon,
 	CheckIcon,
+	LanguagesIcon,
 	PaletteIcon,
 	SlidersHorizontalIcon,
 	UserRoundIcon,
@@ -13,14 +14,19 @@ import { THEMES } from "../features/theme/constants";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
 import AccountSection from "../features/profile/components/AccountSection";
 import { useTranslation } from "react-i18next";
+import { SUPPORTED_LANGUAGES } from "../i18n";
 
-type Section = "account" | "preferences" | "notifications" | "appearance";
+type Section = "account" | "preferences" | "notifications" | "appearance" | "language";
 
+// Labels are i18n keys, resolved at render: a module constant is evaluated
+// once at import, so a translated string here would freeze in whatever
+// language was active on first load.
 const SECTIONS: { id: Section; labelKey: string; icon: typeof UserRoundIcon }[] = [
 	{ id: "account", labelKey: "settings.account", icon: UserRoundIcon },
 	// { id: "preferences", labelKey: "settings.preferences", icon: SlidersHorizontalIcon },
 	// { id: "notifications", labelKey: "settings.notifications", icon: BellIcon },
 	{ id: "appearance", labelKey: "settings.appearance", icon: PaletteIcon },
+	{ id: "language", labelKey: "settings.language", icon: LanguagesIcon },
 ];
 
 export default function SettingsPage() {
@@ -83,6 +89,7 @@ export default function SettingsPage() {
 					)}
 
 					{activeSection === "appearance" && <AppearanceSection />}
+					{activeSection === "language" && <LanguageSection />}
 				</div>
 			</div>
 		</div>
@@ -108,6 +115,47 @@ function EmptySection({
 			<div className="flex flex-col items-center gap-2 p-10 text-center">
 				<Icon className="size-6 text-base-content/30" />
 				<p className="text-sm text-base-content/50">{description}</p>
+			</div>
+		</section>
+	);
+}
+
+function LanguageSection() {
+	const { t, i18n } = useTranslation();
+
+	const current = i18n.resolvedLanguage ?? "en";
+
+	return (
+		<section className="flex flex-col gap-6">
+			<div className="rounded-2xl border border-base-content/10 bg-base-100 shadow-sm">
+				<div className="border-b border-base-content/10 p-4">
+					<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
+						{t("settings.language")}
+					</h2>
+					<p className="mt-1 text-sm text-base-content/60">{t("settings.languageHint")}</p>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
+					{SUPPORTED_LANGUAGES.map(({ code, label }) => {
+						const isActive = current === code;
+						return (
+							<button
+								key={code}
+								type="button"
+								onClick={() => void i18n.changeLanguage(code)}
+								aria-pressed={isActive}
+								className={`flex items-center justify-between gap-2 rounded-box border p-3 text-left transition-colors ${
+									isActive
+										? "border-primary ring-2 ring-primary"
+										: "border-base-content/10 hover:border-base-content/30"
+								}`}
+							>
+								<span className="text-sm font-medium">{label}</span>
+								{isActive && <CheckIcon className="size-4 shrink-0 text-primary" />}
+							</button>
+						);
+					})}
+				</div>
 			</div>
 		</section>
 	);
