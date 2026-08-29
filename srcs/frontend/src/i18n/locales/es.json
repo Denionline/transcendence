@@ -269,5 +269,39 @@
 		"noBioYet": "Aún sin biografía — presenta tu organización abajo.",
 		"editHirerDetails": "Editar detalles de contratante",
 		"title": "Perfil"
+	},
+	"settings": {
+		"title": "Ajustes",
+		"account": "Cuenta",
+		"appearance": "Apariencia",
+		"preferences": "Preferencias",
+		"notifications": "Notificaciones",
+		"nothingToConfigure": "Aquí todavía no hay nada que configurar — vuelve pronto.",
+		"theme": "Tema",
+		"themeHint": "Elige un tema para toda la aplicación. Los cambios se aplican al instante.",
+		"livePreview": "Vista previa · cómo se ve este tema en tu feed",
+		"username": "Nombre de usuario",
+		"email": "Correo electrónico",
+		"avatarUrl": "URL del avatar",
+		"optional": "opcional",
+		"avatarUrlPlaceholder": "https://...",
+		"changePhoto": "Cambiar foto",
+		"saveChanges": "Guardar cambios",
+		"accountUpdated": "Cuenta actualizada correctamente.",
+		"updateFailed": "La actualización ha fallado.",
+		"chooseImage": "Elige una imagen JPEG, PNG o WebP.",
+		"uploadFailed": "La subida ha fallado",
+		"notificationsSoon": "Los ajustes de notificaciones aún no están disponibles — vuelve pronto."
+	},
+	"portfolio": {
+		"title": "Portafolio",
+		"photo": "Foto",
+		"video": "Vídeo",
+		"audio": "Audio",
+		"add": "Añadir {{type}}",
+		"remove": "Eliminar {{name}}",
+		"uploadFailed": "La subida ha fallado",
+		"deleteFailed": "No se pudo eliminar {{name}}.",
+		"tryAgain": "Inténtalo de nuevo."
 	}
 }
