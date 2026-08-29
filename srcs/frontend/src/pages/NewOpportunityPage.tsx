@@ -9,6 +9,7 @@ import { createGig } from "../features/gigs/api";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
 import { ApiError } from "../lib/apiClient";
+import { useTranslation } from "react-i18next";
 
 interface FormValues {
 	title: string;
@@ -35,6 +36,7 @@ interface FieldErrors {
 }
 
 export default function NewOpportunityPage() {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const navigate = useNavigate();
 	const { categories, isLoading: isLoadingCategories } = useCategories();
@@ -81,7 +83,7 @@ export default function NewOpportunityPage() {
 			});
 			setPublished(true);
 		} catch (error) {
-			setFormError(error instanceof ApiError ? error.message : "Failed to publish opportunity");
+			setFormError(error instanceof ApiError ? error.message : t("gig.publishFailed"));
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -93,16 +95,14 @@ export default function NewOpportunityPage() {
 				<div className="rounded-full bg-primary/10 p-4 text-primary">
 					<CheckCircle2 className="size-10" />
 				</div>
-				<h1 className="text-xl font-bold">Opportunity published</h1>
-				<p className="text-base-content/60">
-					Artists matching &ldquo;{values.title}&rdquo; will start seeing it in their feed.
-				</p>
+				<h1 className="text-xl font-bold">{t("gig.published")}</h1>
+				<p className="text-base-content/60">{t("gig.publishedHint", { title: values.title })}</p>
 				<button
 					type="button"
 					className="btn btn-primary mt-2"
 					onClick={() => navigate("/opportunities/mine")}
 				>
-					View my opportunities
+					{t("gig.viewMyOpportunities")}
 				</button>
 			</div>
 		);
@@ -116,12 +116,12 @@ export default function NewOpportunityPage() {
 						type="button"
 						onClick={() => navigate(-1)}
 						className="btn btn-ghost btn-circle btn-sm"
-						aria-label="Go back"
+						aria-label={t("profile.goBack")}
 					>
 						<ArrowLeft className="size-4" />
 					</button>
 					<h1 className="truncate font-bold">
-						New opportunity
+						{t("gig.newOpportunity")}
 						<span className="ml-2 truncate text-sm font-normal text-base-content/50">
 							· posting as {user?.username}
 						</span>
@@ -139,7 +139,7 @@ export default function NewOpportunityPage() {
 						) : (
 							<Check className="size-4" />
 						)}
-						{isSubmitting ? "Publishing…" : "Publish opportunity"}
+						{isSubmitting ? t("gig.publishing") : t("gig.publish")}
 					</button>
 				</div>
 			</header>
@@ -153,19 +153,19 @@ export default function NewOpportunityPage() {
 				>
 					<section className="flex flex-col gap-4">
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Basics
+							{t("gig.basics")}
 						</h2>
 
 						<fieldset className="fieldset">
 							<label className="label" htmlFor="opportunity-title">
-								Title
+								{t("gig.title")}
 							</label>
 							<input
 								id="opportunity-title"
 								type="text"
 								name="title"
 								className="input validator w-full"
-								placeholder="e.g. Hand-painted mural for our terrace launch"
+								placeholder={t("gig.titlePlaceholder")}
 								value={values.title}
 								onChange={handleChange}
 								aria-invalid={errors.title ? "true" : "false"}
@@ -176,7 +176,7 @@ export default function NewOpportunityPage() {
 						<div className="flex flex-col gap-4 sm:flex-row">
 							<fieldset className="fieldset flex-1">
 								<label className="label" htmlFor="opportunity-category">
-									Category
+									{t("gig.category")}
 								</label>
 								<select
 									id="opportunity-category"
@@ -188,7 +188,7 @@ export default function NewOpportunityPage() {
 									aria-invalid={errors.category ? "true" : "false"}
 								>
 									<option value="" disabled>
-										{isLoadingCategories ? "Loading categories…" : "Select category"}
+										{isLoadingCategories ? t("gig.loadingCategories") : t("gig.selectCategory")}
 									</option>
 									{categories.map((category) => (
 										<option key={category.slug} value={category.slug}>
@@ -203,7 +203,8 @@ export default function NewOpportunityPage() {
 
 							<fieldset className="fieldset flex-1">
 								<label className="label" htmlFor="opportunity-rate">
-									Rate <span className="font-normal text-base-content/50">· optional, €</span>
+									{t("gig.rate")}{" "}
+									<span className="font-normal text-base-content/50">{t("gig.rateHint")}</span>
 								</label>
 								<input
 									id="opportunity-rate"
@@ -212,7 +213,7 @@ export default function NewOpportunityPage() {
 									step={1}
 									name="rate"
 									className="input validator w-full"
-									placeholder="e.g. 1200"
+									placeholder={t("gig.ratePlaceholder")}
 									value={values.rate}
 									onChange={handleChange}
 									aria-invalid={errors.rate ? "true" : "false"}
@@ -224,19 +225,20 @@ export default function NewOpportunityPage() {
 
 					<section className="flex flex-col gap-4">
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Brief
+							{t("gig.brief")}
 						</h2>
 
 						<fieldset className="fieldset">
 							<label className="label" htmlFor="opportunity-description">
-								Description <span className="font-normal text-base-content/50">· optional</span>
+								{t("gig.description")}{" "}
+								<span className="font-normal text-base-content/50">{t("gig.optional")}</span>
 							</label>
 							<textarea
 								id="opportunity-description"
 								name="description"
 								className="textarea validator w-full"
 								rows={4}
-								placeholder="Describe the work, deliverables, and any references artists should know about."
+								placeholder={t("gig.descriptionPlaceholder")}
 								value={values.description}
 								onChange={handleChange}
 								aria-invalid={errors.description ? "true" : "false"}
@@ -249,19 +251,20 @@ export default function NewOpportunityPage() {
 
 					<section className="flex flex-col gap-4">
 						<h2 className="text-xs font-semibold tracking-wide text-base-content/50 uppercase">
-							Location
+							{t("gig.location")}
 						</h2>
 
 						<fieldset className="fieldset sm:w-72">
 							<label className="label" htmlFor="opportunity-location">
-								Location <span className="font-normal text-base-content/50">· optional</span>
+								{t("gig.location")}{" "}
+								<span className="font-normal text-base-content/50">{t("gig.optional")}</span>
 							</label>
 							<input
 								id="opportunity-location"
 								type="text"
 								name="location"
 								className="input validator w-full"
-								placeholder="e.g. Lisbon"
+								placeholder={t("gig.locationPlaceholder")}
 								value={values.location}
 								onChange={handleChange}
 								aria-invalid={errors.location ? "true" : "false"}
@@ -277,7 +280,7 @@ export default function NewOpportunityPage() {
 
 				<aside className="h-fit lg:sticky lg:top-20">
 					<p className="mb-2 text-xs tracking-wide text-base-content/50 uppercase">
-						Preview · how artists see it
+						{t("gig.preview")}
 					</p>
 					<OpportunityCard
 						hirerName={user?.username ?? ""}
