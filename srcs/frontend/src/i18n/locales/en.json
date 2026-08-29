@@ -1,7 +1,22 @@
 {
 	"common": {
 		"appName": "Artmate",
-		"language": "Language"
+		"language": "Language",
+		"viewAll": "View all",
+		"viewProfile": "View profile",
+		"coverPhoto": "Cover photo",
+		"friendRequest": "Friend request",
+		"noConversationsYet": "No conversations yet.",
+		"yourCategoriesHint": "Your own categories — every gig here matches at least one already. Add more from Settings to widen this list.",
+		"currentPassword": "Current password",
+		"newPassword": "New password",
+		"confirmPassword": "Confirm new password",
+		"updatePassword": "Update password",
+		"passwordChanged": "Password changed successfully.",
+		"canvasBlank": "This canvas is blank.",
+		"notFoundBody": "The page you're looking for was moved, renamed, or never framed in the first place. Let's get you back to the work.",
+		"backToDiscover": "Back to Discover",
+		"goHome": "Go home"
 	},
 	"nav": {
 		"discover": "Discover",
@@ -350,5 +365,59 @@
 		"loadListFailed": "Couldn't load your opportunities. Please try again.",
 		"couldntLoadOne": "Couldn’t load this opportunity",
 		"couldntLoadList": "Couldn’t load your opportunities"
+	},
+	"onboarding": {
+		"setUpProfile": "Set up your {{role}} profile",
+		"roleHirer": "hirer",
+		"roleArtist": "artist",
+		"hirerIntro": "Organization name is required to get started — everything else below is optional and can be filled in anytime from Settings.",
+		"artistIntro": "Category is required to get started — it's how we match you with opportunities. Everything else below is optional and can be filled in anytime from Settings.",
+		"category": "Category",
+		"selectCategory": "Select category",
+		"organizationName": "Organization name",
+		"bio": "Bio",
+		"location": "Location",
+		"optionalSuffix": "(optional)",
+		"availableForWork": "Available for work",
+		"continue": "Continue",
+		"saveFailed": "Couldn't save your profile. Please try again.",
+		"pickATheme": "Pick a theme",
+		"themeIntro": "Totally optional — changes apply instantly and you can always switch it later in Settings.",
+		"maybeLater": "Maybe later"
+	},
+	"admin": {
+		"welcomeBack": "Welcome back",
+		"whatsHappening": "Here's what's happening across the platform.",
+		"searchUsers": "Search by name, email, role or status",
+		"selectAllOnPage": "Select all users on this page",
+		"selectedCount": "{{count}} selected",
+		"delete": "Delete",
+		"clear": "Clear",
+		"cancel": "Cancel",
+		"noUsersMatch": "No users match your search.",
+		"user": "User",
+		"role": "Role",
+		"joined": "Joined",
+		"editUser": "Edit user",
+		"deleteUser": "Delete user",
+		"cantDeleteSelf": "You can't delete your own account",
+		"deleteTitle_one": "Delete {{count}} user?",
+		"deleteTitle_other": "Delete {{count}} users?",
+		"deleteBody": "This action cannot be undone. The selected users will be permanently removed.",
+		"updateFailed": "Update failed.",
+		"saveChanges": "Save changes",
+		"close": "close"
+	},
+	"a11y": {
+		"close": "Close",
+		"loading": "Loading",
+		"logout": "Logout",
+		"artmateHome": "Artmate home",
+		"legal": "Legal",
+		"previousMedia": "Previous media",
+		"nextMedia": "Next media",
+		"seek": "Seek",
+		"uploadProgress": "Upload progress",
+		"send": "Send"
 	}
 }
