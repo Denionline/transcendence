@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { XIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const SIZE_CLASSES = {
 	md: "max-w-lg",
@@ -31,6 +32,7 @@ export default function Modal({
 	dismissible = true,
 	size = "md",
 }: ModalProps) {
+	const { t } = useTranslation();
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const dialogRef = useRef<HTMLDivElement>(null);
 	const onCloseRef = useRef(onClose);
@@ -78,7 +80,7 @@ export default function Modal({
 						ref={closeButtonRef}
 						type="button"
 						onClick={onClose}
-						aria-label="Close"
+						aria-label={t("a11y.close")}
 						className="btn btn-circle btn-sm absolute top-3 right-3 z-10 border-none bg-base-100/80 backdrop-blur hover:bg-base-100"
 					>
 						<XIcon className="size-4" aria-hidden="true" />
