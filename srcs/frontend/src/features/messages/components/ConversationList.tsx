@@ -1,5 +1,6 @@
 import Avatar from "../../../components/Avatar";
 import type { MatchDto } from "../../matches/types";
+import { useTranslation } from "react-i18next";
 
 interface ConversationListProps {
 	matches: MatchDto[];
@@ -12,6 +13,7 @@ export default function ConversationList({
 	selectedMatchId,
 	onSelect,
 }: ConversationListProps) {
+	const { t } = useTranslation();
 	if (matches.length === 0) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-1 p-6 text-center text-base-content/50">
@@ -44,7 +46,7 @@ export default function ConversationList({
 								{match.otherUser.online && (
 									<span
 										className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-base-100 bg-success"
-										aria-label="Online"
+										aria-label={t("messages.online")}
 									/>
 								)}
 							</div>
