@@ -260,10 +260,7 @@ export default function OpportunitiesPage() {
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
 						{t("filters.discipline")}
 					</h3>
-					<p className="mb-2 text-xs text-base-content/40">
-						Your own categories — every gig here matches at least one already. Add more from
-						Settings to widen this list.
-					</p>
+					<p className="mb-2 text-xs text-base-content/40">{t("common.yourCategoriesHint")}</p>
 					<div className="flex flex-wrap gap-1.5">
 						{myCategories.map((category) => (
 							<button
