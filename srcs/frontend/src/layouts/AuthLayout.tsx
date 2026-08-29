@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router-dom";
 import Logo from "../components/Logo";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import Welcome from "../components/Welcome";
 import { useTranslation } from "react-i18next";
 
@@ -17,9 +18,13 @@ export default function AuthLayout() {
 					{/* Signed-out visitors live here, so the legal pages have to be
 					    reachable from the auth screens too — kept understated so they
 					    don't compete with the form. */}
+					<div className="mt-8 flex justify-center">
+						<LanguageSwitcher />
+					</div>
+
 					<nav
 						aria-label={t("a11y.legal")}
-						className="mt-8 flex justify-center gap-4 text-xs text-base-content/50"
+						className="mt-3 flex justify-center gap-4 text-xs text-base-content/50"
 					>
 						<Link to="/privacy" className="transition-colors hover:text-base-content">
 							Privacy Policy
