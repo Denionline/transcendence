@@ -3,6 +3,7 @@ import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import ProfileMediaGallery from "./ProfileMediaGallery";
 import type { Artist } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface ArtistDetailsModalProps {
 	artist: Artist | null;
@@ -27,6 +28,7 @@ export default function ArtistDetailsModal({
 	onInterested,
 	friendSlot,
 }: ArtistDetailsModalProps) {
+	const { t } = useTranslation();
 	return (
 		<Modal open={Boolean(artist)} onClose={onClose} labelledBy="artist-details-title" size="lg">
 			{artist && (
@@ -59,7 +61,7 @@ export default function ArtistDetailsModal({
 									)}
 								</div>
 								<div className="truncate text-sm text-base-content/60">
-									{artist.discipline} · {artist.remoteOk ? "Remote OK" : artist.location}
+									{artist.discipline} · {artist.remoteOk ? t("deck.remoteOk") : artist.location}
 								</div>
 							</div>
 							{friendSlot}
