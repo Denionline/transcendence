@@ -31,8 +31,6 @@ export default function AppLayout() {
 				searchPlaceholder={isHirer ? t("nav.searchAsHirer") : t("nav.searchAsArtist")}
 				action={isHirer ? { to: "/opportunities/new", label: t("nav.postOpportunity") } : undefined}
 			/>
-			{/* flex-1 pushes the footer to the bottom on short pages instead of
-			    leaving it floating mid-screen. */}
 			<main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
 				<Outlet />
 			</main>
