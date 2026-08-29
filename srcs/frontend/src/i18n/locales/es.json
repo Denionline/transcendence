@@ -85,7 +85,175 @@
 	"legal": {
 		"privacyPolicy": "Política de Privacidad",
 		"termsOfService": "Términos del Servicio",
-		"legalNavLabel": "Legal"
+		"legalNavLabel": "Legal",
+		"lastUpdatedLabel": "Última actualización:",
+		"privacy": {
+			"title": "Política de Privacidad",
+			"intro": "Esta Política de Privacidad explica qué información recoge Artmate, por qué la recoge y qué puedes hacer al respecto. Artmate es una plataforma que conecta a quienes ofrecen trabajo creativo (“contratantes”) con los artistas que lo realizan. Al crear una cuenta, aceptas el tratamiento de tu información tal como se describe a continuación.",
+			"sections": {
+				"collect": {
+					"heading": "Qué información recogemos",
+					"paragraphs": ["Solo recogemos lo que la plataforma necesita para funcionar:"],
+					"items": [
+						{
+							"label": "Datos de la cuenta",
+							"text": "la dirección de correo, el nombre visible y la contraseña que indicas al registrarte, y si tu cuenta es de artista o de contratante. Las contraseñas nunca se guardan de forma legible (ver “Cómo protegemos tu información”)."
+						},
+						{
+							"label": "Información del perfil",
+							"text": "todo lo que decidas añadir a tu perfil, como tu ubicación, disciplinas, disponibilidad, tarifa, un avatar y los archivos de portafolio que subas."
+						},
+						{
+							"label": "Actividad en la plataforma",
+							"text": "las oportunidades que publicas, los swipes que haces, las coincidencias que generan y los mensajes que intercambias con quienes has coincidido."
+						},
+						{
+							"label": "Datos técnicos",
+							"text": "información básica que tu navegador envía con cada petición (como tu dirección IP), usada para mantener las sesiones seguras y aplicar límites de uso contra abusos."
+						}
+					]
+				},
+				"use": {
+					"heading": "Cómo usamos tu información",
+					"paragraphs": ["Tu información se usa para prestar el servicio, en concreto para:"],
+					"items": [
+						{
+							"text": "crear y proteger tu cuenta y mantener la sesión iniciada;"
+						},
+						{
+							"text": "mostrar tu perfil a contratantes o artistas relevantes para que puedan producirse coincidencias mutuas;"
+						},
+						{
+							"text": "conectar oportunidades con candidatos y permitir el chat entre usuarios que han coincidido;"
+						},
+						{
+							"text": "enviar notificaciones en la aplicación sobre actividad que te concierne;"
+						},
+						{
+							"text": "proteger la plataforma frente a fraude, abuso y ataques automatizados."
+						}
+					],
+					"closing": "No vendemos tu información personal ni la usamos para mostrar publicidad de terceros."
+				},
+				"visibility": {
+					"heading": "Qué ven los demás usuarios",
+					"paragraphs": [
+						"Artmate es una plataforma de emparejamiento, así que parte de la información está pensada para que la vean otros. Tu perfil — nombre visible, avatar, disciplinas, ubicación, disponibilidad y los archivos de portafolio que añadas — es visible para los usuarios con los que puedes coincidir. Los mensajes que envías son visibles para el usuario con el que has coincidido. Tu correo electrónico y tu contraseña nunca se muestran a otros usuarios."
+					]
+				},
+				"protect": {
+					"heading": "Cómo protegemos tu información",
+					"paragraphs": [
+						"Las contraseñas se guardan solo como hash con salt, nunca en texto plano, de modo que no pueden leerse ni siquiera por nosotros. Todas las conexiones entre tu navegador y Artmate usan HTTPS. La autenticación emplea tokens de acceso de corta duración y un token de renovación aparte, guardado en una cookie segura gestionada por el navegador. El acceso a los datos de otros usuarios está restringido por comprobaciones de rol y de propiedad en el servidor."
+					]
+				},
+				"retention": {
+					"heading": "Conservación de datos",
+					"paragraphs": [
+						"Conservamos tu información mientras exista tu cuenta. Cuando eliminas la cuenta, tu información personal, tu perfil y los archivos subidos se eliminan, y el contenido vinculado a tu cuenta (como tus ofertas, swipes y coincidencias) se borra con ella. Algunos registros técnicos mínimos pueden persistir brevemente por motivos de seguridad antes de descartarse."
+					]
+				},
+				"rights": {
+					"heading": "Tus derechos",
+					"paragraphs": [
+						"Puedes ver y actualizar la mayor parte de tu información en cualquier momento desde tu perfil y los ajustes. Puedes eliminar tu cuenta, lo que borra tus datos personales según lo descrito arriba. Si tienes preguntas sobre tus datos o quieres ejercer algún derecho que te reconozca la legislación aplicable, contáctanos con los datos indicados abajo."
+					]
+				},
+				"children": {
+					"heading": "Menores",
+					"paragraphs": [
+						"Artmate no está dirigida a menores. Debes tener edad suficiente para celebrar un acuerdo vinculante en tu país para crear una cuenta, y no deberías usar Artmate si eres menor de esa edad."
+					]
+				},
+				"changes": {
+					"heading": "Cambios en esta política",
+					"paragraphs": [
+						"Podemos actualizar esta Política de Privacidad a medida que la plataforma evoluciona. Cuando hagamos cambios relevantes, actualizaremos la fecha de “Última actualización” en la parte superior de esta página. Seguir usando Artmate tras un cambio significa que aceptas la política actualizada."
+					]
+				},
+				"contact": {
+					"heading": "Contacto",
+					"paragraphs": [
+						"Artmate es un proyecto no comercial creado como parte del currículo de 42. Para cualquier duda sobre esta política o sobre tus datos, contacta con el equipo del proyecto a través del repositorio o de la dirección indicada en el README del proyecto."
+					]
+				}
+			}
+		},
+		"terms": {
+			"title": "Términos del Servicio",
+			"intro": "Estos Términos del Servicio (“Términos”) rigen tu uso de Artmate, una plataforma que conecta a contratantes que ofrecen trabajo creativo con los artistas que lo realizan. Al crear una cuenta o usar Artmate, aceptas estos Términos. Si no estás de acuerdo, no uses la plataforma.",
+			"sections": {
+				"who": {
+					"heading": "Quién puede usar Artmate",
+					"paragraphs": [
+						"Debes tener edad suficiente para celebrar un acuerdo vinculante en tu país para usar Artmate. Aceptas facilitar información de cuenta veraz y mantener seguras tus credenciales de acceso. Eres responsable de la actividad que se produzca en tu cuenta."
+					]
+				},
+				"account": {
+					"heading": "Tu cuenta",
+					"paragraphs": [
+						"Te registras como artista o como contratante. Puedes actualizar tu perfil en cualquier momento y eliminar tu cuenta cuando quieras. Podemos suspender o eliminar cuentas que incumplan estos Términos, que se usen para abusos, o que pongan en riesgo a otros usuarios o a la plataforma."
+					]
+				},
+				"content": {
+					"heading": "Contenido que aportas",
+					"paragraphs": [
+						"Conservas la propiedad del contenido que añades a Artmate — tu información de perfil, archivos de portafolio, oportunidades y mensajes. Al publicar contenido, concedes a Artmate el permiso limitado necesario para almacenarlo y mostrarlo con el fin de operar la plataforma (por ejemplo, mostrar tu perfil a usuarios con los que puedes coincidir). Eres responsable de asegurarte de que tienes derecho a compartir todo lo que subes."
+					]
+				},
+				"acceptable": {
+					"heading": "Uso aceptable",
+					"paragraphs": ["Al usar Artmate, aceptas no:"],
+					"items": [
+						{
+							"text": "suplantar a otras personas ni tergiversar tu identidad, competencias o intenciones;"
+						},
+						{
+							"text": "publicar contenido ilegal, infractor, de odio, de acoso o dañino de cualquier otro modo;"
+						},
+						{
+							"text": "usar la plataforma para enviar spam, ni para acceder a ella, extraer datos o perturbarla por medios automatizados;"
+						},
+						{
+							"text": "intentar romper, eludir o sondear la seguridad de la plataforma o las cuentas de otros usuarios;"
+						},
+						{
+							"text": "usar Artmate para cualquier fin que sea ilegal donde vives."
+						}
+					]
+				},
+				"matches": {
+					"heading": "Coincidencias y acuerdos entre usuarios",
+					"paragraphs": [
+						"Artmate presenta a artistas y contratantes y habilita el chat cuando hay una coincidencia mutua. Cualquier acuerdo, pago o relación de trabajo que resulte de ello es estrictamente entre los usuarios implicados. Artmate no es parte en esos acuerdos, no emplea a artistas ni a contratantes, y no garantiza la calidad, legalidad ni el resultado de ningún trabajo acordado a través de la plataforma."
+					]
+				},
+				"availability": {
+					"heading": "Disponibilidad del servicio",
+					"paragraphs": [
+						"Artmate es un proyecto académico ofrecido “tal cual” y “según disponibilidad”. No prometemos que sea ininterrumpido, libre de errores ni permanentemente disponible, y podemos cambiar o descontinuar funciones en cualquier momento."
+					]
+				},
+				"liability": {
+					"heading": "Limitación de responsabilidad",
+					"paragraphs": [
+						"En la máxima medida permitida por la ley, Artmate y sus colaboradores no son responsables de ninguna pérdida indirecta o consecuente derivada de tu uso de la plataforma, incluidos los litigios, pérdidas o daños resultantes de acuerdos hechos entre usuarios. El uso de Artmate es bajo tu propia responsabilidad."
+					]
+				},
+				"changes": {
+					"heading": "Cambios en estos Términos",
+					"paragraphs": [
+						"Podemos actualizar estos Términos a medida que la plataforma evoluciona. Cuando hagamos cambios relevantes, actualizaremos la fecha de “Última actualización” en la parte superior de esta página. Seguir usando Artmate tras un cambio significa que aceptas los Términos actualizados."
+					]
+				},
+				"contact": {
+					"heading": "Contacto",
+					"paragraphs": [
+						"Artmate es un proyecto no comercial creado como parte del currículo de 42. Para cualquier duda sobre estos Términos, contacta con el equipo del proyecto a través del repositorio o de la dirección indicada en el README del proyecto."
+					]
+				}
+			}
+		}
 	},
 	"password": {
 		"minLength": "Al menos 12 caracteres",
