@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { flattenError } from "zod";
 import { loginSchema, type LoginFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
@@ -10,6 +11,7 @@ import { defaultPathForRole } from "../../../Router";
 type FieldErrors = Partial<Record<keyof LoginFormValues, string>>;
 
 export default function LoginForm() {
+	const { t } = useTranslation();
 	const { login, isLoading } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -45,7 +47,7 @@ export default function LoginForm() {
 				: defaultPathForRole(user.role);
 			navigate(to, { replace: true });
 		} catch (error) {
-			setFormError(error instanceof Error ? error.message : "Failed to log in");
+			setFormError(error instanceof Error ? error.message : t("auth.loginFailed"));
 		}
 	}
 
@@ -53,14 +55,14 @@ export default function LoginForm() {
 		<form className="fieldset w-full" onSubmit={handleSubmit} noValidate>
 			<fieldset className="fieldset">
 				<label className="label" htmlFor="login-email">
-					Email
+					{t("auth.email")}
 				</label>
 				<input
 					id="login-email"
 					type="email"
 					name="email"
 					className="input validator w-full"
-					placeholder="you@email.com"
+					placeholder={t("auth.emailPlaceholder")}
 					value={values.email}
 					onChange={handleChange}
 					aria-invalid={errors.email ? "true" : undefined}
@@ -71,10 +73,10 @@ export default function LoginForm() {
 			<fieldset className="fieldset">
 				<div className="flex justify-between">
 					<label className="label" htmlFor="login-password">
-						Password
+						{t("auth.password")}
 					</label>
 					<button type="button" className="text-primary font-semibold hover:underline">
-						Forgot?
+						{t("auth.forgot")}
 					</button>
 				</div>
 				<input
@@ -82,7 +84,7 @@ export default function LoginForm() {
 					type="password"
 					name="password"
 					className="input validator w-full"
-					placeholder="••••••••"
+					placeholder={t("auth.passwordPlaceholder")}
 					value={values.password}
 					onChange={handleChange}
 					aria-invalid={errors.password ? "true" : undefined}
@@ -95,7 +97,7 @@ export default function LoginForm() {
 			{formError && <p className="text-error text-sm mt-2">{formError}</p>}
 
 			<button className="btn btn-primary mt-4" type="submit" disabled={isLoading}>
-				{isLoading ? "Logging in…" : "Log in"}
+				{isLoading ? t("auth.loggingIn") : t("auth.logIn")}
 				<ArrowRight size={14} className="my-auto" />
 			</button>
 		</form>
