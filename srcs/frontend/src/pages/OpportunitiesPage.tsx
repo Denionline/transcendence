@@ -13,6 +13,7 @@ import { fetchMyProfile } from "../features/profile/api";
 import { onProfileUpdated } from "../features/profile/profileEvents";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
+import { useTranslation } from "react-i18next";
 import type { GigListing } from "../features/opportunities/gigTypes";
 import type { CategoryDto } from "../features/categories/types";
 
@@ -25,6 +26,7 @@ const DESKTOP_QUERY = "(min-width: 1024px)";
 const MAX_FETCH_ATTEMPTS = 50;
 
 export default function OpportunitiesPage() {
+	const { t } = useTranslation();
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
 	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
 	// mount so the initial fetch burst matches whichever layout is live.
@@ -250,13 +252,13 @@ export default function OpportunitiesPage() {
 						disabled={!hasPendingFilterChanges}
 						className="btn btn-primary btn-xs rounded-full disabled:opacity-30"
 					>
-						Apply filters
+						{t("filters.applyFilters")}
 					</button>
 				}
 			>
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-						Discipline
+						{t("filters.discipline")}
 					</h3>
 					<p className="mb-2 text-xs text-base-content/40">
 						Your own categories — every gig here matches at least one already. Add more from
@@ -283,21 +285,21 @@ export default function OpportunitiesPage() {
 
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-						Location
+						{t("filters.location")}
 					</h3>
-					<p className="mb-2 text-xs text-base-content/40">Locked to your profile.</p>
+					<p className="mb-2 text-xs text-base-content/40">{t("filters.lockedToProfile")}</p>
 					<input
 						type="text"
 						value={locationQuery}
 						disabled
-						placeholder="Not specified"
+						placeholder={t("filters.notSpecified")}
 						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
 					/>
 				</div>
 
 				<div>
 					<h3 className="mb-2 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-						Minimum rate
+						{t("filters.minimumRate")}
 					</h3>
 					<input
 						type="number"
@@ -307,7 +309,7 @@ export default function OpportunitiesPage() {
 						onKeyDown={(e) => {
 							if (e.key === "Enter") applyFilters();
 						}}
-						placeholder="e.g. 500"
+						placeholder={t("filters.ratePlaceholder")}
 						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent"
 					/>
 				</div>
@@ -316,7 +318,7 @@ export default function OpportunitiesPage() {
 			<div className="min-w-0 flex-1">
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
-						<h1 className="text-2xl font-semibold">Opportunities</h1>
+						<h1 className="text-2xl font-semibold">{t("opportunities.title")}</h1>
 					</div>
 
 					<FiltersToggle open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)} />
@@ -324,17 +326,17 @@ export default function OpportunitiesPage() {
 
 				{status === "error" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-						<p className="font-medium">No gigs to show right now</p>
-						<p className="text-sm">Give it another try in a moment.</p>
+						<p className="font-medium">{t("opportunities.noGigsRightNow")}</p>
+						<p className="text-sm">{t("opportunities.tryAgainInAMoment")}</p>
 						<button type="button" onClick={retry} className="btn btn-sm mt-2 rounded-full">
-							Try again
+							{t("opportunities.tryAgain")}
 						</button>
 					</div>
 				)}
 
 				{status === "loading" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 items-center justify-center text-sm text-base-content/50">
-						Loading gigs…
+						{t("opportunities.loadingGigs")}
 					</div>
 				)}
 
