@@ -4,6 +4,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 import prettierPlugin from "eslint-plugin-prettier";
+import globals from "globals";
 
 export default tseslint.config(
 	{ ignores: ["dist"] },
@@ -26,5 +27,11 @@ export default tseslint.config(
 		settings: {
 			react: { version: "detect" },
 		},
+	},
+	{
+		// Build-time scripts run under Node, not in the browser, so `console`
+		// and `process` are legitimately available there.
+		files: ["scripts/**/*.mjs"],
+		languageOptions: { globals: globals.node },
 	},
 );
