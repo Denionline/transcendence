@@ -9,12 +9,14 @@ import { useAuth } from "../features/auth/hooks/useAuth";
 import { ApiError } from "../lib/apiClient";
 import { useMediaQuery } from "../lib/useMediaQuery";
 import { getSocket } from "../lib/socket";
+import { useTranslation } from "react-i18next";
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
 type Status = "loading" | "ready" | "error";
 
 export default function MessagesPage() {
+	const { t } = useTranslation();
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
 	const { user } = useAuth();
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -41,7 +43,7 @@ export default function MessagesPage() {
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
-				setError(err instanceof ApiError ? err.message : "Couldn't load your matches.");
+				setError(err instanceof ApiError ? err.message : "matches.loadMatchesFailed");
 				setStatus("error");
 			});
 		return () => {
@@ -101,7 +103,7 @@ export default function MessagesPage() {
 	return (
 		<div className="mx-auto max-w-5xl">
 			<div className="mb-6">
-				<h1 className="text-2xl font-semibold">Messages</h1>
+				<h1 className="text-2xl font-semibold">{t("messages.title")}</h1>
 				<p className="text-sm text-base-content/50">
 					Chat with the people you&rsquo;ve matched with.
 				</p>
@@ -110,7 +112,7 @@ export default function MessagesPage() {
 			{status === "error" && (
 				<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
 					<p className="font-medium">Couldn&rsquo;t load your messages</p>
-					<p className="text-error/80">{error}</p>
+					<p className="text-error/80">{error ? t(error) : null}</p>
 				</div>
 			)}
 
@@ -150,7 +152,7 @@ export default function MessagesPage() {
 							// Only reachable when isDesktop (mobile's showChat requires a
 							// selectedMatch), so this is always the two-pane empty state.
 							<div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-center text-base-content/50">
-								<p className="font-medium">Select a conversation</p>
+								<p className="font-medium">{t("messages.selectConversation")}</p>
 								<p className="text-sm">Pick someone from the left to see your messages.</p>
 							</div>
 						))}
