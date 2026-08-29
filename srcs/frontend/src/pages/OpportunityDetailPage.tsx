@@ -7,8 +7,10 @@ import { listMatches } from "../features/matches/api";
 import { formatDate } from "../lib/format";
 import { ApiError } from "../lib/apiClient";
 import type { GigDto } from "../features/gigs/types";
+import { useTranslation } from "react-i18next";
 
 export default function OpportunityDetailPage() {
+	const { t } = useTranslation();
 	const { id } = useParams<{ id: string }>();
 	const { user } = useAuth();
 	const navigate = useNavigate();
@@ -34,11 +36,7 @@ export default function OpportunityDetailPage() {
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
-				setError(
-					err instanceof ApiError
-						? err.message
-						: "Couldn't load this opportunity. Please try again.",
-				);
+				setError(err instanceof ApiError ? err.message : "gig.loadFailed");
 				setStatus("error");
 			});
 		return () => {
@@ -72,7 +70,7 @@ export default function OpportunityDetailPage() {
 			const updated = await updateGigStatus(gig.id, gig.status === "open" ? "closed" : "open");
 			setGig(updated);
 		} catch (err) {
-			setError(err instanceof ApiError ? err.message : "Couldn't update this opportunity.");
+			setError(err instanceof ApiError ? err.message : "gig.updateFailed");
 		} finally {
 			setIsUpdating(false);
 		}
@@ -86,19 +84,19 @@ export default function OpportunityDetailPage() {
 				className="btn btn-ghost btn-sm w-fit gap-2 px-0"
 			>
 				<ArrowLeftIcon className="size-4" aria-hidden="true" />
-				My opportunities
+				{t("gig.myOpportunities")}
 			</button>
 
 			{status === "error" && (
 				<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					<p className="font-medium">Couldn&rsquo;t load this opportunity</p>
-					<p className="text-error/80">{error}</p>
+					<p className="font-medium">{t("gig.couldntLoadOne")}</p>
+					<p className="text-error/80">{error ? t(error) : null}</p>
 				</div>
 			)}
 
 			{status === "loading" && (
 				<div className="flex h-64 items-center justify-center text-sm text-base-content/50">
-					Loading…
+					{t("gig.loading")}
 				</div>
 			)}
 
@@ -113,11 +111,11 @@ export default function OpportunityDetailPage() {
 										gig.status === "open" ? "badge-primary" : "badge-ghost"
 									}`}
 								>
-									{gig.status === "open" ? "Open" : "Closed"}
+									{gig.status === "open" ? t("gig.open") : t("gig.closed")}
 								</span>
 							</div>
 							<p className="text-sm text-base-content/50">
-								{gig.category.label} · {gig.location ?? "Location TBD"} · Posted{" "}
+								{gig.category.label} · {gig.location ?? t("gig.locationTbd")} · {t("gig.posted")}{" "}
 								{formatDate(gig.createdAt)}
 							</p>
 						</div>
@@ -143,17 +141,17 @@ export default function OpportunityDetailPage() {
 								}}
 							>
 								<SearchIcon className="size-4" aria-hidden="true" />
-								Search related artists
+								{t("gig.searchRelatedArtists")}
 							</Link>
 							{gig.status === "closed" && hasMatch ? (
 								<button
 									type="button"
 									disabled
-									aria-label="You matched on this opportunity, so it stays closed"
+									aria-label={t("gig.matchedStaysClosed")}
 									className="btn btn-outline tooltip rounded-full border-base-content/15 opacity-50"
-									data-tip="You matched on this opportunity, so it stays closed"
+									data-tip={t("gig.matchedStaysClosed")}
 								>
-									Reopen opportunity
+									{t("gig.reopenOpportunity")}
 								</button>
 							) : (
 								<button
@@ -163,10 +161,10 @@ export default function OpportunityDetailPage() {
 									className="btn btn-outline rounded-full border-base-content/15"
 								>
 									{isUpdating
-										? "Updating…"
+										? t("gig.updating")
 										: gig.status === "open"
-											? "Close opportunity"
-											: "Reopen opportunity"}
+											? t("gig.closeOpportunity")
+											: t("gig.reopenOpportunity")}
 								</button>
 							)}
 						</div>
