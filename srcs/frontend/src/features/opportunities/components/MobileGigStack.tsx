@@ -4,6 +4,7 @@ import { CheckIcon, Undo2Icon, XIcon } from "lucide-react";
 import GigCard from "./GigCard";
 import GigDetailsModal from "./GigDetailsModal";
 import type { GigListing } from "../gigTypes";
+import { useTranslation } from "react-i18next";
 
 const EXIT_MS = 260;
 const SWIPE_THRESHOLD = 100;
@@ -21,6 +22,7 @@ export default function MobileGigStack({
 	selectedDisciplines,
 	onSwipe,
 }: MobileGigStackProps) {
+	const { t } = useTranslation();
 	const [index, setIndex] = useState(0);
 	const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
 	const [exitDir, setExitDir] = useState<1 | -1 | 0>(0);
@@ -169,8 +171,8 @@ export default function MobileGigStack({
 
 				{!front && (
 					<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-						<p className="font-medium">You&rsquo;re all caught up</p>
-						<p className="text-sm">Check back later for new gigs.</p>
+						<p className="font-medium">{t("deck.allCaughtUp")}</p>
+						<p className="text-sm">{t("deck.checkBackForGigs")}</p>
 					</div>
 				)}
 			</div>
@@ -180,7 +182,7 @@ export default function MobileGigStack({
 					type="button"
 					onClick={handleUndo}
 					disabled={!canUndo}
-					aria-label="Undo"
+					aria-label={t("deck.undo")}
 					className="btn btn-circle border-base-content/15 bg-base-100 transition-transform duration-150 hover:scale-110 disabled:opacity-30"
 				>
 					<Undo2Icon className="size-4 text-base-content/70" aria-hidden="true" />
@@ -189,7 +191,7 @@ export default function MobileGigStack({
 					type="button"
 					onClick={() => commitSwipe(-1)}
 					disabled={!canAct}
-					aria-label="Pass"
+					aria-label={t("deck.pass")}
 					className="btn btn-circle border-base-content/15 bg-base-100 transition-[background-color,border-color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 disabled:opacity-30"
 				>
 					<XIcon className="size-5 text-error" aria-hidden="true" />
@@ -198,7 +200,7 @@ export default function MobileGigStack({
 					type="button"
 					onClick={() => commitSwipe(1)}
 					disabled={!canAct}
-					aria-label="Interested"
+					aria-label={t("deck.interested")}
 					className="btn btn-circle btn-primary btn-lg transition-transform duration-150 hover:scale-110 disabled:opacity-30"
 				>
 					<CheckIcon className="size-6" aria-hidden="true" />
