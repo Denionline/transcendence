@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { flattenError } from "zod";
 import { loginSchema, type LoginFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
+import { translateFieldError } from "../../../i18n/validation";
 import { defaultPathForRole } from "../../../Router";
 
 type FieldErrors = Partial<Record<keyof LoginFormValues, string>>;
@@ -67,7 +68,9 @@ export default function LoginForm() {
 					onChange={handleChange}
 					aria-invalid={errors.email ? "true" : undefined}
 				/>
-				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
+				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>
+					{translateFieldError(t, errors.email)}
+				</p>
 			</fieldset>
 
 			<fieldset className="fieldset">
@@ -90,7 +93,7 @@ export default function LoginForm() {
 					aria-invalid={errors.password ? "true" : undefined}
 				/>
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
-					{errors.password}
+					{translateFieldError(t, errors.password)}
 				</span>
 			</fieldset>
 
