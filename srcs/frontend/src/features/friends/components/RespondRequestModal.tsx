@@ -4,6 +4,7 @@ import Modal from "../../../components/Modal";
 import Avatar from "../../../components/Avatar";
 import { fetchFriendshipStatus, respondToRequest } from "../api";
 import type { FriendshipStatus } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface RespondRequestModalProps {
 	actor: { id: string; displayName: string; avatarUrl: string | null } | null;
@@ -29,6 +30,7 @@ interface RespondRequestModalProps {
  * pending request the notification was about.
  */
 export default function RespondRequestModal({ actor, onClose }: RespondRequestModalProps) {
+	const { t } = useTranslation();
 	const [pending, setPending] = useState(false);
 	// Keyed by the actor it was fetched for, not just set to null on every
 	// actor change — that let a `setStatus` call fire synchronously inside
@@ -116,8 +118,8 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 							<>
 								<p className="text-sm text-base-content/60">
 									{status === "accepted"
-										? "You're already friends."
-										: "You already responded to this request."}
+										? t("friends.alreadyFriends")
+										: t("friends.alreadyResponded")}
 								</p>
 								<button type="button" onClick={onClose} className="btn rounded-full btn-outline">
 									Close
