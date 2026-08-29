@@ -11,13 +11,17 @@
 		"format": "prettier --write . --ignore-path ../../.prettierignore",
 		"format:check": "prettier --check . --ignore-path ../../.prettierignore",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"check:i18n": "node scripts/check-translations.mjs"
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.3.2",
+		"i18next": "^26.4.0",
+		"i18next-browser-languagedetector": "^8.2.1",
 		"lucide-react": "^1.23.0",
 		"react": "^19.2.7",
 		"react-dom": "^19.2.7",
+		"react-i18next": "^17.0.12",
 		"react-router-dom": "^7.18.1",
 		"socket.io-client": "^4.8.3",
 		"tailwindcss": "^4.3.2",
