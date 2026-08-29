@@ -321,7 +321,13 @@
 		"remoteOk": "Remote OK",
 		"remote": "Remote",
 		"onSite": "On-site",
-		"verifiedHirer": "Verified hirer"
+		"verifiedHirer": "Verified hirer",
+		"filters": "Filters",
+		"new": "New",
+		"passOn": "Pass on {{name}}",
+		"viewDetailsFor": "View details for {{name}}",
+		"startsOnGigCategory": "Starts on this opportunity’s own category — check more to browse other disciplines too. A like still only counts within the gig’s real category.",
+		"previewHint": "This is exactly how artists will see it in their feed — fill in the form and watch it update here."
 	},
 	"preview": {
 		"yourBrand": "Your brand",
@@ -366,7 +372,10 @@
 		"cancel": "Cancel",
 		"removing": "Removing…",
 		"removeMatch": "Remove match",
-		"close": "close"
+		"close": "close",
+		"subtitle": "People interested in you, and the matches you’ve already made.",
+		"noMatchesYet": "No matches yet",
+		"acceptOrSwipe": "Accept an interest above, or keep swiping to find one."
 	},
 	"messages": {
 		"title": "Messages",
@@ -380,7 +389,17 @@
 		"messageLabel": "Message",
 		"messagePlaceholder": "Message {{name}}",
 		"sendFailed": "Couldn't send that message.",
-		"delete": "Delete"
+		"delete": "Delete",
+		"subtitle": "Chat with the people you’ve matched with.",
+		"couldntLoadMessages": "Couldn’t load your messages",
+		"loadingConversations": "Loading conversations…",
+		"pickFromLeft": "Pick someone from the left to see your messages.",
+		"loadingMessages": "Loading messages…",
+		"couldntLoadConversation": "Couldn’t load this conversation.",
+		"startConversation": "You matched on {{title}} — start the conversation.",
+		"noMatchesYet": "No matches yet",
+		"onceYouMatch": "Once you match with someone, they’ll show up here.",
+		"couldntLoadShort": "Couldn’t load messages."
 	},
 	"friends": {
 		"title": "Friends",
@@ -404,7 +423,9 @@
 		"declineRequest": "Decline friend request",
 		"acceptRequest": "Accept friend request",
 		"alreadyFriends": "You're already friends.",
-		"alreadyResponded": "You already responded to this request."
+		"alreadyResponded": "You already responded to this request.",
+		"decline": "Decline",
+		"accept": "Accept"
 	},
 	"notifications": {
 		"title": "Notifications",
@@ -418,7 +439,20 @@
 		"tryAgain": "Try again",
 		"loadingNotifications": "Loading notifications…",
 		"noneYet": "No notifications yet",
-		"willShowHere": "Matches, messages, and updates will show up here."
+		"willShowHere": "Matches, messages, and updates will show up here.",
+		"couldntLoadShort": "Couldn’t load notifications.",
+		"allCaughtUp": "You’re all caught up.",
+		"matchedWith": "You matched with {{name}}!",
+		"someone": "Someone",
+		"sentMessage": "{{name}} sent you a message",
+		"messagePreview": "{{name}}: {{preview}}",
+		"gigClosed": "“{{title}}” was closed",
+		"aGig": "A gig",
+		"interestedInGig": "{{name}} is interested in {{title}}",
+		"yourGig": "your gig",
+		"interestedInYou": "{{name}} is interested in you",
+		"sentFriendRequest": "{{name}} sent you a friend request",
+		"acceptedFriendRequest": "{{name}} accepted your friend request"
 	},
 	"profile": {
 		"back": "Back",
@@ -451,7 +485,15 @@
 		"yourPublicProfile": "Your public profile",
 		"noBioYet": "No bio yet — introduce your organization below.",
 		"editHirerDetails": "Edit hirer details",
-		"title": "Profile"
+		"title": "Profile",
+		"resultTitle": "Profile",
+		"couldntLoadRetry": "Couldn’t load this profile. Please try again.",
+		"avatarHint": "Click the camera to upload a photo, or paste an image URL below.",
+		"account": "Account",
+		"portfolioHint": "Add photos, a reel or a voice note — they show up in the preview above instantly, and on your public profile.",
+		"hirerEditHint": "Shown to artists alongside your opportunities — changes above update instantly.",
+		"artistEditHint": "Changes above update the preview instantly — hit save to publish them.",
+		"categoriesHint": "(pick at least one, up to {{max}})"
 	},
 	"settings": {
 		"title": "Settings",
@@ -576,7 +618,8 @@
 		"deleteBody": "This action cannot be undone. The selected users will be permanently removed.",
 		"updateFailed": "Update failed.",
 		"saveChanges": "Save changes",
-		"close": "close"
+		"close": "close",
+		"selectUser": "Select {{name}}"
 	},
 	"a11y": {
 		"close": "Close",
@@ -589,5 +632,24 @@
 		"seek": "Seek",
 		"uploadProgress": "Upload progress",
 		"send": "Send"
+	},
+	"files": {
+		"viewFullSize": "View {{name}} full size",
+		"delete": "Delete {{name}}"
+	},
+	"time": {
+		"justNow": "just now",
+		"minutesAgo": "{{count}}m ago",
+		"hoursAgo": "{{count}}h ago",
+		"daysAgo": "{{count}}d ago"
+	},
+	"categories": {
+		"musician": "Musician",
+		"dj": "DJ",
+		"photographer": "Photographer",
+		"videographer": "Videographer",
+		"painter": "Painter",
+		"illustrator": "Illustrator",
+		"couldNotLoad": "Could not load categories."
 	}
 }

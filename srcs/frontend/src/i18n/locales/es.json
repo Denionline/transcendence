@@ -321,7 +321,13 @@
 		"remoteOk": "Remoto OK",
 		"remote": "Remoto",
 		"onSite": "Presencial",
-		"verifiedHirer": "Contratante verificado"
+		"verifiedHirer": "Contratante verificado",
+		"filters": "Filtros",
+		"new": "Nueva",
+		"passOn": "Pasar de {{name}}",
+		"viewDetailsFor": "Ver detalles de {{name}}",
+		"startsOnGigCategory": "Empieza por la categoría propia de esta oportunidad — marca más para explorar otras disciplinas. Un me gusta solo cuenta dentro de la categoría real de la oferta.",
+		"previewHint": "Así es exactamente como la verán los artistas en su feed — rellena el formulario y míralo actualizarse aquí."
 	},
 	"preview": {
 		"yourBrand": "Tu marca",
@@ -366,7 +372,10 @@
 		"cancel": "Cancelar",
 		"removing": "Eliminando…",
 		"removeMatch": "Eliminar coincidencia",
-		"close": "cerrar"
+		"close": "cerrar",
+		"subtitle": "Personas interesadas en ti y las coincidencias que ya has hecho.",
+		"noMatchesYet": "Aún sin coincidencias",
+		"acceptOrSwipe": "Acepta un interés arriba, o sigue deslizando para encontrar una."
 	},
 	"messages": {
 		"title": "Mensajes",
@@ -380,7 +389,17 @@
 		"messageLabel": "Mensaje",
 		"messagePlaceholder": "Mensaje para {{name}}",
 		"sendFailed": "No se pudo enviar ese mensaje.",
-		"delete": "Eliminar"
+		"delete": "Eliminar",
+		"subtitle": "Chatea con las personas con las que has coincidido.",
+		"couldntLoadMessages": "No se pudieron cargar tus mensajes",
+		"loadingConversations": "Cargando conversaciones…",
+		"pickFromLeft": "Elige a alguien de la izquierda para ver tus mensajes.",
+		"loadingMessages": "Cargando mensajes…",
+		"couldntLoadConversation": "No se pudo cargar esta conversación.",
+		"startConversation": "Habéis coincidido en {{title}} — empieza la conversación.",
+		"noMatchesYet": "Aún sin coincidencias",
+		"onceYouMatch": "En cuanto coincidas con alguien, aparecerá aquí.",
+		"couldntLoadShort": "No se pudieron cargar los mensajes."
 	},
 	"friends": {
 		"title": "Amigos",
@@ -404,7 +423,9 @@
 		"declineRequest": "Rechazar solicitud de amistad",
 		"acceptRequest": "Aceptar solicitud de amistad",
 		"alreadyFriends": "Ya sois amigos.",
-		"alreadyResponded": "Ya has respondido a esta solicitud."
+		"alreadyResponded": "Ya has respondido a esta solicitud.",
+		"decline": "Rechazar",
+		"accept": "Aceptar"
 	},
 	"notifications": {
 		"title": "Notificaciones",
@@ -418,7 +439,20 @@
 		"tryAgain": "Intentar de nuevo",
 		"loadingNotifications": "Cargando notificaciones…",
 		"noneYet": "Aún sin notificaciones",
-		"willShowHere": "Coincidencias, mensajes y novedades aparecerán aquí."
+		"willShowHere": "Coincidencias, mensajes y novedades aparecerán aquí.",
+		"couldntLoadShort": "No se pudieron cargar las notificaciones.",
+		"allCaughtUp": "Estás al día.",
+		"matchedWith": "¡Has coincidido con {{name}}!",
+		"someone": "Alguien",
+		"sentMessage": "{{name}} te ha enviado un mensaje",
+		"messagePreview": "{{name}}: {{preview}}",
+		"gigClosed": "“{{title}}” se ha cerrado",
+		"aGig": "Una oferta",
+		"interestedInGig": "{{name}} está interesado en {{title}}",
+		"yourGig": "tu oferta",
+		"interestedInYou": "{{name}} está interesado en ti",
+		"sentFriendRequest": "{{name}} te ha enviado una solicitud de amistad",
+		"acceptedFriendRequest": "{{name}} ha aceptado tu solicitud de amistad"
 	},
 	"profile": {
 		"back": "Volver",
@@ -451,7 +485,15 @@
 		"yourPublicProfile": "Tu perfil público",
 		"noBioYet": "Aún sin biografía — presenta tu organización abajo.",
 		"editHirerDetails": "Editar detalles de contratante",
-		"title": "Perfil"
+		"title": "Perfil",
+		"resultTitle": "Perfil",
+		"couldntLoadRetry": "No se pudo cargar este perfil. Inténtalo de nuevo.",
+		"avatarHint": "Haz clic en la cámara para subir una foto, o pega abajo la URL de una imagen.",
+		"account": "Cuenta",
+		"portfolioHint": "Añade fotos, un reel o una nota de voz — aparecen al instante en la vista previa de arriba y en tu perfil público.",
+		"hirerEditHint": "Se muestra a los artistas junto a tus oportunidades — los cambios de arriba se actualizan al instante.",
+		"artistEditHint": "Los cambios de arriba actualizan la vista previa al instante — guarda para publicarlos.",
+		"categoriesHint": "(elige al menos una, hasta {{max}})"
 	},
 	"settings": {
 		"title": "Ajustes",
@@ -576,7 +618,8 @@
 		"deleteBody": "Esta acción no se puede deshacer. Los usuarios seleccionados se eliminarán permanentemente.",
 		"updateFailed": "La actualización ha fallado.",
 		"saveChanges": "Guardar cambios",
-		"close": "cerrar"
+		"close": "cerrar",
+		"selectUser": "Seleccionar a {{name}}"
 	},
 	"a11y": {
 		"close": "Cerrar",
@@ -589,5 +632,24 @@
 		"seek": "Buscar",
 		"uploadProgress": "Progreso de la subida",
 		"send": "Enviar"
+	},
+	"files": {
+		"viewFullSize": "Ver {{name}} a tamaño completo",
+		"delete": "Eliminar {{name}}"
+	},
+	"time": {
+		"justNow": "ahora mismo",
+		"minutesAgo": "hace {{count}} min",
+		"hoursAgo": "hace {{count}} h",
+		"daysAgo": "hace {{count}} d"
+	},
+	"categories": {
+		"musician": "Músico",
+		"dj": "DJ",
+		"photographer": "Fotógrafo",
+		"videographer": "Videógrafo",
+		"painter": "Pintor",
+		"illustrator": "Ilustrador",
+		"couldNotLoad": "No se pudieron cargar las categorías."
 	}
 }

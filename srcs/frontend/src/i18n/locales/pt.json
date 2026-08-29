@@ -321,7 +321,13 @@
 		"remoteOk": "Remoto OK",
 		"remote": "Remoto",
 		"onSite": "Presencial",
-		"verifiedHirer": "Contratante verificado"
+		"verifiedHirer": "Contratante verificado",
+		"filters": "Filtros",
+		"new": "Nova",
+		"passOn": "Passar {{name}}",
+		"viewDetailsFor": "Ver detalhes de {{name}}",
+		"startsOnGigCategory": "Começa na categoria desta oportunidade — marca mais para explorares outras disciplinas. Um gosto continua a contar apenas dentro da categoria real da vaga.",
+		"previewHint": "É exatamente assim que os artistas a vão ver no feed deles — preenche o formulário e vê aqui a atualizar."
 	},
 	"preview": {
 		"yourBrand": "A tua marca",
@@ -366,7 +372,10 @@
 		"cancel": "Cancelar",
 		"removing": "A remover…",
 		"removeMatch": "Remover correspondência",
-		"close": "fechar"
+		"close": "fechar",
+		"subtitle": "Pessoas interessadas em ti e as correspondências que já fizeste.",
+		"noMatchesYet": "Ainda sem correspondências",
+		"acceptOrSwipe": "Aceita um interesse acima, ou continua a deslizar para encontrares uma."
 	},
 	"messages": {
 		"title": "Mensagens",
@@ -380,7 +389,17 @@
 		"messageLabel": "Mensagem",
 		"messagePlaceholder": "Mensagem para {{name}}",
 		"sendFailed": "Não foi possível enviar essa mensagem.",
-		"delete": "Apagar"
+		"delete": "Apagar",
+		"subtitle": "Conversa com as pessoas com quem tiveste correspondência.",
+		"couldntLoadMessages": "Não foi possível carregar as tuas mensagens",
+		"loadingConversations": "A carregar conversas…",
+		"pickFromLeft": "Escolhe alguém à esquerda para veres as tuas mensagens.",
+		"loadingMessages": "A carregar mensagens…",
+		"couldntLoadConversation": "Não foi possível carregar esta conversa.",
+		"startConversation": "Tiveram correspondência em {{title}} — começa a conversa.",
+		"noMatchesYet": "Ainda sem correspondências",
+		"onceYouMatch": "Assim que tiveres uma correspondência, ela aparece aqui.",
+		"couldntLoadShort": "Não foi possível carregar as mensagens."
 	},
 	"friends": {
 		"title": "Amigos",
@@ -404,7 +423,9 @@
 		"declineRequest": "Recusar pedido de amizade",
 		"acceptRequest": "Aceitar pedido de amizade",
 		"alreadyFriends": "Já são amigos.",
-		"alreadyResponded": "Já respondeste a este pedido."
+		"alreadyResponded": "Já respondeste a este pedido.",
+		"decline": "Recusar",
+		"accept": "Aceitar"
 	},
 	"notifications": {
 		"title": "Notificações",
@@ -418,7 +439,20 @@
 		"tryAgain": "Tentar novamente",
 		"loadingNotifications": "A carregar notificações…",
 		"noneYet": "Ainda sem notificações",
-		"willShowHere": "Correspondências, mensagens e atualizações aparecem aqui."
+		"willShowHere": "Correspondências, mensagens e atualizações aparecem aqui.",
+		"couldntLoadShort": "Não foi possível carregar as notificações.",
+		"allCaughtUp": "Estás em dia.",
+		"matchedWith": "Tiveste uma correspondência com {{name}}!",
+		"someone": "Alguém",
+		"sentMessage": "{{name}} enviou-te uma mensagem",
+		"messagePreview": "{{name}}: {{preview}}",
+		"gigClosed": "“{{title}}” foi fechada",
+		"aGig": "Uma vaga",
+		"interestedInGig": "{{name}} está interessado em {{title}}",
+		"yourGig": "a tua vaga",
+		"interestedInYou": "{{name}} está interessado em ti",
+		"sentFriendRequest": "{{name}} enviou-te um pedido de amizade",
+		"acceptedFriendRequest": "{{name}} aceitou o teu pedido de amizade"
 	},
 	"profile": {
 		"back": "Voltar",
@@ -451,7 +485,15 @@
 		"yourPublicProfile": "O teu perfil público",
 		"noBioYet": "Ainda sem biografia — apresenta a tua organização abaixo.",
 		"editHirerDetails": "Editar detalhes de contratante",
-		"title": "Perfil"
+		"title": "Perfil",
+		"resultTitle": "Perfil",
+		"couldntLoadRetry": "Não foi possível carregar este perfil. Tenta novamente.",
+		"avatarHint": "Clica na câmara para carregares uma foto, ou cola abaixo o URL de uma imagem.",
+		"account": "Conta",
+		"portfolioHint": "Adiciona fotos, um reel ou uma nota de voz — aparecem de imediato na pré-visualização acima e no teu perfil público.",
+		"hirerEditHint": "Mostrado aos artistas junto das tuas oportunidades — as alterações acima atualizam de imediato.",
+		"artistEditHint": "As alterações acima atualizam a pré-visualização de imediato — guarda para as publicares.",
+		"categoriesHint": "(escolhe pelo menos uma, até {{max}})"
 	},
 	"settings": {
 		"title": "Definições",
@@ -576,7 +618,8 @@
 		"deleteBody": "Esta ação não pode ser anulada. Os utilizadores selecionados serão removidos permanentemente.",
 		"updateFailed": "A atualização falhou.",
 		"saveChanges": "Guardar alterações",
-		"close": "fechar"
+		"close": "fechar",
+		"selectUser": "Selecionar {{name}}"
 	},
 	"a11y": {
 		"close": "Fechar",
@@ -589,5 +632,24 @@
 		"seek": "Avançar",
 		"uploadProgress": "Progresso do carregamento",
 		"send": "Enviar"
+	},
+	"files": {
+		"viewFullSize": "Ver {{name}} em tamanho real",
+		"delete": "Apagar {{name}}"
+	},
+	"time": {
+		"justNow": "agora mesmo",
+		"minutesAgo": "há {{count}} min",
+		"hoursAgo": "há {{count}} h",
+		"daysAgo": "há {{count}} d"
+	},
+	"categories": {
+		"musician": "Músico",
+		"dj": "DJ",
+		"photographer": "Fotógrafo",
+		"videographer": "Videógrafo",
+		"painter": "Pintor",
+		"illustrator": "Ilustrador",
+		"couldNotLoad": "Não foi possível carregar as categorias."
 	}
 }
