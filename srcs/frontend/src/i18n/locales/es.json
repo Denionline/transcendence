@@ -198,5 +198,43 @@
 		"messagePlaceholder": "Mensaje para {{name}}",
 		"sendFailed": "No se pudo enviar ese mensaje.",
 		"delete": "Eliminar"
+	},
+	"friends": {
+		"title": "Amigos",
+		"count_zero": "Aún sin amigos",
+		"count_one": "{{count}} amigo",
+		"count_other": "{{count}} amigos",
+		"loading": "Cargando…",
+		"loadingFriends": "Cargando amigos…",
+		"loadFailed": "No se pudieron cargar tus amigos.",
+		"noFriendsYet": "Aún sin amigos",
+		"addFromProfile": "Añade a alguien desde su perfil para verlo aquí.",
+		"remove": "Eliminar a {{name}}",
+		"locationTbd": "Ubicación por definir",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"friends": "Amigos",
+		"removeFriend": "Eliminar amigo",
+		"requestSent": "Solicitud enviada",
+		"addFriend": "Añadir amigo",
+		"sentYouRequest": "Te ha enviado una solicitud de amistad",
+		"declineRequest": "Rechazar solicitud de amistad",
+		"acceptRequest": "Aceptar solicitud de amistad",
+		"alreadyFriends": "Ya sois amigos.",
+		"alreadyResponded": "Ya has respondido a esta solicitud."
+	},
+	"notifications": {
+		"title": "Notificaciones",
+		"unread_zero": "Sin notificaciones sin leer",
+		"unread_one": "{{count}} sin leer",
+		"unread_other": "{{count}} sin leer",
+		"loading": "Cargando…",
+		"markAllRead": "Marcar todas como leídas",
+		"markAsRead": "Marcar como leída",
+		"couldntLoad": "No se pudieron cargar las notificaciones",
+		"tryAgain": "Intentar de nuevo",
+		"loadingNotifications": "Cargando notificaciones…",
+		"noneYet": "Aún sin notificaciones",
+		"willShowHere": "Coincidencias, mensajes y novedades aparecerán aquí."
 	}
 }
