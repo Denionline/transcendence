@@ -1,7 +1,22 @@
 {
 	"common": {
 		"appName": "Artmate",
-		"language": "Idioma"
+		"language": "Idioma",
+		"viewAll": "Ver tudo",
+		"viewProfile": "Ver perfil",
+		"coverPhoto": "Foto de capa",
+		"friendRequest": "Pedido de amizade",
+		"noConversationsYet": "Ainda sem conversas.",
+		"yourCategoriesHint": "As tuas categorias — todas as vagas aqui correspondem a pelo menos uma. Adiciona mais nas Definições para alargar esta lista.",
+		"currentPassword": "Palavra-passe atual",
+		"newPassword": "Nova palavra-passe",
+		"confirmPassword": "Confirmar nova palavra-passe",
+		"updatePassword": "Atualizar palavra-passe",
+		"passwordChanged": "Palavra-passe alterada com sucesso.",
+		"canvasBlank": "Esta tela está em branco.",
+		"notFoundBody": "A página que procuras foi movida, mudou de nome, ou nunca chegou a existir. Vamos levar-te de volta ao trabalho.",
+		"backToDiscover": "Voltar a Descobrir",
+		"goHome": "Ir para o início"
 	},
 	"nav": {
 		"discover": "Descobrir",
@@ -350,5 +365,59 @@
 		"loadListFailed": "Não foi possível carregar as tuas oportunidades. Tenta novamente.",
 		"couldntLoadOne": "Não foi possível carregar esta oportunidade",
 		"couldntLoadList": "Não foi possível carregar as tuas oportunidades"
+	},
+	"onboarding": {
+		"setUpProfile": "Configura o teu perfil de {{role}}",
+		"roleHirer": "contratante",
+		"roleArtist": "artista",
+		"hirerIntro": "O nome da organização é obrigatório para começares — tudo o resto abaixo é opcional e pode ser preenchido a qualquer momento nas Definições.",
+		"artistIntro": "A categoria é obrigatória para começares — é assim que te ligamos a oportunidades. Tudo o resto abaixo é opcional e pode ser preenchido a qualquer momento nas Definições.",
+		"category": "Categoria",
+		"selectCategory": "Escolher categoria",
+		"organizationName": "Nome da organização",
+		"bio": "Biografia",
+		"location": "Localização",
+		"optionalSuffix": "(opcional)",
+		"availableForWork": "Disponível para trabalhar",
+		"continue": "Continuar",
+		"saveFailed": "Não foi possível guardar o teu perfil. Tenta novamente.",
+		"pickATheme": "Escolhe um tema",
+		"themeIntro": "Totalmente opcional — as alterações aplicam-se de imediato e podes mudar depois nas Definições.",
+		"maybeLater": "Talvez mais tarde"
+	},
+	"admin": {
+		"welcomeBack": "Bem-vindo de volta",
+		"whatsHappening": "Eis o que se passa na plataforma.",
+		"searchUsers": "Procurar por nome, email, função ou estado",
+		"selectAllOnPage": "Selecionar todos os utilizadores desta página",
+		"selectedCount": "{{count}} selecionados",
+		"delete": "Apagar",
+		"clear": "Limpar",
+		"cancel": "Cancelar",
+		"noUsersMatch": "Nenhum utilizador corresponde à tua pesquisa.",
+		"user": "Utilizador",
+		"role": "Função",
+		"joined": "Registou-se",
+		"editUser": "Editar utilizador",
+		"deleteUser": "Apagar utilizador",
+		"cantDeleteSelf": "Não podes apagar a tua própria conta",
+		"deleteTitle_one": "Apagar {{count}} utilizador?",
+		"deleteTitle_other": "Apagar {{count}} utilizadores?",
+		"deleteBody": "Esta ação não pode ser anulada. Os utilizadores selecionados serão removidos permanentemente.",
+		"updateFailed": "A atualização falhou.",
+		"saveChanges": "Guardar alterações",
+		"close": "fechar"
+	},
+	"a11y": {
+		"close": "Fechar",
+		"loading": "A carregar",
+		"logout": "Terminar sessão",
+		"artmateHome": "Início do Artmate",
+		"legal": "Legal",
+		"previousMedia": "Média anterior",
+		"nextMedia": "Média seguinte",
+		"seek": "Avançar",
+		"uploadProgress": "Progresso do carregamento",
+		"send": "Enviar"
 	}
 }
