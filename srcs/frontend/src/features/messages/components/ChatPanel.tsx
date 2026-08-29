@@ -15,6 +15,7 @@ import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
 import { getSocket } from "../../../lib/socket";
 import { useUnreadMessages } from "../hooks/useUnreadMessages";
+import { useTranslation } from "react-i18next";
 
 // Close enough to the bottom that an incoming message should still autoscroll
 // — past this, assume the user scrolled up to read history and leave them be.
@@ -27,6 +28,7 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelProps) {
+	const { t } = useTranslation();
 	const { refresh: refreshUnreadCount, setActiveMatchId } = useUnreadMessages();
 	const [messages, setMessages] = useState<ChatMessageDto[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -190,7 +192,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		//	whitespace — which the server refuses.
 		const checked = messageContentSchema.safeParse(draft);
 		if (!checked.success) {
-			setSendError(checked.error.issues[0]?.message ?? "Couldn't send that message.");
+			setSendError(checked.error.issues[0]?.message ?? t("messages.sendFailed"));
 			return;
 		}
 		const content = checked.data;
@@ -205,7 +207,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 			setDraft("");
 			isNearBottomRef.current = true;
 		} catch (err: unknown) {
-			setSendError(err instanceof Error ? err.message : "Couldn't send that message.");
+			setSendError(err instanceof Error ? err.message : t("messages.sendFailed"));
 		} finally {
 			setSending(false);
 		}
@@ -218,7 +220,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 					<button
 						type="button"
 						onClick={onBack}
-						aria-label="Back to conversations"
+						aria-label={t("messages.backToConversations")}
 						className="btn btn-ghost btn-circle btn-sm"
 					>
 						<ArrowLeftIcon className="size-4" aria-hidden="true" />
@@ -233,7 +235,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 					{match.otherUser.online && (
 						<span
 							className="absolute right-0 bottom-0 size-2 rounded-full border-2 border-base-100 bg-success"
-							aria-label="Online"
+							aria-label={t("messages.online")}
 						/>
 					)}
 				</div>
@@ -266,7 +268,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 									disabled={loadingMore}
 									className="btn btn-ghost btn-xs rounded-full disabled:opacity-50"
 								>
-									{loadingMore ? "Loading…" : "Load earlier messages"}
+									{loadingMore ? t("messages.loading") : t("messages.loadEarlier")}
 								</button>
 							</div>
 						)}
@@ -305,8 +307,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 					onFocus={handleFocus}
 					maxLength={2000}
 					disabled={sending}
-					placeholder={`Message ${match.otherUser.displayName}`}
-					aria-label="Message"
+					placeholder={t("messages.messagePlaceholder", { name: match.otherUser.displayName })}
+					aria-label={t("messages.messageLabel")}
 					className="input input-bordered flex-1 rounded-full"
 				/>
 				<button
