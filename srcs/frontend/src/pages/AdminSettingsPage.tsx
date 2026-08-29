@@ -51,14 +51,14 @@ export default function AdminSettingsPage() {
 		setIsSavingProfile(true);
 		try {
 			await updateProfile(checked.data);
-			setProfileStatus({ type: "success", text: "Profile updated successfully." });
+			setProfileStatus({ type: "success", text: t("profile.updated") });
 		} catch (err) {
 			const fromServer = fieldErrorsFromApi<ProfileValues>(err);
 			if (fromServer) setProfileErrors(fromServer);
 			else
 				setProfileStatus({
 					type: "error",
-					text: err instanceof Error ? err.message : "Update failed.",
+					text: err instanceof Error ? err.message : t("settings.updateFailed"),
 				});
 		} finally {
 			setIsSavingProfile(false);
@@ -86,7 +86,7 @@ export default function AdminSettingsPage() {
 		setIsSavingPassword(true);
 		try {
 			await updatePassword(currentPassword, newPassword);
-			setPasswordStatus({ type: "success", text: "Password changed successfully." });
+			setPasswordStatus({ type: "success", text: t("common.passwordChanged") });
 			setPasswordErrors({});
 			setCurrentPassword("");
 			setNewPassword("");
@@ -94,7 +94,7 @@ export default function AdminSettingsPage() {
 		} catch (err) {
 			setPasswordStatus({
 				type: "error",
-				text: err instanceof Error ? err.message : "Update failed.",
+				text: err instanceof Error ? err.message : t("settings.updateFailed"),
 			});
 		} finally {
 			setIsSavingPassword(false);
@@ -124,7 +124,7 @@ export default function AdminSettingsPage() {
 					)}
 
 					<label className="fieldset-label flex-col items-start gap-1">
-						<span className="text-sm font-medium">Username</span>
+						<span className="text-sm font-medium">{t("settings.username")}</span>
 						<input
 							type="text"
 							className="input w-full max-w-sm"
@@ -150,7 +150,7 @@ export default function AdminSettingsPage() {
 					<div>
 						<button type="submit" className="btn btn-primary btn-sm" disabled={isSavingProfile}>
 							{isSavingProfile && <span className="loading loading-spinner loading-xs" />}
-							Save changes
+							{t("settings.saveChanges")}
 						</button>
 					</div>
 				</form>
@@ -172,7 +172,7 @@ export default function AdminSettingsPage() {
 					)}
 
 					<label className="fieldset-label flex-col items-start gap-1">
-						<span className="text-sm font-medium">Current password</span>
+						<span className="text-sm font-medium">{t("common.currentPassword")}</span>
 						<input
 							type="password"
 							className="input w-full max-w-sm"
@@ -215,7 +215,7 @@ export default function AdminSettingsPage() {
 					<div>
 						<button type="submit" className="btn btn-primary btn-sm" disabled={isSavingPassword}>
 							{isSavingPassword && <span className="loading loading-spinner loading-xs" />}
-							Update password
+							{t("common.updatePassword")}
 						</button>
 					</div>
 				</form>
