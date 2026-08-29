@@ -7,6 +7,7 @@ import ProfileOnboardingModal, {
 	type ProfileOnboardingValues,
 } from "./components/ProfileOnboardingModal";
 import ThemeOnboardingModal from "./components/ThemeOnboardingModal";
+import { useTranslation } from "react-i18next";
 
 type Step = "checking" | "none" | "profile" | "theme";
 
@@ -26,6 +27,7 @@ function themePromptKey(userId: string): string {
  * admins.
  */
 export default function ProfileOnboardingGate() {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const [step, setStep] = useState<Step>("checking");
 	const [isSaving, setIsSaving] = useState(false);
@@ -90,9 +92,7 @@ export default function ProfileOnboardingGate() {
 			notifyProfileUpdated();
 			setStep(nextStepAfterProfile(user.id));
 		} catch (err) {
-			setSaveError(
-				err instanceof ApiError ? err.message : "Couldn't save your profile. Please try again.",
-			);
+			setSaveError(err instanceof ApiError ? err.message : t("onboarding.saveFailed"));
 		} finally {
 			setIsSaving(false);
 		}
