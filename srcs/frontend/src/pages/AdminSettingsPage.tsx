@@ -6,6 +6,8 @@ import PasswordStrengthChecklist from "../features/auth/components/PasswordStren
 import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../lib/formValidation";
 import { changePasswordSchema, type ChangePasswordValues } from "../features/auth/schemas";
 import { accountSchema } from "../features/profile/schemas";
+import { useTranslation } from "react-i18next";
+import { translateFieldError } from "../i18n/validation";
 
 //	The same account rules as the profile page, minus the avatar this form
 //	does not collect.
@@ -13,6 +15,7 @@ const profileSchema = accountSchema.omit({ avatarUrl: true });
 type ProfileValues = { username: string; email: string };
 
 export default function AdminSettingsPage() {
+	const { t } = useTranslation();
 	const { user, updateProfile, updatePassword } = useAuth();
 
 	const [username, setUsername] = useState(user?.username ?? "");
@@ -129,7 +132,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setUsername(e.target.value)}
 							aria-invalid={profileErrors.username ? "true" : undefined}
 						/>
-						<FieldError message={profileErrors.username} />
+						<FieldError message={translateFieldError(t, profileErrors.username)} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -141,7 +144,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setEmail(e.target.value)}
 							aria-invalid={profileErrors.email ? "true" : undefined}
 						/>
-						<FieldError message={profileErrors.email} />
+						<FieldError message={translateFieldError(t, profileErrors.email)} />
 					</label>
 
 					<div>
@@ -177,7 +180,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setCurrentPassword(e.target.value)}
 							aria-invalid={passwordErrors.currentPassword ? "true" : undefined}
 						/>
-						<FieldError message={passwordErrors.currentPassword} />
+						<FieldError message={translateFieldError(t, passwordErrors.currentPassword)} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -189,7 +192,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setNewPassword(e.target.value)}
 							aria-invalid={passwordErrors.newPassword ? "true" : undefined}
 						/>
-						<FieldError message={passwordErrors.newPassword} />
+						<FieldError message={translateFieldError(t, passwordErrors.newPassword)} />
 						{/*	The same checklist registration shows, so both places
 							teach the same rules while you type. */}
 						{newPassword !== "" && (
@@ -206,7 +209,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setConfirmPassword(e.target.value)}
 							aria-invalid={passwordErrors.confirmPassword ? "true" : undefined}
 						/>
-						<FieldError message={passwordErrors.confirmPassword} />
+						<FieldError message={translateFieldError(t, passwordErrors.confirmPassword)} />
 					</label>
 
 					<div>
