@@ -7,6 +7,7 @@ import { mapPublicProfileToArtist } from "../../artists/mapPublicProfile";
 import HirerDetailsModal from "./HirerDetailsModal";
 import { fetchPublicProfile } from "../api";
 import type { PublicProfileDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface ProfileResultModalProps {
 	userId: string | null;
@@ -23,6 +24,7 @@ interface ProfileResultModalProps {
  * though there's no swipeable "hirer card" elsewhere to reuse.
  */
 export default function ProfileResultModal({ userId, onClose }: ProfileResultModalProps) {
+	const { t } = useTranslation();
 	const [profile, setProfile] = useState<PublicProfileDto | null>(null);
 	const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>("none");
 	const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -80,19 +82,17 @@ export default function ProfileResultModal({ userId, onClose }: ProfileResultMod
 			{/* Kept in the DOM across every status so the modal always has a valid
 			    accessible name, not just once the profile has loaded. */}
 			<h2 id="profile-result-title" className="sr-only">
-				Profile
+				{t("profile.resultTitle")}
 			</h2>
 
 			{status === "loading" && (
 				<div className="flex h-48 items-center justify-center">
-					<span className="loading loading-spinner" aria-label="Loading" />
+					<span className="loading loading-spinner" aria-label={t("a11y.loading")} />
 				</div>
 			)}
 
 			{status === "error" && (
-				<div className="p-6 text-sm text-base-content/60">
-					Couldn&rsquo;t load this profile. Please try again.
-				</div>
+				<div className="p-6 text-sm text-base-content/60">{t("profile.couldntLoadRetry")}</div>
 			)}
 		</Modal>
 	);

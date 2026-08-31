@@ -2,6 +2,7 @@ import { SlidersHorizontalIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import Modal from "./Modal";
 import { useMediaQuery } from "../lib/useMediaQuery";
+import { useTranslation } from "react-i18next";
 
 const PANEL_ID = "filters-panel";
 const DESKTOP_QUERY = "(min-width: 1024px)";
@@ -26,6 +27,7 @@ interface FiltersPanelProps {
  * the same {@link FiltersToggle} button to drive it.
  */
 export default function FiltersPanel({ open, onClose, actions, children }: FiltersPanelProps) {
+	const { t } = useTranslation();
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
 
 	if (!isDesktop) {
@@ -33,7 +35,7 @@ export default function FiltersPanel({ open, onClose, actions, children }: Filte
 			<Modal open={open} onClose={onClose} labelledBy="filters-panel-title">
 				<div className="flex flex-col gap-6 p-6 text-sm">
 					<h2 id="filters-panel-title" className="text-base font-semibold">
-						Filters
+						{t("deck.filters")}
 					</h2>
 					{children}
 					{actions && <div className="flex justify-end">{actions}</div>}
@@ -51,7 +53,7 @@ export default function FiltersPanel({ open, onClose, actions, children }: Filte
 		>
 			<div className="w-56">
 				<div className="mb-4 flex items-center justify-between gap-2">
-					<h2 className="text-sm font-semibold">Filters</h2>
+					<h2 className="text-sm font-semibold">{t("deck.filters")}</h2>
 					{actions}
 				</div>
 
@@ -73,6 +75,7 @@ interface FiltersToggleProps {
  * (that's every mobile render, and desktop whenever it's collapsed).
  */
 export function FiltersToggle({ open, onToggle }: FiltersToggleProps) {
+	const { t } = useTranslation();
 	return (
 		<button
 			type="button"
@@ -84,7 +87,7 @@ export function FiltersToggle({ open, onToggle }: FiltersToggleProps) {
 			}`}
 		>
 			<SlidersHorizontalIcon className="size-4" aria-hidden="true" />
-			Filters
+			{t("deck.filters")}
 		</button>
 	);
 }

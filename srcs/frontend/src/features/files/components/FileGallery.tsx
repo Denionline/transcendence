@@ -4,6 +4,7 @@ import Modal from "../../../components/Modal";
 import FilePreview from "./FilePreview";
 import { formatBytes } from "../constants";
 import type { FileDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface FileGalleryProps {
 	files: FileDto[];
@@ -19,6 +20,7 @@ export default function FileGallery({
 	deletingId,
 	emptyMessage = "Nothing here yet.",
 }: FileGalleryProps) {
+	const { t } = useTranslation();
 	const [previewFile, setPreviewFile] = useState<FileDto | null>(null);
 
 	if (files.length === 0) {
@@ -43,7 +45,7 @@ export default function FileGallery({
 							{file.type === "image" ? (
 								<button
 									type="button"
-									aria-label={`View ${file.originalName} full size`}
+									aria-label={t("files.viewFullSize", { name: file.originalName })}
 									onClick={() => setPreviewFile(file)}
 									className="block h-full w-full cursor-zoom-in"
 								>
@@ -69,7 +71,7 @@ export default function FileGallery({
 								<button
 									type="button"
 									className="btn btn-ghost btn-xs text-error"
-									aria-label={`Delete ${file.originalName}`}
+									aria-label={t("files.delete", { name: file.originalName })}
 									disabled={deletingId === file.id}
 									onClick={() => onDelete(file)}
 								>

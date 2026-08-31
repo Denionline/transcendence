@@ -5,6 +5,7 @@ import ArtistCard from "./ArtistCard";
 import ArtistDetailsModal from "./ArtistDetailsModal";
 import DiscreetFriendAction from "../../friends/components/DiscreetFriendAction";
 import type { Artist } from "../types";
+import { useTranslation } from "react-i18next";
 
 const EXIT_MS = 260;
 const SWIPE_THRESHOLD = 100;
@@ -22,6 +23,7 @@ export default function MobileArtistStack({
 	selectedDisciplines,
 	onSwipe,
 }: MobileArtistStackProps) {
+	const { t } = useTranslation();
 	const [index, setIndex] = useState(0);
 	const [drag, setDrag] = useState({ x: 0, y: 0, dragging: false });
 	const [exitDir, setExitDir] = useState<1 | -1 | 0>(0);
@@ -151,13 +153,13 @@ export default function MobileArtistStack({
 									style={{ opacity: interestedOpacity }}
 									className="pointer-events-none absolute top-10 left-6 -rotate-12 rounded-lg border-4 border-primary px-3 py-1 text-xl font-black tracking-wider text-primary"
 								>
-									Interested
+									{t("deck.interested")}
 								</div>
 								<div
 									style={{ opacity: passOpacity }}
 									className="pointer-events-none absolute top-10 right-6 rotate-12 rounded-lg border-4 border-error px-3 py-1 text-xl font-black tracking-wider text-error"
 								>
-									Pass
+									{t("deck.pass")}
 								</div>
 							</div>
 						);
@@ -174,8 +176,8 @@ export default function MobileArtistStack({
 
 				{!front && (
 					<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-						<p className="font-medium">You&rsquo;re all caught up</p>
-						<p className="text-sm">Check back later for new artists.</p>
+						<p className="font-medium">{t("deck.allCaughtUp")}</p>
+						<p className="text-sm">{t("deck.checkBackForArtists")}</p>
 					</div>
 				)}
 			</div>
@@ -185,7 +187,7 @@ export default function MobileArtistStack({
 					type="button"
 					onClick={handleUndo}
 					disabled={!canUndo}
-					aria-label="Undo"
+					aria-label={t("deck.undo")}
 					className="btn btn-circle border-base-content/15 bg-base-100 transition-transform duration-150 hover:scale-110 disabled:opacity-30"
 				>
 					<Undo2Icon className="size-4 text-base-content/70" aria-hidden="true" />
@@ -194,7 +196,7 @@ export default function MobileArtistStack({
 					type="button"
 					onClick={() => commitSwipe(-1)}
 					disabled={!canAct}
-					aria-label="Pass"
+					aria-label={t("deck.pass")}
 					className="btn btn-circle border-base-content/15 bg-base-100 transition-[background-color,border-color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 disabled:opacity-30"
 				>
 					<XIcon className="size-5 text-error" aria-hidden="true" />
@@ -203,7 +205,7 @@ export default function MobileArtistStack({
 					type="button"
 					onClick={() => commitSwipe(1)}
 					disabled={!canAct}
-					aria-label="Interested"
+					aria-label={t("deck.interested")}
 					className="btn btn-circle btn-primary btn-lg transition-transform duration-150 hover:scale-110 disabled:opacity-30"
 				>
 					<CheckIcon className="size-6" aria-hidden="true" />

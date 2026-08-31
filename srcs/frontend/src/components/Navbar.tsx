@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LogOutIcon, MenuIcon, PlusIcon, SettingsIcon, UserRoundIcon, XIcon } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Logo from "./Logo";
 import Avatar from "./Avatar";
 import { useAuth } from "../features/auth/hooks/useAuth";
@@ -27,6 +28,7 @@ interface NavbarProps {
 
 export default function Navbar({ items, searchPlaceholder, action }: NavbarProps) {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const { user, logout } = useAuth();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -58,7 +60,7 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 					<button
 						type="button"
 						className="btn btn-ghost btn-circle lg:hidden"
-						aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+						aria-label={isMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
 						aria-expanded={isMenuOpen}
 						aria-controls="navbar-mobile-menu"
 						onClick={() => setIsMenuOpen((open) => !open)}
@@ -70,7 +72,7 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 						)}
 					</button>
 
-					<Link to="/" aria-label="Go to homepage" onClick={() => setIsMenuOpen(false)}>
+					<Link to="/" aria-label={t("nav.goToHomepage")} onClick={() => setIsMenuOpen(false)}>
 						<Logo />
 					</Link>
 				</div>
@@ -113,7 +115,12 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 
 					{user && (
 						<div className="dropdown dropdown-end">
-							<div tabIndex={0} role="button" aria-label="Account menu" className="cursor-pointer">
+							<div
+								tabIndex={0}
+								role="button"
+								aria-label={t("nav.accountMenu")}
+								className="cursor-pointer"
+							>
 								<Avatar username={user.username} avatarUrl={user.avatarUrl} size="sm" />
 							</div>
 							<ul
@@ -124,19 +131,19 @@ export default function Navbar({ items, searchPlaceholder, action }: NavbarProps
 								<li>
 									<Link to="/profile">
 										<UserRoundIcon className="size-4" aria-hidden="true" />
-										Profile
+										{t("nav.profile")}
 									</Link>
 								</li>
 								<li>
 									<Link to="/settings">
 										<SettingsIcon className="size-4" aria-hidden="true" />
-										Settings
+										{t("nav.settings")}
 									</Link>
 								</li>
 								<li>
 									<button type="button" onClick={handleLogout} className="text-error">
 										<LogOutIcon className="size-4" aria-hidden="true" />
-										Logout
+										{t("nav.logout")}
 									</button>
 								</li>
 							</ul>

@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { useUnreadMessages } from "../hooks/useUnreadMessages";
 import MessageListItem from "./MessageListItem";
+import { useTranslation } from "react-i18next";
 
 const RECENT_LIMIT = 6;
 
 export default function MessagesDropdown() {
+	const { t } = useTranslation();
 	const { matches, status } = useUnreadMessages();
 	const recent = matches.slice(0, RECENT_LIMIT);
 
@@ -16,19 +18,19 @@ export default function MessagesDropdown() {
 
 			{status === "loading" && (
 				<div className="flex h-24 items-center justify-center text-sm text-base-content/50">
-					Loading…
+					{t("messages.loading")}
 				</div>
 			)}
 
 			{status === "error" && (
 				<div className="flex h-24 items-center justify-center px-2 text-center text-sm text-error">
-					Couldn&rsquo;t load messages.
+					{t("messages.couldntLoadShort")}
 				</div>
 			)}
 
 			{status === "ready" && recent.length === 0 && (
 				<div className="flex h-24 items-center justify-center px-2 text-center text-sm text-base-content/50">
-					No conversations yet.
+					{t("common.noConversationsYet")}
 				</div>
 			)}
 
@@ -42,7 +44,7 @@ export default function MessagesDropdown() {
 
 			<div className="mt-2 border-t border-base-content/10 pt-2 text-center">
 				<Link to="/messages" className="link text-sm font-medium link-primary">
-					View all
+					{t("common.viewAll")}
 				</Link>
 			</div>
 		</div>

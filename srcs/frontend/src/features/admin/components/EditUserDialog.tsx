@@ -3,6 +3,7 @@ import type { User, UserRole } from "../../auth/types";
 import FieldError from "../../../components/FieldError";
 import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
 import { editUserSchema, type EditUserValues } from "../schemas";
+import { useTranslation } from "react-i18next";
 
 const ROLES: UserRole[] = ["artist", "hirer", "admin"];
 
@@ -16,6 +17,7 @@ interface EditUserDialogProps {
 }
 
 export default function EditUserDialog({ user, onClose, onSave }: EditUserDialogProps) {
+	const { t } = useTranslation();
 	const dialogRef = useRef<HTMLDialogElement>(null);
 
 	const [username, setUsername] = useState("");
@@ -66,7 +68,7 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 			//	someone — belongs under its input, not in the banner.
 			const fromServer = fieldErrorsFromApi<EditUserValues>(err);
 			if (fromServer) setErrors(fromServer);
-			else setError(err instanceof Error ? err.message : "Update failed.");
+			else setError(err instanceof Error ? err.message : t("admin.updateFailed"));
 		} finally {
 			setIsSaving(false);
 		}
@@ -125,17 +127,17 @@ export default function EditUserDialog({ user, onClose, onSave }: EditUserDialog
 
 					<div className="modal-action">
 						<button type="button" className="btn" onClick={onClose} disabled={isSaving}>
-							Cancel
+							{t("admin.cancel")}
 						</button>
 						<button type="submit" className="btn btn-primary" disabled={isSaving}>
 							{isSaving && <span className="loading loading-spinner loading-xs" />}
-							Save changes
+							{t("admin.saveChanges")}
 						</button>
 					</div>
 				</form>
 			</div>
 			<form method="dialog" className="modal-backdrop">
-				<button>close</button>
+				<button>{t("admin.close")}</button>
 			</form>
 		</dialog>
 	);

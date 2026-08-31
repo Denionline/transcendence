@@ -10,6 +10,7 @@ import {
 	VideoIcon,
 } from "lucide-react";
 import type { ProfileMediaItem } from "../types";
+import { useTranslation } from "react-i18next";
 
 const SWIPE_THRESHOLD = 60;
 
@@ -37,6 +38,7 @@ export default function ProfileMediaGallery({
 	topLeftSlot,
 	emptyLabel = "Artist photo / reel",
 }: ProfileMediaGalleryProps) {
+	const { t } = useTranslation();
 	const [index, setIndex] = useState(0);
 	const [dragX, setDragX] = useState(0);
 	const [dragging, setDragging] = useState(false);
@@ -140,7 +142,7 @@ export default function ProfileMediaGallery({
 						<button
 							type="button"
 							onClick={() => goTo(clampedIndex - 1)}
-							aria-label="Previous media"
+							aria-label={t("a11y.previousMedia")}
 							className="btn btn-circle btn-sm absolute top-1/2 left-2 z-10 -translate-y-1/2 border-none bg-black/40 text-white opacity-70 backdrop-blur transition-opacity duration-150 group-hover:opacity-100 hover:bg-black/60"
 						>
 							<ChevronLeftIcon className="size-4" aria-hidden="true" />
@@ -148,7 +150,7 @@ export default function ProfileMediaGallery({
 						<button
 							type="button"
 							onClick={() => goTo(clampedIndex + 1)}
-							aria-label="Next media"
+							aria-label={t("a11y.nextMedia")}
 							className="btn btn-circle btn-sm absolute top-1/2 right-2 z-10 -translate-y-1/2 border-none bg-black/40 text-white opacity-70 backdrop-blur transition-opacity duration-150 group-hover:opacity-100 hover:bg-black/60"
 						>
 							<ChevronRightIcon className="size-4" aria-hidden="true" />
@@ -257,6 +259,7 @@ function formatTime(seconds: number): string {
 /** A custom-styled player — the native `<audio controls>` widget looks out of
  *  place floating on a dark hero panel, so this drives a hidden element instead. */
 function AudioSlide({ item, name }: { item: ProfileMediaItem; name: string }) {
+	const { t } = useTranslation();
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const [playing, setPlaying] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
@@ -312,7 +315,7 @@ function AudioSlide({ item, name }: { item: ProfileMediaItem; name: string }) {
 					step={0.1}
 					value={Math.min(currentTime, duration || 0)}
 					onChange={handleSeek}
-					aria-label="Seek"
+					aria-label={t("a11y.seek")}
 					className="range range-primary range-xs flex-1"
 				/>
 				<span className="tabular-nums">{formatTime(duration)}</span>

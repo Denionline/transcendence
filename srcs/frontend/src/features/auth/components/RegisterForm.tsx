@@ -2,15 +2,18 @@ import { ArrowRight, Pencil, Search } from "lucide-react";
 import { useState } from "react";
 import type { ChangeEvent, SubmitEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { flattenError } from "zod";
 import { registerSchema, type RegisterFormValues } from "../schemas";
 import { useAuth } from "../hooks/useAuth";
 import { defaultPathForRole } from "../../../Router";
 import PasswordStrengthChecklist from "./PasswordStrengthChecklist";
+import { translateFieldError } from "../../../i18n/validation";
 
 type FieldErrors = Partial<Record<keyof RegisterFormValues, string>>;
 
 export default function RegisterForm() {
+	const { t } = useTranslation();
 	const { register, isLoading } = useAuth();
 	const navigate = useNavigate();
 	const [values, setValues] = useState<RegisterFormValues>({
@@ -51,7 +54,7 @@ export default function RegisterForm() {
 			const user = await register(result.data);
 			navigate(defaultPathForRole(user.role), { replace: true });
 		} catch (error) {
-			setFormError(error instanceof Error ? error.message : "Failed to create account");
+			setFormError(error instanceof Error ? error.message : t("auth.registerFailed"));
 		}
 	}
 
@@ -59,54 +62,58 @@ export default function RegisterForm() {
 		<form className="fieldset w-full" onSubmit={handleSubmit} noValidate>
 			<fieldset className="fieldset">
 				<label className="label" htmlFor="register-name">
-					Name
+					{t("auth.name")}
 				</label>
 				<input
 					id="register-name"
 					type="text"
 					name="name"
 					className="input validator w-full"
-					placeholder="Fulano de tal"
+					placeholder={t("auth.namePlaceholder")}
 					value={values.name}
 					onChange={handleChange}
 					aria-invalid={errors.name ? "true" : undefined}
 				/>
-				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>{errors.name}</p>
+				<p className={`validator-hint ${errors.name ? "" : "hidden"}`}>
+					{translateFieldError(t, errors.name)}
+				</p>
 			</fieldset>
 
 			<fieldset className="fieldset">
 				<label className="label" htmlFor="register-email">
-					Email
+					{t("auth.email")}
 				</label>
 				<input
 					id="register-email"
 					type="email"
 					name="email"
 					className="input validator w-full"
-					placeholder="you@email.com"
+					placeholder={t("auth.emailPlaceholder")}
 					value={values.email}
 					onChange={handleChange}
 					aria-invalid={errors.email ? "true" : undefined}
 				/>
-				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>{errors.email}</p>
+				<p className={`validator-hint ${errors.email ? "" : "hidden"}`}>
+					{translateFieldError(t, errors.email)}
+				</p>
 			</fieldset>
 
 			<fieldset className="fieldset">
 				<label className="label" htmlFor="register-password">
-					Password
+					{t("auth.password")}
 				</label>
 				<input
 					id="register-password"
 					type="password"
 					name="password"
 					className="input validator w-full"
-					placeholder="••••••••"
+					placeholder={t("auth.passwordPlaceholder")}
 					value={values.password}
 					onChange={handleChange}
 					aria-invalid={errors.password ? "true" : undefined}
 				/>
 				<span className={`validator-hint ${errors.password ? "" : "hidden"}`}>
-					{errors.password}
+					{translateFieldError(t, errors.password)}
 				</span>
 				<PasswordStrengthChecklist
 					password={values.password}
@@ -116,7 +123,7 @@ export default function RegisterForm() {
 			</fieldset>
 
 			<fieldset className="fieldset">
-				<label className="label">I am signing up as</label>
+				<label className="label">{t("auth.signingUpAs")}</label>
 				<div className="flex w-full gap-3">
 					<button
 						type="button"
@@ -127,7 +134,7 @@ export default function RegisterForm() {
 						aria-pressed={values.role === "artist"}
 					>
 						<Pencil size={14} />
-						Artist
+						{t("auth.artist")}
 					</button>
 					<button
 						type="button"
@@ -138,7 +145,7 @@ export default function RegisterForm() {
 						aria-pressed={values.role === "hirer"}
 					>
 						<Search size={14} />
-						Hirer
+						{t("auth.hirer")}
 					</button>
 				</div>
 			</fieldset>
@@ -146,19 +153,24 @@ export default function RegisterForm() {
 			{formError && <p className="text-error text-sm mt-2">{formError}</p>}
 
 			<button className="btn btn-primary mt-4" type="submit" disabled={isLoading}>
-				{isLoading ? "Creating account…" : `Create account as ${values.role}`}
+				{isLoading
+					? t("auth.creatingAccount")
+					: values.role === "artist"
+						? t("auth.createAccountAsArtist")
+						: t("auth.createAccountAsHirer")}
 				<ArrowRight size={14} className="my-auto" />
 			</button>
+			{/* <Trans> keeps the sentence whole in the locale file and slots the
+			    links into the <terms>/<privacy> placeholders, so each language can
+			    put them wherever its own grammar needs them. */}
 			<span className="text-center opacity-80">
-				By continuing you agree to our{" "}
-				<Link to="/terms" className="underline">
-					Terms
-				</Link>{" "}
-				&{" "}
-				<Link to="/privacy" className="underline">
-					Privacy Policy
-				</Link>
-				.
+				<Trans
+					i18nKey="auth.agreeToTerms"
+					components={{
+						terms: <Link to="/terms" className="underline" />,
+						privacy: <Link to="/privacy" className="underline" />,
+					}}
+				/>
 			</span>
 		</form>
 	);

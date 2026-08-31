@@ -5,8 +5,10 @@ import { listMyGigs } from "../features/gigs/api";
 import { formatDate } from "../lib/format";
 import { ApiError } from "../lib/apiClient";
 import type { GigDto } from "../features/gigs/types";
+import { useTranslation } from "react-i18next";
 
 export default function MyOpportunitiesPage() {
+	const { t } = useTranslation();
 	const [gigs, setGigs] = useState<GigDto[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [error, setError] = useState<string | null>(null);
@@ -21,11 +23,7 @@ export default function MyOpportunitiesPage() {
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
-				setError(
-					err instanceof ApiError
-						? err.message
-						: "Couldn't load your opportunities. Please try again.",
-				);
+				setError(err instanceof ApiError ? err.message : "gig.loadListFailed");
 				setStatus("error");
 			});
 		return () => {
@@ -39,33 +37,33 @@ export default function MyOpportunitiesPage() {
 				<div>
 					<h1 className="text-2xl font-semibold">My opportunities</h1>
 					<p className="text-sm text-base-content/50">
-						{status === "ready" ? `${gigs.length} posted` : "Loading…"}
+						{status === "ready" ? t("gig.postedCount", { count: gigs.length }) : t("gig.loading")}
 					</p>
 				</div>
 				<Link to="/opportunities/new" className="btn btn-primary btn-sm rounded-full">
 					<PlusIcon className="size-4" aria-hidden="true" />
-					Post opportunity
+					{t("gig.postOpportunity")}
 				</Link>
 			</div>
 
 			{status === "error" && (
 				<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					<p className="font-medium">Couldn&rsquo;t load your opportunities</p>
-					<p className="text-error/80">{error}</p>
+					<p className="font-medium">{t("gig.couldntLoadList")}</p>
+					<p className="text-error/80">{error ? t(error) : null}</p>
 				</div>
 			)}
 
 			{status === "loading" && (
 				<div className="flex h-64 items-center justify-center text-sm text-base-content/50">
-					Loading…
+					{t("gig.loading")}
 				</div>
 			)}
 
 			{status === "ready" && gigs.length === 0 && (
 				<div className="flex h-64 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-					<p className="font-medium">You haven&rsquo;t posted any opportunities yet</p>
+					<p className="font-medium">{t("gig.noneYet")}</p>
 					<Link to="/opportunities/new" className="btn btn-primary btn-sm mt-2 rounded-full">
-						Post your first opportunity
+						{t("gig.postFirst")}
 					</Link>
 				</div>
 			)}
@@ -89,12 +87,12 @@ export default function MyOpportunitiesPage() {
 												gig.status === "open" ? "badge-primary" : "badge-ghost"
 											}`}
 										>
-											{gig.status === "open" ? "Open" : "Closed"}
+											{gig.status === "open" ? t("gig.open") : t("gig.closed")}
 										</span>
 									</div>
 									<p className="truncate text-sm text-base-content/50">
-										{gig.category.label} · {gig.location ?? "Location TBD"} · Posted{" "}
-										{formatDate(gig.createdAt)}
+										{gig.category.label} · {gig.location ?? t("gig.locationTbd")} ·{" "}
+										{t("gig.posted")} {formatDate(gig.createdAt)}
 									</p>
 								</div>
 								<ChevronRightIcon

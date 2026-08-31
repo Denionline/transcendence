@@ -5,6 +5,7 @@ import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
 import UsersTable from "../features/admin/components/UsersTable";
 import EditUserDialog from "../features/admin/components/EditUserDialog";
+import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 8;
 
@@ -24,6 +25,7 @@ function getPageWindow(current: number, total: number): (number | "…")[] {
 }
 
 export default function AdminUsersPage() {
+	const { t } = useTranslation();
 	const { user: currentUser } = useAuth();
 	const { users, isLoading, error, update, remove } = useUsers();
 
@@ -73,8 +75,8 @@ export default function AdminUsersPage() {
 					<SearchIcon className="text-base-content opacity-50" aria-hidden="true" />
 					<input
 						type="search"
-						placeholder="Search by name, email, role or status"
-						aria-label="Search by name, email, role or status"
+						placeholder={t("admin.searchUsers")}
+						aria-label={t("admin.searchUsers")}
 						value={search}
 						onChange={(e) => {
 							setSearch(e.target.value);
@@ -87,17 +89,19 @@ export default function AdminUsersPage() {
 
 			{selectedCount > 0 && (
 				<div className="flex flex-wrap items-center gap-2 rounded-box bg-base-200 p-3">
-					<span className="text-sm font-medium">{selectedCount} selected</span>
+					<span className="text-sm font-medium">
+						{t("admin.selectedCount", { count: selectedCount })}
+					</span>
 					<div className="ml-auto flex flex-wrap gap-2">
 						<button
 							className="btn btn-sm btn-outline btn-error"
 							onClick={() => setPendingDeleteIds(Array.from(selectedIds))}
 						>
 							<Trash2 className="size-4" />
-							Delete
+							{t("admin.delete")}
 						</button>
 						<button className="btn btn-sm btn-ghost" onClick={() => setSelectedIds(new Set())}>
-							Clear
+							{t("admin.clear")}
 						</button>
 					</div>
 				</div>
@@ -163,21 +167,21 @@ export default function AdminUsersPage() {
 
 			<dialog ref={deleteDialogRef} className="modal" onClose={() => setPendingDeleteIds(null)}>
 				<div className="modal-box">
-					<h3 className="text-lg font-bold">Delete {pendingDeleteIds?.length ?? 0} user(s)?</h3>
-					<p className="py-4 text-base-content/70">
-						This action cannot be undone. The selected user(s) will be permanently removed.
-					</p>
+					<h3 className="text-lg font-bold">
+						{t("admin.deleteTitle", { count: pendingDeleteIds?.length ?? 0 })}
+					</h3>
+					<p className="py-4 text-base-content/70">{t("admin.deleteBody")}</p>
 					<div className="modal-action">
 						<button className="btn" onClick={() => setPendingDeleteIds(null)}>
-							Cancel
+							{t("admin.cancel")}
 						</button>
 						<button className="btn btn-error" onClick={confirmDelete}>
-							Delete
+							{t("admin.delete")}
 						</button>
 					</div>
 				</div>
 				<form method="dialog" className="modal-backdrop">
-					<button>close</button>
+					<button>{t("admin.close")}</button>
 				</form>
 			</dialog>
 

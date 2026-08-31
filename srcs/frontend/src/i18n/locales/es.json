@@ -1,0 +1,649 @@
+{
+	"common": {
+		"appName": "Artmate",
+		"language": "Idioma",
+		"viewAll": "Ver todo",
+		"viewProfile": "Ver perfil",
+		"coverPhoto": "Foto de portada",
+		"friendRequest": "Solicitud de amistad",
+		"noConversationsYet": "Aún sin conversaciones.",
+		"yourCategoriesHint": "Tus propias categorías — todas las ofertas aquí coinciden con al menos una. Añade más en Ajustes para ampliar esta lista.",
+		"currentPassword": "Contraseña actual",
+		"newPassword": "Nueva contraseña",
+		"confirmPassword": "Confirmar nueva contraseña",
+		"updatePassword": "Actualizar contraseña",
+		"passwordChanged": "Contraseña cambiada correctamente.",
+		"canvasBlank": "Este lienzo está en blanco.",
+		"notFoundBody": "La página que buscas se movió, cambió de nombre o nunca existió. Volvamos al trabajo.",
+		"backToDiscover": "Volver a Descubrir",
+		"goHome": "Ir al inicio"
+	},
+	"nav": {
+		"discover": "Descubrir",
+		"myOpportunities": "Mis oportunidades",
+		"opportunities": "Oportunidades",
+		"matches": "Coincidencias",
+		"friends": "Amigos",
+		"postOpportunity": "Publicar oportunidad",
+		"profile": "Perfil",
+		"settings": "Ajustes",
+		"logout": "Cerrar sesión",
+		"openMenu": "Abrir menú",
+		"closeMenu": "Cerrar menú",
+		"goToHomepage": "Ir a la página de inicio",
+		"accountMenu": "Menú de cuenta",
+		"searchAsHirer": "Buscar artistas, habilidades, ciudades...",
+		"searchAsArtist": "Buscar proyectos, marcas, ciudades..."
+	},
+	"auth": {
+		"email": "Correo electrónico",
+		"emailPlaceholder": "tu@email.com",
+		"password": "Contraseña",
+		"passwordPlaceholder": "••••••••",
+		"forgot": "¿Olvidaste?",
+		"logIn": "Iniciar sesión",
+		"loggingIn": "Iniciando sesión…",
+		"loginFailed": "No se pudo iniciar sesión",
+		"welcomeBack": "Bienvenido de nuevo",
+		"logInToArtmate": "Inicia sesión en Artmate",
+		"sessionExpired": "Tu sesión ha expirado. Vuelve a iniciar sesión para continuar.",
+		"continueWith42": "Continuar con 42",
+		"or": "O",
+		"newToArtmate": "¿Nuevo en Artmate?",
+		"createAccount": "Crear cuenta",
+		"joinArtmate": "Únete a Artmate",
+		"createYourAccount": "Crea tu cuenta",
+		"alreadyOnArtmate": "¿Ya tienes cuenta en Artmate?",
+		"name": "Nombre",
+		"namePlaceholder": "Juana Pérez",
+		"signingUpAs": "Me registro como",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"creatingAccount": "Creando cuenta…",
+		"createAccountAsArtist": "Crear cuenta como artista",
+		"createAccountAsHirer": "Crear cuenta como contratante",
+		"registerFailed": "No se pudo crear la cuenta",
+		"agreeToTerms": "Al continuar, aceptas nuestros <terms>Términos</terms> y la <privacy>Política de Privacidad</privacy>.",
+		"errors": {
+			"emailRequired": "El correo electrónico es obligatorio",
+			"emailInvalid": "Introduce un correo electrónico válido",
+			"emailTooLong": "Esa dirección de correo es demasiado larga",
+			"passwordRequired": "La contraseña es obligatoria",
+			"passwordTooShort": "La contraseña debe tener al menos {{passwordMin}} caracteres",
+			"passwordNeedsLowercase": "La contraseña debe contener una letra minúscula",
+			"passwordNeedsUppercase": "La contraseña debe contener una letra mayúscula",
+			"passwordNeedsDigit": "La contraseña debe contener un dígito",
+			"passwordNeedsSymbol": "La contraseña debe contener un símbolo",
+			"passwordTooLong": "La contraseña es demasiado larga",
+			"nameRequired": "El nombre es obligatorio",
+			"nameTooLong": "Mantén el nombre por debajo de {{usernameMax}} caracteres",
+			"currentPasswordRequired": "Introduce tu contraseña actual",
+			"confirmPasswordRequired": "Confirma la nueva contraseña",
+			"passwordsDoNotMatch": "Las contraseñas no coinciden"
+		}
+	},
+	"legal": {
+		"privacyPolicy": "Política de Privacidad",
+		"termsOfService": "Términos del Servicio",
+		"legalNavLabel": "Legal",
+		"lastUpdatedLabel": "Última actualización:",
+		"privacy": {
+			"title": "Política de Privacidad",
+			"intro": "Esta Política de Privacidad explica qué información recoge Artmate, por qué la recoge y qué puedes hacer al respecto. Artmate es una plataforma que conecta a quienes ofrecen trabajo creativo (“contratantes”) con los artistas que lo realizan. Al crear una cuenta, aceptas el tratamiento de tu información tal como se describe a continuación.",
+			"sections": {
+				"collect": {
+					"heading": "Qué información recogemos",
+					"paragraphs": ["Solo recogemos lo que la plataforma necesita para funcionar:"],
+					"items": [
+						{
+							"label": "Datos de la cuenta",
+							"text": "la dirección de correo, el nombre visible y la contraseña que indicas al registrarte, y si tu cuenta es de artista o de contratante. Las contraseñas nunca se guardan de forma legible (ver “Cómo protegemos tu información”)."
+						},
+						{
+							"label": "Información del perfil",
+							"text": "todo lo que decidas añadir a tu perfil, como tu ubicación, disciplinas, disponibilidad, tarifa, un avatar y los archivos de portafolio que subas."
+						},
+						{
+							"label": "Actividad en la plataforma",
+							"text": "las oportunidades que publicas, los swipes que haces, las coincidencias que generan y los mensajes que intercambias con quienes has coincidido."
+						},
+						{
+							"label": "Datos técnicos",
+							"text": "información básica que tu navegador envía con cada petición (como tu dirección IP), usada para mantener las sesiones seguras y aplicar límites de uso contra abusos."
+						}
+					]
+				},
+				"use": {
+					"heading": "Cómo usamos tu información",
+					"paragraphs": ["Tu información se usa para prestar el servicio, en concreto para:"],
+					"items": [
+						{
+							"text": "crear y proteger tu cuenta y mantener la sesión iniciada;"
+						},
+						{
+							"text": "mostrar tu perfil a contratantes o artistas relevantes para que puedan producirse coincidencias mutuas;"
+						},
+						{
+							"text": "conectar oportunidades con candidatos y permitir el chat entre usuarios que han coincidido;"
+						},
+						{
+							"text": "enviar notificaciones en la aplicación sobre actividad que te concierne;"
+						},
+						{
+							"text": "proteger la plataforma frente a fraude, abuso y ataques automatizados."
+						}
+					],
+					"closing": "No vendemos tu información personal ni la usamos para mostrar publicidad de terceros."
+				},
+				"visibility": {
+					"heading": "Qué ven los demás usuarios",
+					"paragraphs": [
+						"Artmate es una plataforma de emparejamiento, así que parte de la información está pensada para que la vean otros. Tu perfil — nombre visible, avatar, disciplinas, ubicación, disponibilidad y los archivos de portafolio que añadas — es visible para los usuarios con los que puedes coincidir. Los mensajes que envías son visibles para el usuario con el que has coincidido. Tu correo electrónico y tu contraseña nunca se muestran a otros usuarios."
+					]
+				},
+				"protect": {
+					"heading": "Cómo protegemos tu información",
+					"paragraphs": [
+						"Las contraseñas se guardan solo como hash con salt, nunca en texto plano, de modo que no pueden leerse ni siquiera por nosotros. Todas las conexiones entre tu navegador y Artmate usan HTTPS. La autenticación emplea tokens de acceso de corta duración y un token de renovación aparte, guardado en una cookie segura gestionada por el navegador. El acceso a los datos de otros usuarios está restringido por comprobaciones de rol y de propiedad en el servidor."
+					]
+				},
+				"retention": {
+					"heading": "Conservación de datos",
+					"paragraphs": [
+						"Conservamos tu información mientras exista tu cuenta. Cuando eliminas la cuenta, tu información personal, tu perfil y los archivos subidos se eliminan, y el contenido vinculado a tu cuenta (como tus ofertas, swipes y coincidencias) se borra con ella. Algunos registros técnicos mínimos pueden persistir brevemente por motivos de seguridad antes de descartarse."
+					]
+				},
+				"rights": {
+					"heading": "Tus derechos",
+					"paragraphs": [
+						"Puedes ver y actualizar la mayor parte de tu información en cualquier momento desde tu perfil y los ajustes. Puedes eliminar tu cuenta, lo que borra tus datos personales según lo descrito arriba. Si tienes preguntas sobre tus datos o quieres ejercer algún derecho que te reconozca la legislación aplicable, contáctanos con los datos indicados abajo."
+					]
+				},
+				"children": {
+					"heading": "Menores",
+					"paragraphs": [
+						"Artmate no está dirigida a menores. Debes tener edad suficiente para celebrar un acuerdo vinculante en tu país para crear una cuenta, y no deberías usar Artmate si eres menor de esa edad."
+					]
+				},
+				"changes": {
+					"heading": "Cambios en esta política",
+					"paragraphs": [
+						"Podemos actualizar esta Política de Privacidad a medida que la plataforma evoluciona. Cuando hagamos cambios relevantes, actualizaremos la fecha de “Última actualización” en la parte superior de esta página. Seguir usando Artmate tras un cambio significa que aceptas la política actualizada."
+					]
+				},
+				"contact": {
+					"heading": "Contacto",
+					"paragraphs": [
+						"Artmate es un proyecto no comercial creado como parte del currículo de 42. Para cualquier duda sobre esta política o sobre tus datos, contacta con el equipo del proyecto a través del repositorio o de la dirección indicada en el README del proyecto."
+					]
+				}
+			}
+		},
+		"terms": {
+			"title": "Términos del Servicio",
+			"intro": "Estos Términos del Servicio (“Términos”) rigen tu uso de Artmate, una plataforma que conecta a contratantes que ofrecen trabajo creativo con los artistas que lo realizan. Al crear una cuenta o usar Artmate, aceptas estos Términos. Si no estás de acuerdo, no uses la plataforma.",
+			"sections": {
+				"who": {
+					"heading": "Quién puede usar Artmate",
+					"paragraphs": [
+						"Debes tener edad suficiente para celebrar un acuerdo vinculante en tu país para usar Artmate. Aceptas facilitar información de cuenta veraz y mantener seguras tus credenciales de acceso. Eres responsable de la actividad que se produzca en tu cuenta."
+					]
+				},
+				"account": {
+					"heading": "Tu cuenta",
+					"paragraphs": [
+						"Te registras como artista o como contratante. Puedes actualizar tu perfil en cualquier momento y eliminar tu cuenta cuando quieras. Podemos suspender o eliminar cuentas que incumplan estos Términos, que se usen para abusos, o que pongan en riesgo a otros usuarios o a la plataforma."
+					]
+				},
+				"content": {
+					"heading": "Contenido que aportas",
+					"paragraphs": [
+						"Conservas la propiedad del contenido que añades a Artmate — tu información de perfil, archivos de portafolio, oportunidades y mensajes. Al publicar contenido, concedes a Artmate el permiso limitado necesario para almacenarlo y mostrarlo con el fin de operar la plataforma (por ejemplo, mostrar tu perfil a usuarios con los que puedes coincidir). Eres responsable de asegurarte de que tienes derecho a compartir todo lo que subes."
+					]
+				},
+				"acceptable": {
+					"heading": "Uso aceptable",
+					"paragraphs": ["Al usar Artmate, aceptas no:"],
+					"items": [
+						{
+							"text": "suplantar a otras personas ni tergiversar tu identidad, competencias o intenciones;"
+						},
+						{
+							"text": "publicar contenido ilegal, infractor, de odio, de acoso o dañino de cualquier otro modo;"
+						},
+						{
+							"text": "usar la plataforma para enviar spam, ni para acceder a ella, extraer datos o perturbarla por medios automatizados;"
+						},
+						{
+							"text": "intentar romper, eludir o sondear la seguridad de la plataforma o las cuentas de otros usuarios;"
+						},
+						{
+							"text": "usar Artmate para cualquier fin que sea ilegal donde vives."
+						}
+					]
+				},
+				"matches": {
+					"heading": "Coincidencias y acuerdos entre usuarios",
+					"paragraphs": [
+						"Artmate presenta a artistas y contratantes y habilita el chat cuando hay una coincidencia mutua. Cualquier acuerdo, pago o relación de trabajo que resulte de ello es estrictamente entre los usuarios implicados. Artmate no es parte en esos acuerdos, no emplea a artistas ni a contratantes, y no garantiza la calidad, legalidad ni el resultado de ningún trabajo acordado a través de la plataforma."
+					]
+				},
+				"availability": {
+					"heading": "Disponibilidad del servicio",
+					"paragraphs": [
+						"Artmate es un proyecto académico ofrecido “tal cual” y “según disponibilidad”. No prometemos que sea ininterrumpido, libre de errores ni permanentemente disponible, y podemos cambiar o descontinuar funciones en cualquier momento."
+					]
+				},
+				"liability": {
+					"heading": "Limitación de responsabilidad",
+					"paragraphs": [
+						"En la máxima medida permitida por la ley, Artmate y sus colaboradores no son responsables de ninguna pérdida indirecta o consecuente derivada de tu uso de la plataforma, incluidos los litigios, pérdidas o daños resultantes de acuerdos hechos entre usuarios. El uso de Artmate es bajo tu propia responsabilidad."
+					]
+				},
+				"changes": {
+					"heading": "Cambios en estos Términos",
+					"paragraphs": [
+						"Podemos actualizar estos Términos a medida que la plataforma evoluciona. Cuando hagamos cambios relevantes, actualizaremos la fecha de “Última actualización” en la parte superior de esta página. Seguir usando Artmate tras un cambio significa que aceptas los Términos actualizados."
+					]
+				},
+				"contact": {
+					"heading": "Contacto",
+					"paragraphs": [
+						"Artmate es un proyecto no comercial creado como parte del currículo de 42. Para cualquier duda sobre estos Términos, contacta con el equipo del proyecto a través del repositorio o de la dirección indicada en el README del proyecto."
+					]
+				}
+			}
+		}
+	},
+	"password": {
+		"minLength": "Al menos 12 caracteres",
+		"lowercase": "Una letra minúscula",
+		"uppercase": "Una letra mayúscula",
+		"digit": "Un dígito",
+		"symbol": "Un símbolo",
+		"notCommon": "No es una contraseña común",
+		"notPersonal": "No contiene tu nombre ni tu correo"
+	},
+	"welcome": {
+		"headline": "Donde el buen trabajo encuentra",
+		"headlineAccent": "a las personas adecuadas.",
+		"subtitle": "El hogar de muralistas, ilustradores y escenógrafos — y de quienes los contratan.",
+		"tagMural": "mural / lisboa",
+		"tagLettering": "lettering",
+		"tagSetDesign": "escenografía",
+		"quote": "“Conseguí tres murales en mi primer mes aquí.”",
+		"quoteAuthor": "Nélida R. · muralista, Oporto"
+	},
+	"filters": {
+		"discipline": "Disciplina",
+		"availability": "Disponibilidad",
+		"location": "Ubicación",
+		"minimumRate": "Tarifa mínima",
+		"applyFilters": "Aplicar filtros",
+		"lockedToOpportunity": "Fijado a esta oportunidad.",
+		"lockedToProfile": "Fijado a tu perfil.",
+		"notSpecified": "Sin especificar",
+		"any": "Cualquiera",
+		"availableNow": "Disponible ahora",
+		"availableSoon": "Disponible pronto",
+		"ratePlaceholder": "p. ej. 500"
+	},
+	"discover": {
+		"title": "Descubrir artistas",
+		"reviewingForOpportunity": "Revisando para la oportunidad",
+		"reviewingFor": "Revisando para",
+		"selectOpportunity": "Elegir oportunidad",
+		"postGigToStart": "Publica una oferta para empezar a descubrir artistas",
+		"newOpportunity": "Nueva oportunidad",
+		"couldntLoadArtists": "No se pudieron cargar los artistas",
+		"loadingArtists": "Cargando artistas…",
+		"loadFailed": "No se pudieron cargar los artistas. Inténtalo de nuevo.",
+		"loadOpportunitiesFailed": "No se pudieron cargar tus oportunidades.",
+		"notEligible": "{{name}} no es elegible para la categoría de esta oportunidad."
+	},
+	"opportunities": {
+		"title": "Oportunidades",
+		"noGigsRightNow": "No hay ofertas que mostrar ahora mismo",
+		"tryAgainInAMoment": "Vuelve a intentarlo en un momento.",
+		"tryAgain": "Intentar de nuevo",
+		"loadingGigs": "Cargando ofertas…"
+	},
+	"deck": {
+		"noMoreMatches": "No hay más coincidencias",
+		"noMoreGigs": "No hay más ofertas",
+		"checkBackLater": "Vuelve más tarde.",
+		"allCaughtUp": "Estás al día",
+		"checkBackForArtists": "Vuelve más tarde para ver nuevos artistas.",
+		"checkBackForGigs": "Vuelve más tarde para ver nuevas ofertas.",
+		"undo": "Deshacer",
+		"pass": "Pasar",
+		"interested": "Interesado",
+		"remoteOk": "Remoto OK",
+		"remote": "Remoto",
+		"onSite": "Presencial",
+		"verifiedHirer": "Contratante verificado",
+		"filters": "Filtros",
+		"new": "Nueva",
+		"passOn": "Pasar de {{name}}",
+		"viewDetailsFor": "Ver detalles de {{name}}",
+		"startsOnGigCategory": "Empieza por la categoría propia de esta oportunidad — marca más para explorar otras disciplinas. Un me gusta solo cuenta dentro de la categoría real de la oferta.",
+		"previewHint": "Así es exactamente como la verán los artistas en su feed — rellena el formulario y míralo actualizarse aquí."
+	},
+	"preview": {
+		"yourBrand": "Tu marca",
+		"locationTbd": "Ubicación por definir",
+		"titlePlaceholder": "El título de tu oportunidad aparece aquí",
+		"durationTbd": "Duración por definir"
+	},
+	"matches": {
+		"title": "Coincidencias",
+		"possibleMatches": "Posibles coincidencias",
+		"yourMatches": "Tus coincidencias",
+		"interestedCount_zero": "Todavía nadie está interesado",
+		"interestedCount_one": "{{count}} persona está interesada en ti",
+		"interestedCount_other": "{{count}} personas están interesadas en ti",
+		"confirmedCount_zero": "Aún sin coincidencias confirmadas",
+		"confirmedCount_one": "{{count}} coincidencia confirmada",
+		"confirmedCount_other": "{{count}} coincidencias confirmadas",
+		"loading": "Cargando…",
+		"allGigs": "Todas las ofertas",
+		"filterByOpportunity": "Filtrar por oportunidad",
+		"noInterestYet": "Todavía nadie ha mostrado interés",
+		"noInterestForGig": "Aún sin interés en esta oferta",
+		"keepSwiping": "Sigue deslizando — los nuevos intereses aparecen aquí.",
+		"interestedIn": "Interesado en {{title}}",
+		"matchedOn": "Coincidencia en {{title}}",
+		"couldntLoadInterests": "No se pudieron cargar tus intereses",
+		"couldntLoadMatches": "No se pudieron cargar tus coincidencias",
+		"loadInterestsFailed": "No se pudieron cargar tus intereses.",
+		"loadMatchesFailed": "No se pudieron cargar tus coincidencias.",
+		"removeFailed": "No se pudo eliminar esta coincidencia.",
+		"loadingInterests": "Cargando intereses…",
+		"loadingMatches": "Cargando coincidencias…",
+		"tryAgain": "Intentar de nuevo",
+		"decline": "Rechazar a {{name}}",
+		"accept": "Aceptar a {{name}}",
+		"online": "En línea",
+		"chat": "Chatear",
+		"goToChat": "Ir al chat con {{name}}",
+		"removeMatchWith": "Eliminar la coincidencia con {{name}}",
+		"removeTitle": "¿Eliminar la coincidencia con {{name}}?",
+		"removeBody": "Esto termina la coincidencia y borra el historial del chat. No se puede deshacer.",
+		"cancel": "Cancelar",
+		"removing": "Eliminando…",
+		"removeMatch": "Eliminar coincidencia",
+		"close": "cerrar",
+		"subtitle": "Personas interesadas en ti y las coincidencias que ya has hecho.",
+		"noMatchesYet": "Aún sin coincidencias",
+		"acceptOrSwipe": "Acepta un interés arriba, o sigue deslizando para encontrar una."
+	},
+	"messages": {
+		"title": "Mensajes",
+		"selectConversation": "Elige una conversación",
+		"sayHello": "Saluda 👋",
+		"unread": "{{count}} sin leer",
+		"backToConversations": "Volver a las conversaciones",
+		"online": "En línea",
+		"loadEarlier": "Cargar mensajes anteriores",
+		"loading": "Cargando…",
+		"messageLabel": "Mensaje",
+		"messagePlaceholder": "Mensaje para {{name}}",
+		"sendFailed": "No se pudo enviar ese mensaje.",
+		"delete": "Eliminar",
+		"subtitle": "Chatea con las personas con las que has coincidido.",
+		"couldntLoadMessages": "No se pudieron cargar tus mensajes",
+		"loadingConversations": "Cargando conversaciones…",
+		"pickFromLeft": "Elige a alguien de la izquierda para ver tus mensajes.",
+		"loadingMessages": "Cargando mensajes…",
+		"couldntLoadConversation": "No se pudo cargar esta conversación.",
+		"startConversation": "Habéis coincidido en {{title}} — empieza la conversación.",
+		"noMatchesYet": "Aún sin coincidencias",
+		"onceYouMatch": "En cuanto coincidas con alguien, aparecerá aquí.",
+		"couldntLoadShort": "No se pudieron cargar los mensajes."
+	},
+	"friends": {
+		"title": "Amigos",
+		"count_zero": "Aún sin amigos",
+		"count_one": "{{count}} amigo",
+		"count_other": "{{count}} amigos",
+		"loading": "Cargando…",
+		"loadingFriends": "Cargando amigos…",
+		"loadFailed": "No se pudieron cargar tus amigos.",
+		"noFriendsYet": "Aún sin amigos",
+		"addFromProfile": "Añade a alguien desde su perfil para verlo aquí.",
+		"remove": "Eliminar a {{name}}",
+		"locationTbd": "Ubicación por definir",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"friends": "Amigos",
+		"removeFriend": "Eliminar amigo",
+		"requestSent": "Solicitud enviada",
+		"addFriend": "Añadir amigo",
+		"sentYouRequest": "Te ha enviado una solicitud de amistad",
+		"declineRequest": "Rechazar solicitud de amistad",
+		"acceptRequest": "Aceptar solicitud de amistad",
+		"alreadyFriends": "Ya sois amigos.",
+		"alreadyResponded": "Ya has respondido a esta solicitud.",
+		"decline": "Rechazar",
+		"accept": "Aceptar"
+	},
+	"notifications": {
+		"title": "Notificaciones",
+		"unread_zero": "Sin notificaciones sin leer",
+		"unread_one": "{{count}} sin leer",
+		"unread_other": "{{count}} sin leer",
+		"loading": "Cargando…",
+		"markAllRead": "Marcar todas como leídas",
+		"markAsRead": "Marcar como leída",
+		"couldntLoad": "No se pudieron cargar las notificaciones",
+		"tryAgain": "Intentar de nuevo",
+		"loadingNotifications": "Cargando notificaciones…",
+		"noneYet": "Aún sin notificaciones",
+		"willShowHere": "Coincidencias, mensajes y novedades aparecerán aquí.",
+		"couldntLoadShort": "No se pudieron cargar las notificaciones.",
+		"allCaughtUp": "Estás al día.",
+		"matchedWith": "¡Has coincidido con {{name}}!",
+		"someone": "Alguien",
+		"sentMessage": "{{name}} te ha enviado un mensaje",
+		"messagePreview": "{{name}}: {{preview}}",
+		"gigClosed": "“{{title}}” se ha cerrado",
+		"aGig": "Una oferta",
+		"interestedInGig": "{{name}} está interesado en {{title}}",
+		"yourGig": "tu oferta",
+		"interestedInYou": "{{name}} está interesado en ti",
+		"sentFriendRequest": "{{name}} te ha enviado una solicitud de amistad",
+		"acceptedFriendRequest": "{{name}} ha aceptado tu solicitud de amistad"
+	},
+	"profile": {
+		"back": "Volver",
+		"goBack": "Volver atrás",
+		"loading": "Cargando",
+		"loadFailed": "No se pudo cargar este perfil.",
+		"locationTbd": "Ubicación por definir",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"available": "Disponible",
+		"unavailable": "No disponible",
+		"noBio": "Sin biografía.",
+		"portfolio": "Portafolio",
+		"updated": "Perfil actualizado correctamente.",
+		"updateFailed": "La actualización ha fallado.",
+		"noCategoryYet": "Aún sin categoría",
+		"noCategoriesSelected": "Aún no has elegido categorías — selecciona algunas abajo.",
+		"editArtistDetails": "Editar detalles de artista",
+		"editOrganizationDetails": "Editar detalles de la organización",
+		"categories": "Categorías",
+		"bio": "Biografía",
+		"location": "Ubicación",
+		"organizationName": "Nombre de la organización",
+		"bioPlaceholderArtist": "Cuenta a los contratantes qué haces y cómo trabajas.",
+		"bioPlaceholderHirer": "¿Qué hace tu organización y qué buscas?",
+		"locationPlaceholder": "Ciudad, país",
+		"availableForWork": "Disponible para trabajar",
+		"availabilityHint": "Se muestra como insignia en tu perfil público.",
+		"saveChanges": "Guardar cambios",
+		"yourPublicProfile": "Tu perfil público",
+		"noBioYet": "Aún sin biografía — presenta tu organización abajo.",
+		"editHirerDetails": "Editar detalles de contratante",
+		"title": "Perfil",
+		"resultTitle": "Perfil",
+		"couldntLoadRetry": "No se pudo cargar este perfil. Inténtalo de nuevo.",
+		"avatarHint": "Haz clic en la cámara para subir una foto, o pega abajo la URL de una imagen.",
+		"account": "Cuenta",
+		"portfolioHint": "Añade fotos, un reel o una nota de voz — aparecen al instante en la vista previa de arriba y en tu perfil público.",
+		"hirerEditHint": "Se muestra a los artistas junto a tus oportunidades — los cambios de arriba se actualizan al instante.",
+		"artistEditHint": "Los cambios de arriba actualizan la vista previa al instante — guarda para publicarlos.",
+		"categoriesHint": "(elige al menos una, hasta {{max}})"
+	},
+	"settings": {
+		"title": "Ajustes",
+		"account": "Cuenta",
+		"appearance": "Apariencia",
+		"preferences": "Preferencias",
+		"notifications": "Notificaciones",
+		"nothingToConfigure": "Aquí todavía no hay nada que configurar — vuelve pronto.",
+		"theme": "Tema",
+		"themeHint": "Elige un tema para toda la aplicación. Los cambios se aplican al instante.",
+		"livePreview": "Vista previa · cómo se ve este tema en tu feed",
+		"username": "Nombre de usuario",
+		"email": "Correo electrónico",
+		"avatarUrl": "URL del avatar",
+		"optional": "opcional",
+		"avatarUrlPlaceholder": "https://...",
+		"changePhoto": "Cambiar foto",
+		"saveChanges": "Guardar cambios",
+		"accountUpdated": "Cuenta actualizada correctamente.",
+		"updateFailed": "La actualización ha fallado.",
+		"chooseImage": "Elige una imagen JPEG, PNG o WebP.",
+		"uploadFailed": "La subida ha fallado",
+		"notificationsSoon": "Los ajustes de notificaciones aún no están disponibles — vuelve pronto.",
+		"language": "Idioma",
+		"languageHint": "Elige el idioma de toda la aplicación. Los cambios se aplican al instante."
+	},
+	"portfolio": {
+		"title": "Portafolio",
+		"photo": "Foto",
+		"video": "Vídeo",
+		"audio": "Audio",
+		"add": "Añadir {{type}}",
+		"remove": "Eliminar {{name}}",
+		"uploadFailed": "La subida ha fallado",
+		"deleteFailed": "No se pudo eliminar {{name}}.",
+		"tryAgain": "Inténtalo de nuevo."
+	},
+	"gig": {
+		"newOpportunity": "Nueva oportunidad",
+		"published": "Oportunidad publicada",
+		"publishedHint": "Los artistas que coinciden con “{{title}}” empezarán a verla en su feed.",
+		"viewMyOpportunities": "Ver mis oportunidades",
+		"publishing": "Publicando…",
+		"publish": "Publicar oportunidad",
+		"publishFailed": "No se pudo publicar la oportunidad",
+		"basics": "Básico",
+		"title": "Título",
+		"titlePlaceholder": "p. ej. Mural pintado a mano para la apertura de la terraza",
+		"category": "Categoría",
+		"selectCategory": "Elegir categoría",
+		"loadingCategories": "Cargando categorías…",
+		"rate": "Tarifa",
+		"rateHint": "· opcional, €",
+		"ratePlaceholder": "p. ej. 1200",
+		"brief": "Briefing",
+		"description": "Descripción",
+		"optional": "· opcional",
+		"descriptionPlaceholder": "Describe el trabajo, los entregables y cualquier referencia que los artistas deban conocer.",
+		"location": "Ubicación",
+		"locationPlaceholder": "p. ej. Lisboa",
+		"locationTbd": "Ubicación por definir",
+		"preview": "Vista previa · cómo la ven los artistas",
+		"posted": "Publicada el",
+		"myOpportunities": "Mis oportunidades",
+		"postedCount_zero": "Aún ninguna publicada",
+		"postedCount_one": "{{count}} publicada",
+		"postedCount_other": "{{count}} publicadas",
+		"postOpportunity": "Publicar oportunidad",
+		"loading": "Cargando…",
+		"noneYet": "Aún no has publicado ninguna oportunidad",
+		"postFirst": "Publica tu primera oportunidad",
+		"open": "Abierta",
+		"closed": "Cerrada",
+		"searchRelatedArtists": "Buscar artistas relacionados",
+		"updating": "Actualizando…",
+		"closeOpportunity": "Cerrar oportunidad",
+		"reopenOpportunity": "Reabrir oportunidad",
+		"matchedStaysClosed": "Has tenido una coincidencia en esta oportunidad, así que permanece cerrada",
+		"loadFailed": "No se pudo cargar esta oportunidad. Inténtalo de nuevo.",
+		"updateFailed": "No se pudo actualizar esta oportunidad.",
+		"loadListFailed": "No se pudieron cargar tus oportunidades. Inténtalo de nuevo.",
+		"couldntLoadOne": "No se pudo cargar esta oportunidad",
+		"couldntLoadList": "No se pudieron cargar tus oportunidades"
+	},
+	"onboarding": {
+		"setUpProfile": "Configura tu perfil de {{role}}",
+		"roleHirer": "contratante",
+		"roleArtist": "artista",
+		"hirerIntro": "El nombre de la organización es obligatorio para empezar — todo lo demás es opcional y puedes rellenarlo cuando quieras desde Ajustes.",
+		"artistIntro": "La categoría es obligatoria para empezar — es como te conectamos con oportunidades. Todo lo demás es opcional y puedes rellenarlo cuando quieras desde Ajustes.",
+		"category": "Categoría",
+		"selectCategory": "Elegir categoría",
+		"organizationName": "Nombre de la organización",
+		"bio": "Biografía",
+		"location": "Ubicación",
+		"optionalSuffix": "(opcional)",
+		"availableForWork": "Disponible para trabajar",
+		"continue": "Continuar",
+		"saveFailed": "No se pudo guardar tu perfil. Inténtalo de nuevo.",
+		"pickATheme": "Elige un tema",
+		"themeIntro": "Totalmente opcional — los cambios se aplican al instante y siempre puedes cambiarlo luego en Ajustes.",
+		"maybeLater": "Quizá más tarde"
+	},
+	"admin": {
+		"welcomeBack": "Bienvenido de nuevo",
+		"whatsHappening": "Esto es lo que está pasando en la plataforma.",
+		"searchUsers": "Buscar por nombre, correo, rol o estado",
+		"selectAllOnPage": "Seleccionar todos los usuarios de esta página",
+		"selectedCount": "{{count}} seleccionados",
+		"delete": "Eliminar",
+		"clear": "Limpiar",
+		"cancel": "Cancelar",
+		"noUsersMatch": "Ningún usuario coincide con tu búsqueda.",
+		"user": "Usuario",
+		"role": "Rol",
+		"joined": "Se unió",
+		"editUser": "Editar usuario",
+		"deleteUser": "Eliminar usuario",
+		"cantDeleteSelf": "No puedes eliminar tu propia cuenta",
+		"deleteTitle_one": "¿Eliminar {{count}} usuario?",
+		"deleteTitle_other": "¿Eliminar {{count}} usuarios?",
+		"deleteBody": "Esta acción no se puede deshacer. Los usuarios seleccionados se eliminarán permanentemente.",
+		"updateFailed": "La actualización ha fallado.",
+		"saveChanges": "Guardar cambios",
+		"close": "cerrar",
+		"selectUser": "Seleccionar a {{name}}"
+	},
+	"a11y": {
+		"close": "Cerrar",
+		"loading": "Cargando",
+		"logout": "Cerrar sesión",
+		"artmateHome": "Inicio de Artmate",
+		"legal": "Legal",
+		"previousMedia": "Medio anterior",
+		"nextMedia": "Medio siguiente",
+		"seek": "Buscar",
+		"uploadProgress": "Progreso de la subida",
+		"send": "Enviar"
+	},
+	"files": {
+		"viewFullSize": "Ver {{name}} a tamaño completo",
+		"delete": "Eliminar {{name}}"
+	},
+	"time": {
+		"justNow": "ahora mismo",
+		"minutesAgo": "hace {{count}} min",
+		"hoursAgo": "hace {{count}} h",
+		"daysAgo": "hace {{count}} d"
+	},
+	"categories": {
+		"couldNotLoad": "No se pudieron cargar las categorías."
+	}
+}

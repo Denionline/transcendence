@@ -2,6 +2,7 @@ import { CheckIcon, SparklesIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import { useTheme } from "../../theme/hooks/useTheme";
 import { THEMES } from "../../theme/constants";
+import { useTranslation } from "react-i18next";
 
 interface ThemeOnboardingModalProps {
 	/** Fires on every way out — pick a theme and continue, skip, the X, backdrop, or Escape. */
@@ -13,6 +14,7 @@ interface ThemeOnboardingModalProps {
 // account has seen the prompt — dismissing it any way still means "don't ask
 // again", not just closing the dialog.
 export default function ThemeOnboardingModal({ onDone }: ThemeOnboardingModalProps) {
+	const { t } = useTranslation();
 	const { theme, setTheme } = useTheme();
 
 	return (
@@ -21,12 +23,10 @@ export default function ThemeOnboardingModal({ onDone }: ThemeOnboardingModalPro
 				<div className="flex items-center gap-2">
 					<SparklesIcon className="size-5 text-primary" aria-hidden="true" />
 					<h2 id="theme-onboarding-title" className="text-lg font-semibold">
-						Pick a theme
+						{t("onboarding.pickATheme")}
 					</h2>
 				</div>
-				<p className="text-sm text-base-content/60">
-					Totally optional — changes apply instantly and you can always switch it later in Settings.
-				</p>
+				<p className="text-sm text-base-content/60">{t("onboarding.themeIntro")}</p>
 
 				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
 					{THEMES.map(({ value, label }) => {
@@ -63,10 +63,10 @@ export default function ThemeOnboardingModal({ onDone }: ThemeOnboardingModalPro
 
 				<div className="flex items-center justify-end gap-2 pt-2">
 					<button type="button" onClick={onDone} className="btn btn-ghost btn-sm rounded-full">
-						Maybe later
+						{t("onboarding.maybeLater")}
 					</button>
 					<button type="button" onClick={onDone} className="btn btn-primary btn-sm rounded-full">
-						Continue
+						{t("onboarding.continue")}
 					</button>
 				</div>
 			</div>

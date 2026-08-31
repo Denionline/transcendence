@@ -6,6 +6,7 @@ import type { UserRole } from "../../auth/types";
 import FieldError from "../../../components/FieldError";
 import { validateForm, type FieldErrors } from "../../../lib/formValidation";
 import { LIMITS } from "../../../lib/limits";
+import { useTranslation } from "react-i18next";
 import {
 	MAX_BIO_LENGTH,
 	artistOnboardingSchema,
@@ -41,6 +42,7 @@ export default function ProfileOnboardingModal({
 	error,
 	onSubmit,
 }: ProfileOnboardingModalProps) {
+	const { t } = useTranslation();
 	const { categories } = useCategories();
 	const [category, setCategory] = useState("");
 	const [organizationName, setOrganizationName] = useState("");
@@ -85,13 +87,13 @@ export default function ProfileOnboardingModal({
 				<div className="flex items-center gap-2">
 					<PaletteIcon className="size-5 text-primary" aria-hidden="true" />
 					<h2 id="profile-onboarding-title" className="text-lg font-semibold">
-						Set up your {isHirer ? "hirer" : "artist"} profile
+						{t("onboarding.setUpProfile", {
+							role: isHirer ? t("onboarding.roleHirer") : t("onboarding.roleArtist"),
+						})}
 					</h2>
 				</div>
 				<p className="text-sm text-base-content/60">
-					{isHirer
-						? "Organization name is required to get started — everything else below is optional and can be filled in anytime from Settings."
-						: "Category is required to get started — it's how we match you with opportunities. Everything else below is optional and can be filled in anytime from Settings."}
+					{isHirer ? t("onboarding.hirerIntro") : t("onboarding.artistIntro")}
 				</p>
 
 				{error && (
@@ -103,7 +105,8 @@ export default function ProfileOnboardingModal({
 				{!isHirer && (
 					<label className="fieldset-label flex-col items-start gap-1">
 						<span className="text-sm font-medium">
-							Category<span className="text-error">*</span>
+							{t("onboarding.category")}
+							<span className="text-error">*</span>
 						</span>
 						<select
 							className="select w-full"
@@ -112,7 +115,7 @@ export default function ProfileOnboardingModal({
 							required
 						>
 							<option value="" disabled>
-								Select category
+								{t("onboarding.selectCategory")}
 							</option>
 							{categories.map((option) => (
 								<option key={option.slug} value={option.slug}>
@@ -126,7 +129,8 @@ export default function ProfileOnboardingModal({
 				{isHirer && (
 					<label className="fieldset-label flex-col items-start gap-1">
 						<span className="text-sm font-medium">
-							Organization name<span className="text-error">*</span>
+							{t("onboarding.organizationName")}
+							<span className="text-error">*</span>
 						</span>
 						<input
 							type="text"
@@ -142,7 +146,10 @@ export default function ProfileOnboardingModal({
 
 				<label className="fieldset-label flex-col items-start gap-1">
 					<span className="text-sm font-medium">
-						Bio <span className="font-normal text-base-content/40">(optional)</span>
+						{t("onboarding.bio")}{" "}
+						<span className="font-normal text-base-content/40">
+							{t("onboarding.optionalSuffix")}
+						</span>
 					</span>
 					<textarea
 						className="textarea w-full"
@@ -157,7 +164,10 @@ export default function ProfileOnboardingModal({
 
 				<label className="fieldset-label flex-col items-start gap-1">
 					<span className="text-sm font-medium">
-						Location <span className="font-normal text-base-content/40">(optional)</span>
+						{t("onboarding.location")}{" "}
+						<span className="font-normal text-base-content/40">
+							{t("onboarding.optionalSuffix")}
+						</span>
 					</span>
 					<input
 						type="text"
@@ -178,7 +188,7 @@ export default function ProfileOnboardingModal({
 							checked={availability}
 							onChange={(e) => setAvailability(e.target.checked)}
 						/>
-						<span className="text-sm font-medium">Available for work</span>
+						<span className="text-sm font-medium">{t("onboarding.availableForWork")}</span>
 					</label>
 				)}
 
@@ -188,7 +198,7 @@ export default function ProfileOnboardingModal({
 					disabled={!canSubmit || isSaving}
 				>
 					{isSaving && <span className="loading loading-spinner loading-xs" />}
-					Continue
+					{t("onboarding.continue")}
 				</button>
 			</form>
 		</Modal>

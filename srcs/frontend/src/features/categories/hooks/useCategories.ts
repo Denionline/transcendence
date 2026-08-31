@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchCategories } from "../api";
 import type { CategoryDto } from "../types";
 
@@ -8,6 +9,7 @@ import type { CategoryDto } from "../types";
 let cache: CategoryDto[] | null = null;
 
 export function useCategories() {
+	const { t } = useTranslation();
 	const [categories, setCategories] = useState<CategoryDto[]>(cache ?? []);
 	const [isLoading, setIsLoading] = useState(cache === null);
 	const [error, setError] = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function useCategories() {
 			})
 			.catch(() => {
 				if (!active) return;
-				setError("Could not load categories.");
+				setError("categories.couldNotLoad");
 			})
 			.finally(() => {
 				if (!active) return;
@@ -36,5 +38,5 @@ export function useCategories() {
 		};
 	}, []);
 
-	return { categories, isLoading, error };
+	return { categories, isLoading, error: error ? t(error) : null };
 }

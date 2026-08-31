@@ -6,6 +6,7 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import RespondRequestModal from "../../friends/components/RespondRequestModal";
 import { NOTIFICATION_META } from "../utils";
 import type { NotificationDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface NotificationListItemProps {
 	notification: NotificationDto;
@@ -16,6 +17,7 @@ export default function NotificationListItem({
 	notification,
 	onMarkRead,
 }: NotificationListItemProps) {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const isHirer = user?.role === "hirer";
 	const meta = NOTIFICATION_META[notification.type];
@@ -44,7 +46,7 @@ export default function NotificationListItem({
 			<div className="min-w-0 flex-1">
 				<p className="flex items-center gap-1.5 truncate text-sm">
 					<Icon className={`size-3.5 shrink-0 ${meta.iconClass}`} aria-hidden="true" />
-					<span className="truncate">{meta.message(notification, isHirer)}</span>
+					<span className="truncate">{meta.message(t, notification, isHirer)}</span>
 				</p>
 				<p className="text-xs text-base-content/50">{formatRelativeTime(notification.createdAt)}</p>
 			</div>
@@ -88,7 +90,7 @@ export default function NotificationListItem({
 			{!notification.isRead && (
 				<button
 					type="button"
-					aria-label="Mark as read"
+					aria-label={t("notifications.markAsRead")}
 					onClick={() => onMarkRead(notification.id)}
 					className="btn btn-circle btn-ghost btn-xs shrink-0"
 				>

@@ -9,6 +9,7 @@ import FieldError from "../../../components/FieldError";
 import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../../../lib/formValidation";
 import { accountSchema, type AccountValues } from "../schemas";
 import LabeledField from "./LabeledField";
+import { useTranslation } from "react-i18next";
 
 type Status = { type: "success" | "error"; text: string } | null;
 
@@ -17,6 +18,7 @@ type Status = { type: "success" | "error"; text: string } | null;
  *  (bio, categories, rate, …) lives on the dedicated Profile page instead,
  *  reached from the navbar's account menu. */
 export default function AccountSection() {
+	const { t } = useTranslation();
 	const { user, updateProfile } = useAuth();
 
 	const [username, setUsername] = useState(user?.username ?? "");
@@ -42,7 +44,7 @@ export default function AccountSection() {
 
 		const problem = validationErrorFor(file);
 		if (problem || !file.type.startsWith("image/")) {
-			setAvatarError(problem ?? "Choose a JPEG, PNG or WebP image.");
+			setAvatarError(problem ?? t("settings.chooseImage"));
 			return;
 		}
 
@@ -51,7 +53,7 @@ export default function AccountSection() {
 		uploadFile(file, { visibility: "public", onProgress: setAvatarProgress })
 			.then((uploaded) => setAvatarUrl(uploaded.url))
 			.catch((err: unknown) => {
-				setAvatarError(err instanceof Error ? err.message : "Upload failed");
+				setAvatarError(err instanceof Error ? err.message : t("settings.uploadFailed"));
 			})
 			.finally(() => setAvatarProgress(null));
 	}
@@ -71,7 +73,7 @@ export default function AccountSection() {
 		try {
 			//	"" is this form's way of saying "no avatar"; the API wants null.
 			await updateProfile({ ...checked.data, avatarUrl: checked.data.avatarUrl || null });
-			setStatus({ type: "success", text: "Account updated successfully." });
+			setStatus({ type: "success", text: t("settings.accountUpdated") });
 		} catch (err) {
 			//	A rule only the server knows — this email already belongs to
 			//	someone — belongs under its input, not in the banner.
@@ -80,7 +82,7 @@ export default function AccountSection() {
 			else
 				setStatus({
 					type: "error",
-					text: err instanceof Error ? err.message : "Update failed.",
+					text: err instanceof Error ? err.message : t("settings.updateFailed"),
 				});
 		} finally {
 			setIsSaving(false);
@@ -93,7 +95,7 @@ export default function AccountSection() {
 				<span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-base-200 text-base-content/60">
 					<UserRound className="size-3.5" aria-hidden="true" />
 				</span>
-				<h2 className="font-semibold">Account</h2>
+				<h2 className="font-semibold">{t("profile.account")}</h2>
 			</div>
 
 			<form className="flex flex-col gap-5 p-4" onSubmit={handleSubmit}>
@@ -124,7 +126,7 @@ export default function AccountSection() {
 							type="button"
 							onClick={() => avatarInputRef.current?.click()}
 							disabled={avatarProgress !== null}
-							aria-label="Change photo"
+							aria-label={t("settings.changePhoto")}
 							className="btn btn-circle btn-primary btn-xs absolute -right-1 -bottom-1 shadow ring-2 ring-base-100 transition-transform duration-150 hover:scale-110 disabled:opacity-70"
 						>
 							{avatarProgress !== null ? (
@@ -135,14 +137,12 @@ export default function AccountSection() {
 						</button>
 					</div>
 					<div className="flex flex-col gap-1">
-						<p className="text-sm text-base-content/60">
-							Click the camera to upload a photo, or paste an image URL below.
-						</p>
+						<p className="text-sm text-base-content/60">{t("profile.avatarHint")}</p>
 						{avatarError && <p className="text-xs text-error">{avatarError}</p>}
 					</div>
 				</div>
 
-				<LabeledField label="Username" icon={UserRoundIcon} className="max-w-sm">
+				<LabeledField label={t("settings.username")} icon={UserRoundIcon} className="max-w-sm">
 					<input
 						type="text"
 						className="input w-full pl-9"
@@ -153,7 +153,7 @@ export default function AccountSection() {
 					<FieldError message={errors.username} />
 				</LabeledField>
 
-				<LabeledField label="Email" icon={MailIcon} className="max-w-sm">
+				<LabeledField label={t("settings.email")} icon={MailIcon} className="max-w-sm">
 					<input
 						type="email"
 						className="input w-full pl-9"
@@ -164,14 +164,19 @@ export default function AccountSection() {
 					<FieldError message={errors.email} />
 				</LabeledField>
 
-				<LabeledField label="Avatar URL" icon={LinkIcon} hint="optional" className="max-w-sm">
+				<LabeledField
+					label={t("settings.avatarUrl")}
+					icon={LinkIcon}
+					hint={t("settings.optional")}
+					className="max-w-sm"
+				>
 					{/* type="text", not "url": an upload above fills this with a
 					    relative /api/files/... path, which the browser's built-in
 					    URL validation would otherwise reject on submit. */}
 					<input
 						type="text"
 						className="input w-full pl-9"
-						placeholder="https://..."
+						placeholder={t("settings.avatarUrlPlaceholder")}
 						value={avatarUrl}
 						onChange={(e) => setAvatarUrl(e.target.value)}
 						aria-invalid={errors.avatarUrl ? "true" : undefined}
@@ -186,7 +191,7 @@ export default function AccountSection() {
 						disabled={isSaving}
 					>
 						{isSaving && <span className="loading loading-spinner loading-xs" />}
-						Save changes
+						{t("settings.saveChanges")}
 					</button>
 				</div>
 			</form>

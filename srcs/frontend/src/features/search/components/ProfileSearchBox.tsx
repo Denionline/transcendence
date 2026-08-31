@@ -5,6 +5,7 @@ import ProfileResultModal from "./ProfileResultModal";
 import Avatar from "../../../components/Avatar";
 import { useAuth } from "../../auth/hooks/useAuth";
 import type { SearchProfileResult } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface ProfileSearchBoxProps {
 	placeholder: string;
@@ -22,6 +23,7 @@ export default function ProfileSearchBox({
 	className,
 	onSelect,
 }: ProfileSearchBoxProps) {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const [query, setQuery] = useState("");
 	const [results, setResults] = useState<SearchProfileResult[]>([]);
@@ -121,7 +123,7 @@ export default function ProfileSearchBox({
 										result.role === "artist" ? "badge-primary" : "badge-secondary"
 									}`}
 								>
-									{result.role === "artist" ? "Artist" : "Hirer"}
+									{result.role === "artist" ? t("friends.artist") : t("friends.hirer")}
 								</span>
 							</button>
 						</li>

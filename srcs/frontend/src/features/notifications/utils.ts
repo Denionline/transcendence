@@ -6,18 +6,15 @@ import {
 	UserPlusIcon,
 	UserCheckIcon,
 } from "lucide-react";
+import type { TFunction } from "i18next";
 import type { NotificationDto, NotificationType } from "./types";
 
 interface NotificationMeta {
 	icon: typeof BriefcaseIcon;
 	iconClass: string;
-	message: (notification: NotificationDto, isHirer: boolean) => string;
+
+	message: (t: TFunction, notification: NotificationDto, isHirer: boolean) => string;
 	href: (notification: NotificationDto) => string;
-	/**
-	 * When true, clicking the row opens the accept/decline modal in place
-	 * instead of navigating via `href` — used only by new_invite, whose href
-	 * is kept as a `/friends` fallback for notifications with no actor.
-	 */
 	respondsInline?: boolean;
 }
 
@@ -25,44 +22,61 @@ export const NOTIFICATION_META: Record<NotificationType, NotificationMeta> = {
 	new_match: {
 		icon: HeartHandshakeIcon,
 		iconClass: "text-primary",
-		message: (n) => `You matched with ${n.actor?.displayName ?? "someone"}!`,
+		message: (t, n) =>
+			t("notifications.matchedWith", {
+				name: n.actor?.displayName ?? t("notifications.someone"),
+			}),
 		href: (n) => (n.matchId ? `/messages?matchId=${n.matchId}` : "/messages"),
 	},
 	new_message: {
 		icon: MessageCircleIcon,
 		iconClass: "text-secondary",
-		message: (n) =>
-			n.preview
-				? `${n.actor?.displayName ?? "Someone"}: ${n.preview}`
-				: `${n.actor?.displayName ?? "Someone"} sent you a message`,
+		message: (t, n) => {
+			const name = n.actor?.displayName ?? t("notifications.someone");
+			return n.preview
+				? t("notifications.messagePreview", { name, preview: n.preview })
+				: t("notifications.sentMessage", { name });
+		},
 		href: () => "/messages",
 	},
 	gig_closed: {
 		icon: BriefcaseIcon,
 		iconClass: "text-neutral",
-		message: (n) => `"${n.gigTitle ?? "A gig"}" was closed`,
+		message: (t, n) =>
+			t("notifications.gigClosed", { title: n.gigTitle ?? t("notifications.aGig") }),
 		href: (n) => (n.gigId ? `/opportunities/mine/${n.gigId}` : "/opportunities/mine"),
 	},
 	swipe_liked: {
 		icon: ThumbsUpIcon,
 		iconClass: "text-accent",
-		message: (n, isHirer) =>
-			isHirer
-				? `${n.actor?.displayName ?? "Someone"} is interested in ${n.gigTitle || "your gig"}`
-				: `${n.actor?.displayName ?? "Someone"} is interested in you`,
+		message: (t, n, isHirer) => {
+			const name = n.actor?.displayName ?? t("notifications.someone");
+			return isHirer
+				? t("notifications.interestedInGig", {
+						name,
+						title: n.gigTitle || t("notifications.yourGig"),
+					})
+				: t("notifications.interestedInYou", { name });
+		},
 		href: () => "/matches",
 	},
 	new_invite: {
 		icon: UserPlusIcon,
 		iconClass: "text-primary",
-		message: (n) => `${n.actor?.displayName ?? "Someone"} sent you a friend request`,
+		message: (t, n) =>
+			t("notifications.sentFriendRequest", {
+				name: n.actor?.displayName ?? t("notifications.someone"),
+			}),
 		href: () => "/friends",
 		respondsInline: true,
 	},
 	invite_accepted: {
 		icon: UserCheckIcon,
 		iconClass: "text-success",
-		message: (n) => `${n.actor?.displayName ?? "Someone"} accepted your friend request`,
+		message: (t, n) =>
+			t("notifications.acceptedFriendRequest", {
+				name: n.actor?.displayName ?? t("notifications.someone"),
+			}),
 		href: () => "/friends",
 	},
 };

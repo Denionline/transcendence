@@ -1,0 +1,649 @@
+{
+	"common": {
+		"appName": "Artmate",
+		"language": "Idioma",
+		"viewAll": "Ver tudo",
+		"viewProfile": "Ver perfil",
+		"coverPhoto": "Foto de capa",
+		"friendRequest": "Pedido de amizade",
+		"noConversationsYet": "Ainda sem conversas.",
+		"yourCategoriesHint": "As tuas categorias — todas as vagas aqui correspondem a pelo menos uma. Adiciona mais nas Definições para alargar esta lista.",
+		"currentPassword": "Palavra-passe atual",
+		"newPassword": "Nova palavra-passe",
+		"confirmPassword": "Confirmar nova palavra-passe",
+		"updatePassword": "Atualizar palavra-passe",
+		"passwordChanged": "Palavra-passe alterada com sucesso.",
+		"canvasBlank": "Esta tela está em branco.",
+		"notFoundBody": "A página que procuras foi movida, mudou de nome, ou nunca chegou a existir. Vamos levar-te de volta ao trabalho.",
+		"backToDiscover": "Voltar a Descobrir",
+		"goHome": "Ir para o início"
+	},
+	"nav": {
+		"discover": "Descobrir",
+		"myOpportunities": "As minhas oportunidades",
+		"opportunities": "Oportunidades",
+		"matches": "Correspondências",
+		"friends": "Amigos",
+		"postOpportunity": "Publicar oportunidade",
+		"profile": "Perfil",
+		"settings": "Definições",
+		"logout": "Terminar sessão",
+		"openMenu": "Abrir menu",
+		"closeMenu": "Fechar menu",
+		"goToHomepage": "Ir para a página inicial",
+		"accountMenu": "Menu da conta",
+		"searchAsHirer": "Procurar artistas, competências, cidades...",
+		"searchAsArtist": "Procurar projetos, marcas, cidades..."
+	},
+	"auth": {
+		"email": "Email",
+		"emailPlaceholder": "tu@email.com",
+		"password": "Palavra-passe",
+		"passwordPlaceholder": "••••••••",
+		"forgot": "Esqueceste-te?",
+		"logIn": "Entrar",
+		"loggingIn": "A entrar…",
+		"loginFailed": "Não foi possível iniciar sessão",
+		"welcomeBack": "Bem-vindo de volta",
+		"logInToArtmate": "Entrar no Artmate",
+		"sessionExpired": "A tua sessão expirou. Volta a entrar para continuares.",
+		"continueWith42": "Continuar com a 42",
+		"or": "OU",
+		"newToArtmate": "Novo no Artmate?",
+		"createAccount": "Criar conta",
+		"joinArtmate": "Junta-te ao Artmate",
+		"createYourAccount": "Cria a tua conta",
+		"alreadyOnArtmate": "Já tens conta no Artmate?",
+		"name": "Nome",
+		"namePlaceholder": "Joana Silva",
+		"signingUpAs": "Vou registar-me como",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"creatingAccount": "A criar conta…",
+		"createAccountAsArtist": "Criar conta como artista",
+		"createAccountAsHirer": "Criar conta como contratante",
+		"registerFailed": "Não foi possível criar a conta",
+		"agreeToTerms": "Ao continuares, aceitas os nossos <terms>Termos</terms> e a <privacy>Política de Privacidade</privacy>.",
+		"errors": {
+			"emailRequired": "O email é obrigatório",
+			"emailInvalid": "Introduz um email válido",
+			"emailTooLong": "Esse endereço de email é demasiado longo",
+			"passwordRequired": "A palavra-passe é obrigatória",
+			"passwordTooShort": "A palavra-passe tem de ter pelo menos {{passwordMin}} caracteres",
+			"passwordNeedsLowercase": "A palavra-passe tem de conter uma letra minúscula",
+			"passwordNeedsUppercase": "A palavra-passe tem de conter uma letra maiúscula",
+			"passwordNeedsDigit": "A palavra-passe tem de conter um algarismo",
+			"passwordNeedsSymbol": "A palavra-passe tem de conter um símbolo",
+			"passwordTooLong": "A palavra-passe é demasiado longa",
+			"nameRequired": "O nome é obrigatório",
+			"nameTooLong": "Mantém o nome com menos de {{usernameMax}} caracteres",
+			"currentPasswordRequired": "Introduz a tua palavra-passe atual",
+			"confirmPasswordRequired": "Confirma a nova palavra-passe",
+			"passwordsDoNotMatch": "As palavras-passe não coincidem"
+		}
+	},
+	"legal": {
+		"privacyPolicy": "Política de Privacidade",
+		"termsOfService": "Termos de Serviço",
+		"legalNavLabel": "Legal",
+		"lastUpdatedLabel": "Última atualização:",
+		"privacy": {
+			"title": "Política de Privacidade",
+			"intro": "Esta Política de Privacidade explica que informação a Artmate recolhe, porque a recolhe e o que podes fazer quanto a isso. A Artmate é uma plataforma que liga quem oferece trabalho criativo (“contratantes”) aos artistas que o executam. Ao criares uma conta, aceitas o tratamento da tua informação como descrito abaixo.",
+			"sections": {
+				"collect": {
+					"heading": "Que informação recolhemos",
+					"paragraphs": ["Recolhemos apenas o que a plataforma precisa para funcionar:"],
+					"items": [
+						{
+							"label": "Dados da conta",
+							"text": "o endereço de email, o nome apresentado e a palavra-passe que indicas no registo, e se a tua conta é de artista ou de contratante. As palavras-passe nunca são guardadas de forma legível (ver “Como protegemos a tua informação”)."
+						},
+						{
+							"label": "Informação de perfil",
+							"text": "tudo o que escolheres acrescentar ao teu perfil, como a localização, disciplinas, disponibilidade, valor, um avatar e ficheiros de portfólio que carregues."
+						},
+						{
+							"label": "Atividade na plataforma",
+							"text": "as oportunidades que publicas, os swipes que fazes, as correspondências que daí resultam e as mensagens que trocas com quem tiveste correspondência."
+						},
+						{
+							"label": "Dados técnicos",
+							"text": "informação básica que o teu navegador envia em cada pedido (como o endereço IP), usada para manter as sessões seguras e aplicar limites de utilização contra abusos."
+						}
+					]
+				},
+				"use": {
+					"heading": "Como usamos a tua informação",
+					"paragraphs": ["A tua informação é usada para prestar o serviço, em concreto para:"],
+					"items": [
+						{
+							"text": "criar e proteger a tua conta e manter a sessão iniciada;"
+						},
+						{
+							"text": "mostrar o teu perfil a contratantes ou artistas relevantes para que possam surgir correspondências mútuas;"
+						},
+						{
+							"text": "ligar oportunidades a candidatos e permitir a conversa entre utilizadores com correspondência;"
+						},
+						{
+							"text": "enviar notificações na aplicação sobre atividade que te diz respeito;"
+						},
+						{
+							"text": "proteger a plataforma contra fraude, abuso e ataques automatizados."
+						}
+					],
+					"closing": "Não vendemos a tua informação pessoal, nem a usamos para mostrar publicidade de terceiros."
+				},
+				"visibility": {
+					"heading": "O que os outros utilizadores veem",
+					"paragraphs": [
+						"A Artmate é uma plataforma de correspondência, por isso alguma informação destina-se a ser vista por outros. O teu perfil — nome apresentado, avatar, disciplinas, localização, disponibilidade e os ficheiros de portfólio que acrescentares — é visível para os utilizadores com quem podes ter correspondência. As mensagens que envias são visíveis para o utilizador com quem tiveste correspondência. O teu email e a tua palavra-passe nunca são mostrados a outros utilizadores."
+					]
+				},
+				"protect": {
+					"heading": "Como protegemos a tua informação",
+					"paragraphs": [
+						"As palavras-passe são guardadas apenas como hash com salt, nunca em texto simples, por isso não podem ser lidas nem por nós. Todas as ligações entre o teu navegador e a Artmate usam HTTPS. A autenticação usa tokens de acesso de curta duração e um token de renovação separado, guardado num cookie seguro gerido pelo navegador. O acesso aos dados de outros utilizadores é restringido por verificações de função e de propriedade no servidor."
+					]
+				},
+				"retention": {
+					"heading": "Retenção de dados",
+					"paragraphs": [
+						"Guardamos a tua informação enquanto a tua conta existir. Quando apagas a conta, a tua informação pessoal, o perfil e os ficheiros carregados são removidos, e o conteúdo associado à conta (como as tuas vagas, swipes e correspondências) é apagado com ela. Alguns registos técnicos mínimos podem persistir por pouco tempo, por motivos de segurança, antes de serem descartados."
+					]
+				},
+				"rights": {
+					"heading": "Os teus direitos",
+					"paragraphs": [
+						"Podes ver e atualizar a maior parte da tua informação a qualquer momento a partir do teu perfil e das definições. Podes apagar a tua conta, o que remove os teus dados pessoais como descrito acima. Se tiveres dúvidas sobre os teus dados ou quiseres exercer algum direito que a lei aplicável te confira, contacta-nos através dos dados abaixo."
+					]
+				},
+				"children": {
+					"heading": "Crianças",
+					"paragraphs": [
+						"A Artmate não se dirige a crianças. Tens de ter idade suficiente para celebrar um acordo vinculativo no teu país para criares uma conta, e não deves usar a Artmate se tiveres idade inferior."
+					]
+				},
+				"changes": {
+					"heading": "Alterações a esta política",
+					"paragraphs": [
+						"Podemos atualizar esta Política de Privacidade à medida que a plataforma evolui. Quando fizermos alterações relevantes, atualizamos a data de “Última atualização” no topo desta página. Continuares a usar a Artmate depois de uma alteração significa que aceitas a política atualizada."
+					]
+				},
+				"contact": {
+					"heading": "Contacto",
+					"paragraphs": [
+						"A Artmate é um projeto não comercial construído no âmbito do currículo da 42. Para qualquer questão sobre esta política ou sobre os teus dados, contacta a equipa do projeto através do repositório ou do endereço indicado no README do projeto."
+					]
+				}
+			}
+		},
+		"terms": {
+			"title": "Termos de Serviço",
+			"intro": "Estes Termos de Serviço (“Termos”) regulam o teu uso da Artmate, uma plataforma que liga contratantes que oferecem trabalho criativo aos artistas que o executam. Ao criares uma conta ou ao usares a Artmate, aceitas estes Termos. Se não concordares, não uses a plataforma.",
+			"sections": {
+				"who": {
+					"heading": "Quem pode usar a Artmate",
+					"paragraphs": [
+						"Tens de ter idade suficiente para celebrar um acordo vinculativo no teu país para usares a Artmate. Concordas em fornecer informação de conta verdadeira e em manter as tuas credenciais seguras. És responsável pela atividade que ocorrer na tua conta."
+					]
+				},
+				"account": {
+					"heading": "A tua conta",
+					"paragraphs": [
+						"Registas-te como artista ou como contratante. Podes atualizar o teu perfil a qualquer momento e apagar a tua conta quando quiseres. Podemos suspender ou remover contas que violem estes Termos, que sejam usadas para abuso, ou que ponham em risco outros utilizadores ou a plataforma."
+					]
+				},
+				"content": {
+					"heading": "Conteúdo que forneces",
+					"paragraphs": [
+						"Mantens a propriedade do conteúdo que acrescentas à Artmate — informação de perfil, ficheiros de portfólio, oportunidades e mensagens. Ao publicares conteúdo, concedes à Artmate a permissão limitada necessária para o armazenar e mostrar com o objetivo de operar a plataforma (por exemplo, mostrar o teu perfil a utilizadores com quem podes ter correspondência). És responsável por garantir que tens o direito de partilhar tudo o que carregas."
+					]
+				},
+				"acceptable": {
+					"heading": "Uso aceitável",
+					"paragraphs": ["Ao usares a Artmate, concordas em não:"],
+					"items": [
+						{
+							"text": "fazer-te passar por outra pessoa ou deturpar a tua identidade, competências ou intenções;"
+						},
+						{
+							"text": "publicar conteúdo ilegal, que viole direitos, odioso, de assédio ou de outra forma prejudicial;"
+						},
+						{
+							"text": "usar a plataforma para enviar spam, ou para lhe aceder, extrair dados ou perturbá-la por meios automatizados;"
+						},
+						{
+							"text": "tentar quebrar, contornar ou sondar a segurança da plataforma ou as contas de outros utilizadores;"
+						},
+						{
+							"text": "usar a Artmate para qualquer fim que seja ilegal onde vives."
+						}
+					]
+				},
+				"matches": {
+					"heading": "Correspondências e acordos entre utilizadores",
+					"paragraphs": [
+						"A Artmate apresenta artistas e contratantes e disponibiliza conversa quando há correspondência mútua. Qualquer acordo, pagamento ou relação de trabalho que daí resulte é estritamente entre os utilizadores envolvidos. A Artmate não é parte nesses acordos, não emprega artistas nem contratantes, e não garante a qualidade, legalidade ou resultado de qualquer trabalho combinado através da plataforma."
+					]
+				},
+				"availability": {
+					"heading": "Disponibilidade do serviço",
+					"paragraphs": [
+						"A Artmate é um projeto académico fornecido “tal como está” e “conforme disponível”. Não prometemos que seja ininterrupto, isento de erros ou permanentemente disponível, e podemos alterar ou descontinuar funcionalidades a qualquer momento."
+					]
+				},
+				"liability": {
+					"heading": "Limitação de responsabilidade",
+					"paragraphs": [
+						"Na máxima medida permitida por lei, a Artmate e os seus colaboradores não são responsáveis por qualquer perda indireta ou consequente decorrente do teu uso da plataforma, incluindo qualquer litígio, perda ou dano resultante de acordos feitos entre utilizadores. O uso da Artmate é por tua conta e risco."
+					]
+				},
+				"changes": {
+					"heading": "Alterações a estes Termos",
+					"paragraphs": [
+						"Podemos atualizar estes Termos à medida que a plataforma evolui. Quando fizermos alterações relevantes, atualizamos a data de “Última atualização” no topo desta página. Continuares a usar a Artmate depois de uma alteração significa que aceitas os Termos atualizados."
+					]
+				},
+				"contact": {
+					"heading": "Contacto",
+					"paragraphs": [
+						"A Artmate é um projeto não comercial construído no âmbito do currículo da 42. Para qualquer questão sobre estes Termos, contacta a equipa do projeto através do repositório ou do endereço indicado no README do projeto."
+					]
+				}
+			}
+		}
+	},
+	"password": {
+		"minLength": "Pelo menos 12 caracteres",
+		"lowercase": "Uma letra minúscula",
+		"uppercase": "Uma letra maiúscula",
+		"digit": "Um algarismo",
+		"symbol": "Um símbolo",
+		"notCommon": "Não é uma palavra-passe comum",
+		"notPersonal": "Não contém o teu nome nem o teu email"
+	},
+	"welcome": {
+		"headline": "Onde o bom trabalho encontra",
+		"headlineAccent": "as pessoas certas.",
+		"subtitle": "A casa de muralistas, ilustradores e cenógrafos — e de quem os contrata.",
+		"tagMural": "mural / lisboa",
+		"tagLettering": "lettering",
+		"tagSetDesign": "cenografia",
+		"quote": "“Consegui três murais no meu primeiro mês aqui.”",
+		"quoteAuthor": "Nélida R. · muralista, Porto"
+	},
+	"filters": {
+		"discipline": "Disciplina",
+		"availability": "Disponibilidade",
+		"location": "Localização",
+		"minimumRate": "Valor mínimo",
+		"applyFilters": "Aplicar filtros",
+		"lockedToOpportunity": "Fixado a esta oportunidade.",
+		"lockedToProfile": "Fixado ao teu perfil.",
+		"notSpecified": "Não especificado",
+		"any": "Qualquer",
+		"availableNow": "Disponível agora",
+		"availableSoon": "Disponível em breve",
+		"ratePlaceholder": "ex.: 500"
+	},
+	"discover": {
+		"title": "Descobrir artistas",
+		"reviewingForOpportunity": "A rever para a oportunidade",
+		"reviewingFor": "A rever para",
+		"selectOpportunity": "Escolher oportunidade",
+		"postGigToStart": "Publica uma vaga para começares a descobrir artistas",
+		"newOpportunity": "Nova oportunidade",
+		"couldntLoadArtists": "Não foi possível carregar os artistas",
+		"loadingArtists": "A carregar artistas…",
+		"loadFailed": "Não foi possível carregar os artistas. Tenta novamente.",
+		"loadOpportunitiesFailed": "Não foi possível carregar as tuas oportunidades.",
+		"notEligible": "{{name}} não é elegível para a categoria desta oportunidade."
+	},
+	"opportunities": {
+		"title": "Oportunidades",
+		"noGigsRightNow": "Nenhuma vaga para mostrar de momento",
+		"tryAgainInAMoment": "Tenta novamente daqui a pouco.",
+		"tryAgain": "Tentar novamente",
+		"loadingGigs": "A carregar vagas…"
+	},
+	"deck": {
+		"noMoreMatches": "Não há mais correspondências",
+		"noMoreGigs": "Não há mais vagas",
+		"checkBackLater": "Volta mais tarde.",
+		"allCaughtUp": "Estás em dia",
+		"checkBackForArtists": "Volta mais tarde para veres novos artistas.",
+		"checkBackForGigs": "Volta mais tarde para veres novas vagas.",
+		"undo": "Anular",
+		"pass": "Passar",
+		"interested": "Interessado",
+		"remoteOk": "Remoto OK",
+		"remote": "Remoto",
+		"onSite": "Presencial",
+		"verifiedHirer": "Contratante verificado",
+		"filters": "Filtros",
+		"new": "Nova",
+		"passOn": "Passar {{name}}",
+		"viewDetailsFor": "Ver detalhes de {{name}}",
+		"startsOnGigCategory": "Começa na categoria desta oportunidade — marca mais para explorares outras disciplinas. Um gosto continua a contar apenas dentro da categoria real da vaga.",
+		"previewHint": "É exatamente assim que os artistas a vão ver no feed deles — preenche o formulário e vê aqui a atualizar."
+	},
+	"preview": {
+		"yourBrand": "A tua marca",
+		"locationTbd": "Localização por definir",
+		"titlePlaceholder": "O título da tua oportunidade aparece aqui",
+		"durationTbd": "Duração por definir"
+	},
+	"matches": {
+		"title": "Correspondências",
+		"possibleMatches": "Possíveis correspondências",
+		"yourMatches": "As tuas correspondências",
+		"interestedCount_zero": "Ainda ninguém está interessado",
+		"interestedCount_one": "{{count}} pessoa está interessada em ti",
+		"interestedCount_other": "{{count}} pessoas estão interessadas em ti",
+		"confirmedCount_zero": "Ainda sem correspondências confirmadas",
+		"confirmedCount_one": "{{count}} correspondência confirmada",
+		"confirmedCount_other": "{{count}} correspondências confirmadas",
+		"loading": "A carregar…",
+		"allGigs": "Todas as vagas",
+		"filterByOpportunity": "Filtrar por oportunidade",
+		"noInterestYet": "Ainda ninguém mostrou interesse",
+		"noInterestForGig": "Ainda sem interesse nesta vaga",
+		"keepSwiping": "Continua a deslizar — os novos interesses aparecem aqui.",
+		"interestedIn": "Interessado em {{title}}",
+		"matchedOn": "Correspondência em {{title}}",
+		"couldntLoadInterests": "Não foi possível carregar os teus interesses",
+		"couldntLoadMatches": "Não foi possível carregar as tuas correspondências",
+		"loadInterestsFailed": "Não foi possível carregar os teus interesses.",
+		"loadMatchesFailed": "Não foi possível carregar as tuas correspondências.",
+		"removeFailed": "Não foi possível remover esta correspondência.",
+		"loadingInterests": "A carregar interesses…",
+		"loadingMatches": "A carregar correspondências…",
+		"tryAgain": "Tentar novamente",
+		"decline": "Recusar {{name}}",
+		"accept": "Aceitar {{name}}",
+		"online": "Online",
+		"chat": "Conversar",
+		"goToChat": "Ir para a conversa com {{name}}",
+		"removeMatchWith": "Remover correspondência com {{name}}",
+		"removeTitle": "Remover a correspondência com {{name}}?",
+		"removeBody": "Isto termina a correspondência e apaga o histórico da conversa. Não pode ser anulado.",
+		"cancel": "Cancelar",
+		"removing": "A remover…",
+		"removeMatch": "Remover correspondência",
+		"close": "fechar",
+		"subtitle": "Pessoas interessadas em ti e as correspondências que já fizeste.",
+		"noMatchesYet": "Ainda sem correspondências",
+		"acceptOrSwipe": "Aceita um interesse acima, ou continua a deslizar para encontrares uma."
+	},
+	"messages": {
+		"title": "Mensagens",
+		"selectConversation": "Escolhe uma conversa",
+		"sayHello": "Diz olá 👋",
+		"unread": "{{count}} por ler",
+		"backToConversations": "Voltar às conversas",
+		"online": "Online",
+		"loadEarlier": "Carregar mensagens anteriores",
+		"loading": "A carregar…",
+		"messageLabel": "Mensagem",
+		"messagePlaceholder": "Mensagem para {{name}}",
+		"sendFailed": "Não foi possível enviar essa mensagem.",
+		"delete": "Apagar",
+		"subtitle": "Conversa com as pessoas com quem tiveste correspondência.",
+		"couldntLoadMessages": "Não foi possível carregar as tuas mensagens",
+		"loadingConversations": "A carregar conversas…",
+		"pickFromLeft": "Escolhe alguém à esquerda para veres as tuas mensagens.",
+		"loadingMessages": "A carregar mensagens…",
+		"couldntLoadConversation": "Não foi possível carregar esta conversa.",
+		"startConversation": "Tiveram correspondência em {{title}} — começa a conversa.",
+		"noMatchesYet": "Ainda sem correspondências",
+		"onceYouMatch": "Assim que tiveres uma correspondência, ela aparece aqui.",
+		"couldntLoadShort": "Não foi possível carregar as mensagens."
+	},
+	"friends": {
+		"title": "Amigos",
+		"count_zero": "Ainda sem amigos",
+		"count_one": "{{count}} amigo",
+		"count_other": "{{count}} amigos",
+		"loading": "A carregar…",
+		"loadingFriends": "A carregar amigos…",
+		"loadFailed": "Não foi possível carregar os teus amigos.",
+		"noFriendsYet": "Ainda sem amigos",
+		"addFromProfile": "Adiciona alguém a partir do perfil dessa pessoa para a veres aqui.",
+		"remove": "Remover {{name}}",
+		"locationTbd": "Localização por definir",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"friends": "Amigos",
+		"removeFriend": "Remover amigo",
+		"requestSent": "Pedido enviado",
+		"addFriend": "Adicionar amigo",
+		"sentYouRequest": "Enviou-te um pedido de amizade",
+		"declineRequest": "Recusar pedido de amizade",
+		"acceptRequest": "Aceitar pedido de amizade",
+		"alreadyFriends": "Já são amigos.",
+		"alreadyResponded": "Já respondeste a este pedido.",
+		"decline": "Recusar",
+		"accept": "Aceitar"
+	},
+	"notifications": {
+		"title": "Notificações",
+		"unread_zero": "Sem notificações por ler",
+		"unread_one": "{{count}} por ler",
+		"unread_other": "{{count}} por ler",
+		"loading": "A carregar…",
+		"markAllRead": "Marcar todas como lidas",
+		"markAsRead": "Marcar como lida",
+		"couldntLoad": "Não foi possível carregar as notificações",
+		"tryAgain": "Tentar novamente",
+		"loadingNotifications": "A carregar notificações…",
+		"noneYet": "Ainda sem notificações",
+		"willShowHere": "Correspondências, mensagens e atualizações aparecem aqui.",
+		"couldntLoadShort": "Não foi possível carregar as notificações.",
+		"allCaughtUp": "Estás em dia.",
+		"matchedWith": "Tiveste uma correspondência com {{name}}!",
+		"someone": "Alguém",
+		"sentMessage": "{{name}} enviou-te uma mensagem",
+		"messagePreview": "{{name}}: {{preview}}",
+		"gigClosed": "“{{title}}” foi fechada",
+		"aGig": "Uma vaga",
+		"interestedInGig": "{{name}} está interessado em {{title}}",
+		"yourGig": "a tua vaga",
+		"interestedInYou": "{{name}} está interessado em ti",
+		"sentFriendRequest": "{{name}} enviou-te um pedido de amizade",
+		"acceptedFriendRequest": "{{name}} aceitou o teu pedido de amizade"
+	},
+	"profile": {
+		"back": "Voltar",
+		"goBack": "Voltar atrás",
+		"loading": "A carregar",
+		"loadFailed": "Não foi possível carregar este perfil.",
+		"locationTbd": "Localização por definir",
+		"artist": "Artista",
+		"hirer": "Contratante",
+		"available": "Disponível",
+		"unavailable": "Indisponível",
+		"noBio": "Sem biografia.",
+		"portfolio": "Portfólio",
+		"updated": "Perfil atualizado com sucesso.",
+		"updateFailed": "A atualização falhou.",
+		"noCategoryYet": "Ainda sem categoria",
+		"noCategoriesSelected": "Ainda não escolheste categorias — seleciona algumas abaixo.",
+		"editArtistDetails": "Editar detalhes de artista",
+		"editOrganizationDetails": "Editar detalhes da organização",
+		"categories": "Categorias",
+		"bio": "Biografia",
+		"location": "Localização",
+		"organizationName": "Nome da organização",
+		"bioPlaceholderArtist": "Diz aos contratantes o que fazes e como trabalhas.",
+		"bioPlaceholderHirer": "O que faz a tua organização e o que procuras?",
+		"locationPlaceholder": "Cidade, país",
+		"availableForWork": "Disponível para trabalhar",
+		"availabilityHint": "Mostrado como distintivo no teu perfil público.",
+		"saveChanges": "Guardar alterações",
+		"yourPublicProfile": "O teu perfil público",
+		"noBioYet": "Ainda sem biografia — apresenta a tua organização abaixo.",
+		"editHirerDetails": "Editar detalhes de contratante",
+		"title": "Perfil",
+		"resultTitle": "Perfil",
+		"couldntLoadRetry": "Não foi possível carregar este perfil. Tenta novamente.",
+		"avatarHint": "Clica na câmara para carregares uma foto, ou cola abaixo o URL de uma imagem.",
+		"account": "Conta",
+		"portfolioHint": "Adiciona fotos, um reel ou uma nota de voz — aparecem de imediato na pré-visualização acima e no teu perfil público.",
+		"hirerEditHint": "Mostrado aos artistas junto das tuas oportunidades — as alterações acima atualizam de imediato.",
+		"artistEditHint": "As alterações acima atualizam a pré-visualização de imediato — guarda para as publicares.",
+		"categoriesHint": "(escolhe pelo menos uma, até {{max}})"
+	},
+	"settings": {
+		"title": "Definições",
+		"account": "Conta",
+		"appearance": "Aparência",
+		"preferences": "Preferências",
+		"notifications": "Notificações",
+		"nothingToConfigure": "Ainda não há nada para configurar aqui — volta em breve.",
+		"theme": "Tema",
+		"themeHint": "Escolhe um tema para toda a aplicação. As alterações aplicam-se de imediato.",
+		"livePreview": "Pré-visualização · como este tema fica no teu feed",
+		"username": "Nome de utilizador",
+		"email": "Email",
+		"avatarUrl": "URL do avatar",
+		"optional": "opcional",
+		"avatarUrlPlaceholder": "https://...",
+		"changePhoto": "Mudar foto",
+		"saveChanges": "Guardar alterações",
+		"accountUpdated": "Conta atualizada com sucesso.",
+		"updateFailed": "A atualização falhou.",
+		"chooseImage": "Escolhe uma imagem JPEG, PNG ou WebP.",
+		"uploadFailed": "O carregamento falhou",
+		"notificationsSoon": "As definições de notificações ainda não estão disponíveis — volta em breve.",
+		"language": "Idioma",
+		"languageHint": "Escolhe o idioma de toda a aplicação. As alterações aplicam-se de imediato."
+	},
+	"portfolio": {
+		"title": "Portfólio",
+		"photo": "Foto",
+		"video": "Vídeo",
+		"audio": "Áudio",
+		"add": "Adicionar {{type}}",
+		"remove": "Remover {{name}}",
+		"uploadFailed": "O carregamento falhou",
+		"deleteFailed": "Não foi possível apagar {{name}}.",
+		"tryAgain": "Tenta novamente."
+	},
+	"gig": {
+		"newOpportunity": "Nova oportunidade",
+		"published": "Oportunidade publicada",
+		"publishedHint": "Os artistas que correspondem a “{{title}}” vão começar a vê-la no feed deles.",
+		"viewMyOpportunities": "Ver as minhas oportunidades",
+		"publishing": "A publicar…",
+		"publish": "Publicar oportunidade",
+		"publishFailed": "Não foi possível publicar a oportunidade",
+		"basics": "Básico",
+		"title": "Título",
+		"titlePlaceholder": "ex.: Mural pintado à mão para a abertura do terraço",
+		"category": "Categoria",
+		"selectCategory": "Escolher categoria",
+		"loadingCategories": "A carregar categorias…",
+		"rate": "Valor",
+		"rateHint": "· opcional, €",
+		"ratePlaceholder": "ex.: 1200",
+		"brief": "Briefing",
+		"description": "Descrição",
+		"optional": "· opcional",
+		"descriptionPlaceholder": "Descreve o trabalho, os entregáveis e quaisquer referências que os artistas devam conhecer.",
+		"location": "Localização",
+		"locationPlaceholder": "ex.: Lisboa",
+		"locationTbd": "Localização por definir",
+		"preview": "Pré-visualização · como os artistas a veem",
+		"posted": "Publicada a",
+		"myOpportunities": "As minhas oportunidades",
+		"postedCount_zero": "Ainda nenhuma publicada",
+		"postedCount_one": "{{count}} publicada",
+		"postedCount_other": "{{count}} publicadas",
+		"postOpportunity": "Publicar oportunidade",
+		"loading": "A carregar…",
+		"noneYet": "Ainda não publicaste nenhuma oportunidade",
+		"postFirst": "Publica a tua primeira oportunidade",
+		"open": "Aberta",
+		"closed": "Fechada",
+		"searchRelatedArtists": "Procurar artistas relacionados",
+		"updating": "A atualizar…",
+		"closeOpportunity": "Fechar oportunidade",
+		"reopenOpportunity": "Reabrir oportunidade",
+		"matchedStaysClosed": "Tiveste uma correspondência nesta oportunidade, por isso mantém-se fechada",
+		"loadFailed": "Não foi possível carregar esta oportunidade. Tenta novamente.",
+		"updateFailed": "Não foi possível atualizar esta oportunidade.",
+		"loadListFailed": "Não foi possível carregar as tuas oportunidades. Tenta novamente.",
+		"couldntLoadOne": "Não foi possível carregar esta oportunidade",
+		"couldntLoadList": "Não foi possível carregar as tuas oportunidades"
+	},
+	"onboarding": {
+		"setUpProfile": "Configura o teu perfil de {{role}}",
+		"roleHirer": "contratante",
+		"roleArtist": "artista",
+		"hirerIntro": "O nome da organização é obrigatório para começares — tudo o resto abaixo é opcional e pode ser preenchido a qualquer momento nas Definições.",
+		"artistIntro": "A categoria é obrigatória para começares — é assim que te ligamos a oportunidades. Tudo o resto abaixo é opcional e pode ser preenchido a qualquer momento nas Definições.",
+		"category": "Categoria",
+		"selectCategory": "Escolher categoria",
+		"organizationName": "Nome da organização",
+		"bio": "Biografia",
+		"location": "Localização",
+		"optionalSuffix": "(opcional)",
+		"availableForWork": "Disponível para trabalhar",
+		"continue": "Continuar",
+		"saveFailed": "Não foi possível guardar o teu perfil. Tenta novamente.",
+		"pickATheme": "Escolhe um tema",
+		"themeIntro": "Totalmente opcional — as alterações aplicam-se de imediato e podes mudar depois nas Definições.",
+		"maybeLater": "Talvez mais tarde"
+	},
+	"admin": {
+		"welcomeBack": "Bem-vindo de volta",
+		"whatsHappening": "Eis o que se passa na plataforma.",
+		"searchUsers": "Procurar por nome, email, função ou estado",
+		"selectAllOnPage": "Selecionar todos os utilizadores desta página",
+		"selectedCount": "{{count}} selecionados",
+		"delete": "Apagar",
+		"clear": "Limpar",
+		"cancel": "Cancelar",
+		"noUsersMatch": "Nenhum utilizador corresponde à tua pesquisa.",
+		"user": "Utilizador",
+		"role": "Função",
+		"joined": "Registou-se",
+		"editUser": "Editar utilizador",
+		"deleteUser": "Apagar utilizador",
+		"cantDeleteSelf": "Não podes apagar a tua própria conta",
+		"deleteTitle_one": "Apagar {{count}} utilizador?",
+		"deleteTitle_other": "Apagar {{count}} utilizadores?",
+		"deleteBody": "Esta ação não pode ser anulada. Os utilizadores selecionados serão removidos permanentemente.",
+		"updateFailed": "A atualização falhou.",
+		"saveChanges": "Guardar alterações",
+		"close": "fechar",
+		"selectUser": "Selecionar {{name}}"
+	},
+	"a11y": {
+		"close": "Fechar",
+		"loading": "A carregar",
+		"logout": "Terminar sessão",
+		"artmateHome": "Início do Artmate",
+		"legal": "Legal",
+		"previousMedia": "Média anterior",
+		"nextMedia": "Média seguinte",
+		"seek": "Avançar",
+		"uploadProgress": "Progresso do carregamento",
+		"send": "Enviar"
+	},
+	"files": {
+		"viewFullSize": "Ver {{name}} em tamanho real",
+		"delete": "Apagar {{name}}"
+	},
+	"time": {
+		"justNow": "agora mesmo",
+		"minutesAgo": "há {{count}} min",
+		"hoursAgo": "há {{count}} h",
+		"daysAgo": "há {{count}} d"
+	},
+	"categories": {
+		"couldNotLoad": "Não foi possível carregar as categorias."
+	}
+}

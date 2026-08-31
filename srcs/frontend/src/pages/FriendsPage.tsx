@@ -5,8 +5,10 @@ import Avatar from "../components/Avatar";
 import { listFriends, removeFriend } from "../features/friends/api";
 import type { FriendSummary } from "../features/friends/types";
 import { ApiError } from "../lib/apiClient";
+import { useTranslation } from "react-i18next";
 
 export default function FriendsPage() {
+	const { t } = useTranslation();
 	const [friends, setFriends] = useState<FriendSummary[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 	const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function FriendsPage() {
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
-				setError(err instanceof ApiError ? err.message : "Couldn't load your friends.");
+				setError(err instanceof ApiError ? err.message : "friends.loadFailed");
 				setStatus("error");
 			});
 		return () => {
@@ -68,28 +70,30 @@ export default function FriendsPage() {
 	return (
 		<div className="mx-auto max-w-2xl">
 			<div className="mb-6">
-				<h1 className="text-2xl font-semibold">Friends</h1>
+				<h1 className="text-2xl font-semibold">{t("friends.title")}</h1>
 				<p className="text-sm text-base-content/50">
-					{status === "ready" ? `${friends.length} friends` : "Loading…"}
+					{status === "ready"
+						? t("friends.count", { count: friends.length })
+						: t("friends.loading")}
 				</p>
 			</div>
 
 			{status === "error" && (
 				<div className="rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					{error}
+					{error ? t(error) : null}
 				</div>
 			)}
 
 			{status === "loading" && (
 				<div className="flex h-64 items-center justify-center text-sm text-base-content/50">
-					Loading friends…
+					{t("friends.loadingFriends")}
 				</div>
 			)}
 
 			{status === "ready" && friends.length === 0 && (
 				<div className="flex h-64 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-					<p className="font-medium">No friends yet</p>
-					<p className="text-sm">Add someone from their profile to see them here.</p>
+					<p className="font-medium">{t("friends.noFriendsYet")}</p>
+					<p className="text-sm">{t("friends.addFromProfile")}</p>
 				</div>
 			)}
 
@@ -108,14 +112,14 @@ export default function FriendsPage() {
 								<div className="min-w-0">
 									<p className="truncate font-medium">{friend.displayName}</p>
 									<p className="truncate text-sm text-base-content/50">
-										{friend.role === "artist" ? "Artist" : "Hirer"} ·{" "}
-										{friend.location ?? "Location TBD"}
+										{friend.role === "artist" ? t("friends.artist") : t("friends.hirer")} ·{" "}
+										{friend.location ?? t("friends.locationTbd")}
 									</p>
 								</div>
 							</Link>
 							<button
 								type="button"
-								aria-label={`Remove ${friend.displayName}`}
+								aria-label={t("friends.remove", { name: friend.displayName })}
 								disabled={removingIds.has(friend.id)}
 								onClick={() => handleRemove(friend)}
 								className="btn btn-ghost btn-sm shrink-0 text-error disabled:opacity-30"
