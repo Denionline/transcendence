@@ -201,6 +201,13 @@ jobs:
       - name: Dump container logs on failure
         if: failure()
         run: docker compose -f srcs/docker-compose.yml logs
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: srcs/frontend/test-results
+          retention-days: 7
       - name: Tear down
         if: always()
         run: docker compose -f srcs/docker-compose.yml down -v

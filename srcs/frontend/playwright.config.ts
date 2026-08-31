@@ -6,5 +6,6 @@ export default defineConfig({
 	use: {
 		baseURL: "https://localhost:8443",
 		ignoreHTTPSErrors: true,
+		trace: "retain-on-failure",
 	},
 });
