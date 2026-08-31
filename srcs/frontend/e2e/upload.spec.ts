@@ -34,14 +34,17 @@ test("artist can upload a portfolio photo and see it persist", async ({ page }) 
 
 	// A second, larger preview elsewhere on the page reuses this alt text
 	// with a "Name's " prefix — exact: true keeps this pinned to the
-	// portfolio grid tile specifically.
+	// portfolio grid tile specifically. A generous timeout here: this step
+	// follows real file I/O (network + disk on the server), which is far
+	// more sensitive to a loaded CI runner than a plain UI interaction is —
+	// the default 5s was enough locally but not always in CI.
 	const uploadedImage = page.getByAltText(fileName, { exact: true });
-	await expect(uploadedImage).toBeVisible();
+	await expect(uploadedImage).toBeVisible({ timeout: 15_000 });
 
 	// Reload to make sure this is a real, saved file — not just optimistic
 	// local state that would vanish the moment the page refreshes.
 	await page.reload();
-	await expect(uploadedImage).toBeVisible();
+	await expect(uploadedImage).toBeVisible({ timeout: 15_000 });
 
 	await apiDelete(page, `/api/files/${fileId}`);
 });
