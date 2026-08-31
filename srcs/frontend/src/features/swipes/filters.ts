@@ -24,21 +24,19 @@ export function matchesAvailabilityFilter(
 	return selected === null || selected === itemTone;
 }
 
-// "Location TBD" is what mapGig.ts/mapCandidate.ts substitute in for a gig or
+// An empty location is what mapGig.ts/mapCandidate.ts substitute in for a gig or
 // artist that never had a location set (both `null` and `""` collapse to it).
 // That's the same "nothing to filter against" case as an empty query, on the
 // other side of the match — excluding it would silently drop every
 // location-less item the moment the *other* side's location filter (which,
 // for both Discover and Opportunities, is locked to the caller's own locked
 // profile/gig location, not freely typed) is non-empty.
-const UNSPECIFIED_LOCATION = "Location TBD";
-
 /** Case-insensitive substring match; an empty query, or an unset item location, means "no restriction". */
 export function matchesLocationFilter(itemLocation: string, query: string): boolean {
 	const q = query.trim().toLowerCase();
 	if (q === "") return true;
 	const item = itemLocation.trim();
-	if (item === "" || item === UNSPECIFIED_LOCATION) return true;
+	if (item === "") return true;
 	return item.toLowerCase().includes(q);
 }
 

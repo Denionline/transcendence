@@ -3,6 +3,7 @@ import { CheckIcon, Trash2Icon, UserPlusIcon, XIcon } from "lucide-react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { sendFriendRequest, respondToRequest, removeFriend } from "../api";
 import type { FriendshipStatus } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface FriendRequestButtonProps {
 	userId: string;
@@ -24,6 +25,7 @@ export default function FriendRequestButton({
 	onStatusChange,
 	compact = false,
 }: FriendRequestButtonProps) {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const [pending, setPending] = useState(false);
 
@@ -65,11 +67,11 @@ export default function FriendRequestButton({
 			<div className="flex items-center gap-2">
 				<span className={`badge gap-1.5 badge-outline badge-success ${compact ? "badge-sm" : ""}`}>
 					<CheckIcon className="size-3.5" aria-hidden="true" />
-					Friends
+					{t("friends.friends")}
 				</span>
 				<button
 					type="button"
-					aria-label="Remove friend"
+					aria-label={t("friends.removeFriend")}
 					disabled={pending}
 					onClick={handleRemove}
 					className="btn btn-circle btn-ghost btn-xs text-error disabled:opacity-30"
@@ -87,7 +89,7 @@ export default function FriendRequestButton({
 				disabled
 				className={`btn rounded-full ${compact ? "btn-xs" : "btn-sm"}`}
 			>
-				Request Sent
+				{t("friends.requestSent")}
 			</button>
 		);
 	}
@@ -96,11 +98,11 @@ export default function FriendRequestButton({
 		return (
 			<div className="flex items-center gap-2">
 				{!compact && (
-					<span className="text-sm text-base-content/60">Sent you a friend request</span>
+					<span className="text-sm text-base-content/60">{t("friends.sentYouRequest")}</span>
 				)}
 				<button
 					type="button"
-					aria-label="Decline friend request"
+					aria-label={t("friends.declineRequest")}
 					disabled={pending}
 					onClick={() => handleRespond(false)}
 					className={`btn btn-circle btn-outline border-base-content/15 text-base-content/50 hover:border-error hover:bg-error hover:text-error-content disabled:opacity-30 ${compact ? "btn-xs" : "btn-sm"}`}
@@ -109,7 +111,7 @@ export default function FriendRequestButton({
 				</button>
 				<button
 					type="button"
-					aria-label="Accept friend request"
+					aria-label={t("friends.acceptRequest")}
 					disabled={pending}
 					onClick={() => handleRespond(true)}
 					className={`btn btn-circle btn-primary disabled:opacity-30 ${compact ? "btn-xs" : "btn-sm"}`}
@@ -132,7 +134,7 @@ export default function FriendRequestButton({
 			}
 		>
 			<UserPlusIcon className={compact ? "size-3" : "size-4"} aria-hidden="true" />
-			Add Friend
+			{t("friends.addFriend")}
 		</button>
 	);
 }

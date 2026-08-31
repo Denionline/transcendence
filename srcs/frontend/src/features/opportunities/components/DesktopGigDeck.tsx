@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import GigCard from "./GigCard";
 import GigDetailsModal from "./GigDetailsModal";
 import type { GigListing } from "../gigTypes";
+import { useTranslation } from "react-i18next";
 
 const SLOT_COUNT = 3;
 const EXIT_MS = 340;
@@ -25,6 +26,7 @@ export default function DesktopGigDeck({
 	selectedDisciplines,
 	onSwipe,
 }: DesktopGigDeckProps) {
+	const { t } = useTranslation();
 	// Always start with exactly SLOT_COUNT cells, even if fewer gigs are
 	// available yet — a real (rather than decorative) filter can legitimately
 	// leave the pool smaller than a full deck, and mounting with fewer slots
@@ -125,8 +127,8 @@ export default function DesktopGigDeck({
 
 							{!current && !outgoing && (
 								<div className="flex h-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-									<p className="font-medium">No more gigs</p>
-									<p className="text-sm">Check back later.</p>
+									<p className="font-medium">{t("deck.noMoreGigs")}</p>
+									<p className="text-sm">{t("deck.checkBackLater")}</p>
 								</div>
 							)}
 						</div>

@@ -3,6 +3,7 @@ import type { ManagedUser } from "../types";
 import { formatDate } from "../../../lib/format";
 import { ROLE_BADGE } from "../constants";
 import Avatar from "../../../components/Avatar";
+import { useTranslation } from "react-i18next";
 
 export default function UserRow({
 	user,
@@ -19,13 +20,14 @@ export default function UserRow({
 	onEdit: () => void;
 	onDelete: () => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<tr className={selected ? "bg-base-200" : undefined}>
 			<th>
 				<input
 					type="checkbox"
 					className="checkbox"
-					aria-label={`Select ${user.username}`}
+					aria-label={t("admin.selectUser", { name: user.username })}
 					checked={selected}
 					disabled={isSelf}
 					onChange={onToggleSelect}
@@ -52,8 +54,8 @@ export default function UserRow({
 					<button
 						type="button"
 						className="btn btn-ghost btn-xs tooltip"
-						data-tip="Edit user"
-						aria-label="Edit user"
+						data-tip={t("admin.editUser")}
+						aria-label={t("admin.editUser")}
 						onClick={onEdit}
 					>
 						<Pencil className="size-4" />
@@ -61,8 +63,8 @@ export default function UserRow({
 					<button
 						type="button"
 						className="btn btn-ghost btn-xs text-error tooltip tooltip-left"
-						data-tip={isSelf ? "You can't delete your own account" : "Delete user"}
-						aria-label={isSelf ? "You can't delete your own account" : "Delete user"}
+						data-tip={isSelf ? t("admin.cantDeleteSelf") : t("admin.deleteUser")}
+						aria-label={isSelf ? t("admin.cantDeleteSelf") : t("admin.deleteUser")}
 						disabled={isSelf}
 						onClick={onDelete}
 					>

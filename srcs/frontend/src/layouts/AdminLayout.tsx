@@ -2,6 +2,7 @@ import { HomeIcon, LogOutIcon, SettingsIcon, SidebarIcon, UsersIcon } from "luci
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import Avatar from "../components/Avatar";
+import { useTranslation } from "react-i18next";
 
 const NAV_ITEMS = [
 	{ to: "/admin", label: "Dashboard", icon: HomeIcon, end: true },
@@ -10,6 +11,7 @@ const NAV_ITEMS = [
 ];
 
 export default function AdminLayout() {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user, logout } = useAuth();
 
@@ -96,7 +98,7 @@ export default function AdminLayout() {
 						<button
 							type="button"
 							className="btn btn-ghost is-drawer-close:btn-square w-full justify-start gap-2 text-error hover:bg-error/10 is-drawer-close:tooltip is-drawer-close:tooltip-right"
-							data-tip="Logout"
+							data-tip={t("a11y.logout")}
 							onClick={handleLogout}
 						>
 							<LogOutIcon className="size-5" />

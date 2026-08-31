@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { MessageSquareIcon } from "lucide-react";
 import { useUnreadMessages } from "../hooks/useUnreadMessages";
 import MessagesDropdown from "./MessagesDropdown";
+import { useTranslation } from "react-i18next";
 
 const BUMP_DURATION_MS = 500;
 
 export default function MessagesIcon() {
+	const { t } = useTranslation();
 	const { unreadCount, bumpToken } = useUnreadMessages();
 	const [isBumping, setIsBumping] = useState(false);
 	// Skip the animation on first mount — bumpToken starts at 0, but a
@@ -28,7 +30,7 @@ export default function MessagesIcon() {
 			<div
 				tabIndex={0}
 				role="button"
-				aria-label="Messages"
+				aria-label={t("messages.title")}
 				className="btn btn-ghost btn-circle relative"
 			>
 				<MessageSquareIcon

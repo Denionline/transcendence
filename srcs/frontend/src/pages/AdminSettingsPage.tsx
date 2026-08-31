@@ -6,6 +6,8 @@ import PasswordStrengthChecklist from "../features/auth/components/PasswordStren
 import { fieldErrorsFromApi, validateForm, type FieldErrors } from "../lib/formValidation";
 import { changePasswordSchema, type ChangePasswordValues } from "../features/auth/schemas";
 import { accountSchema } from "../features/profile/schemas";
+import { useTranslation } from "react-i18next";
+import { translateFieldError } from "../i18n/validation";
 
 //	The same account rules as the profile page, minus the avatar this form
 //	does not collect.
@@ -13,6 +15,7 @@ const profileSchema = accountSchema.omit({ avatarUrl: true });
 type ProfileValues = { username: string; email: string };
 
 export default function AdminSettingsPage() {
+	const { t } = useTranslation();
 	const { user, updateProfile, updatePassword } = useAuth();
 
 	const [username, setUsername] = useState(user?.username ?? "");
@@ -48,14 +51,14 @@ export default function AdminSettingsPage() {
 		setIsSavingProfile(true);
 		try {
 			await updateProfile(checked.data);
-			setProfileStatus({ type: "success", text: "Profile updated successfully." });
+			setProfileStatus({ type: "success", text: t("profile.updated") });
 		} catch (err) {
 			const fromServer = fieldErrorsFromApi<ProfileValues>(err);
 			if (fromServer) setProfileErrors(fromServer);
 			else
 				setProfileStatus({
 					type: "error",
-					text: err instanceof Error ? err.message : "Update failed.",
+					text: err instanceof Error ? err.message : t("settings.updateFailed"),
 				});
 		} finally {
 			setIsSavingProfile(false);
@@ -83,7 +86,7 @@ export default function AdminSettingsPage() {
 		setIsSavingPassword(true);
 		try {
 			await updatePassword(currentPassword, newPassword);
-			setPasswordStatus({ type: "success", text: "Password changed successfully." });
+			setPasswordStatus({ type: "success", text: t("common.passwordChanged") });
 			setPasswordErrors({});
 			setCurrentPassword("");
 			setNewPassword("");
@@ -91,7 +94,7 @@ export default function AdminSettingsPage() {
 		} catch (err) {
 			setPasswordStatus({
 				type: "error",
-				text: err instanceof Error ? err.message : "Update failed.",
+				text: err instanceof Error ? err.message : t("settings.updateFailed"),
 			});
 		} finally {
 			setIsSavingPassword(false);
@@ -121,7 +124,7 @@ export default function AdminSettingsPage() {
 					)}
 
 					<label className="fieldset-label flex-col items-start gap-1">
-						<span className="text-sm font-medium">Username</span>
+						<span className="text-sm font-medium">{t("settings.username")}</span>
 						<input
 							type="text"
 							className="input w-full max-w-sm"
@@ -129,7 +132,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setUsername(e.target.value)}
 							aria-invalid={profileErrors.username ? "true" : undefined}
 						/>
-						<FieldError message={profileErrors.username} />
+						<FieldError message={translateFieldError(t, profileErrors.username)} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -141,13 +144,13 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setEmail(e.target.value)}
 							aria-invalid={profileErrors.email ? "true" : undefined}
 						/>
-						<FieldError message={profileErrors.email} />
+						<FieldError message={translateFieldError(t, profileErrors.email)} />
 					</label>
 
 					<div>
 						<button type="submit" className="btn btn-primary btn-sm" disabled={isSavingProfile}>
 							{isSavingProfile && <span className="loading loading-spinner loading-xs" />}
-							Save changes
+							{t("settings.saveChanges")}
 						</button>
 					</div>
 				</form>
@@ -169,7 +172,7 @@ export default function AdminSettingsPage() {
 					)}
 
 					<label className="fieldset-label flex-col items-start gap-1">
-						<span className="text-sm font-medium">Current password</span>
+						<span className="text-sm font-medium">{t("common.currentPassword")}</span>
 						<input
 							type="password"
 							className="input w-full max-w-sm"
@@ -177,7 +180,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setCurrentPassword(e.target.value)}
 							aria-invalid={passwordErrors.currentPassword ? "true" : undefined}
 						/>
-						<FieldError message={passwordErrors.currentPassword} />
+						<FieldError message={translateFieldError(t, passwordErrors.currentPassword)} />
 					</label>
 
 					<label className="fieldset-label flex-col items-start gap-1">
@@ -189,7 +192,7 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setNewPassword(e.target.value)}
 							aria-invalid={passwordErrors.newPassword ? "true" : undefined}
 						/>
-						<FieldError message={passwordErrors.newPassword} />
+						<FieldError message={translateFieldError(t, passwordErrors.newPassword)} />
 						{/*	The same checklist registration shows, so both places
 							teach the same rules while you type. */}
 						{newPassword !== "" && (
@@ -206,13 +209,13 @@ export default function AdminSettingsPage() {
 							onChange={(e) => setConfirmPassword(e.target.value)}
 							aria-invalid={passwordErrors.confirmPassword ? "true" : undefined}
 						/>
-						<FieldError message={passwordErrors.confirmPassword} />
+						<FieldError message={translateFieldError(t, passwordErrors.confirmPassword)} />
 					</label>
 
 					<div>
 						<button type="submit" className="btn btn-primary btn-sm" disabled={isSavingPassword}>
 							{isSavingPassword && <span className="loading loading-spinner loading-xs" />}
-							Update password
+							{t("common.updatePassword")}
 						</button>
 					</div>
 				</form>

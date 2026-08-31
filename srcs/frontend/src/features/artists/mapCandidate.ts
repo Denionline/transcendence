@@ -29,7 +29,7 @@ export function mapArtistCandidateToArtist(candidate: ArtistCandidateDto): Artis
 		name: candidate.user?.username ?? "Unnamed artist",
 		discipline: candidate.categories[0]?.label ?? "Discipline TBD",
 		categorySlugs: candidate.categories.map((category) => category.slug),
-		location: candidate.location ?? "Location TBD",
+		location: candidate.location ?? "",
 		remoteOk: false,
 		availabilityLabel: candidate.availability ? "Available now" : "Unavailable",
 		availabilityTone: candidate.availability ? "available" : "soon",

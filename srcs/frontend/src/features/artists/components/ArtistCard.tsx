@@ -1,6 +1,7 @@
 import { BadgeCheckIcon, EyeIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import type { Artist } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface ArtistCardProps {
 	artist: Artist;
@@ -20,6 +21,7 @@ export default function ArtistCard({
 	onInterested,
 	onOpenDetails,
 }: ArtistCardProps) {
+	const { t } = useTranslation();
 	const {
 		name,
 		discipline,
@@ -75,7 +77,7 @@ export default function ArtistCard({
 	const detailsHint = (
 		<span className="pointer-events-none absolute top-3 right-3 flex animate-[hint-pulse_2400ms_ease-in-out_infinite] items-center gap-1 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur transition-transform duration-200 group-hover:animate-none group-hover:scale-110">
 			<EyeIcon className="size-3" aria-hidden="true" />
-			View profile
+			{t("common.viewProfile")}
 		</span>
 	);
 
@@ -120,7 +122,7 @@ export default function ArtistCard({
 							)}
 						</div>
 						<div className="truncate text-sm text-white/70">
-							{discipline} · {remoteOk ? "Remote OK" : location}
+							{discipline} · {remoteOk ? t("deck.remoteOk") : location || t("preview.locationTbd")}
 						</div>
 					</div>
 					{tagBadges}
@@ -135,7 +137,7 @@ export default function ArtistCard({
 			onKeyDown={handleCardKeyDown}
 			role="button"
 			tabIndex={0}
-			aria-label={`View details for ${name}`}
+			aria-label={t("deck.viewDetailsFor", { name })}
 			className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-base-content/10 bg-base-100 shadow-sm transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
 		>
 			<div className="relative min-h-0 flex-1 bg-neutral bg-[repeating-linear-gradient(45deg,color-mix(in_oklab,var(--color-primary)_18%,transparent)_0px,color-mix(in_oklab,var(--color-primary)_18%,transparent)_10px,transparent_10px,transparent_20px)]">
@@ -153,7 +155,7 @@ export default function ArtistCard({
 						)}
 					</div>
 					<div className="truncate text-sm text-base-content/60">
-						{discipline} · {remoteOk ? "Remote OK" : location}
+						{discipline} · {remoteOk ? t("deck.remoteOk") : location || t("preview.locationTbd")}
 					</div>
 				</div>
 
@@ -164,7 +166,7 @@ export default function ArtistCard({
 						<button
 							type="button"
 							onClick={handlePassClick}
-							aria-label={`Pass on ${name}`}
+							aria-label={t("deck.passOn", { name })}
 							className="btn btn-circle btn-sm border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 						>
 							<XIcon className="size-4" aria-hidden="true" />
@@ -174,7 +176,7 @@ export default function ArtistCard({
 							onClick={handleInterestedClick}
 							className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
 						>
-							Interested
+							{t("deck.interested")}
 						</button>
 					</div>
 				</div>

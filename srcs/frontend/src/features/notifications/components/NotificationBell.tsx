@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { BellIcon } from "lucide-react";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationDropdown from "./NotificationDropdown";
+import { useTranslation } from "react-i18next";
 
 const BUMP_DURATION_MS = 500;
 
 export default function NotificationBell() {
+	const { t } = useTranslation();
 	const { unreadCount, bumpToken } = useNotifications();
 	const [isBumping, setIsBumping] = useState(false);
 	// Skip the animation on first mount — bumpToken starts at 0, but a
@@ -28,7 +30,7 @@ export default function NotificationBell() {
 			<div
 				tabIndex={0}
 				role="button"
-				aria-label="Notifications"
+				aria-label={t("notifications.title")}
 				className="btn btn-ghost btn-circle relative"
 			>
 				<BellIcon

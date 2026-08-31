@@ -1,0 +1,649 @@
+{
+	"common": {
+		"appName": "Artmate",
+		"language": "Language",
+		"viewAll": "View all",
+		"viewProfile": "View profile",
+		"coverPhoto": "Cover photo",
+		"friendRequest": "Friend request",
+		"noConversationsYet": "No conversations yet.",
+		"yourCategoriesHint": "Your own categories — every gig here matches at least one already. Add more from Settings to widen this list.",
+		"currentPassword": "Current password",
+		"newPassword": "New password",
+		"confirmPassword": "Confirm new password",
+		"updatePassword": "Update password",
+		"passwordChanged": "Password changed successfully.",
+		"canvasBlank": "This canvas is blank.",
+		"notFoundBody": "The page you're looking for was moved, renamed, or never framed in the first place. Let's get you back to the work.",
+		"backToDiscover": "Back to Discover",
+		"goHome": "Go home"
+	},
+	"nav": {
+		"discover": "Discover",
+		"myOpportunities": "My opportunities",
+		"opportunities": "Opportunities",
+		"matches": "Matches",
+		"friends": "Friends",
+		"postOpportunity": "Post opportunity",
+		"profile": "Profile",
+		"settings": "Settings",
+		"logout": "Logout",
+		"openMenu": "Open menu",
+		"closeMenu": "Close menu",
+		"goToHomepage": "Go to homepage",
+		"accountMenu": "Account menu",
+		"searchAsHirer": "Search artists, skills, cities...",
+		"searchAsArtist": "Search briefs, brands, cities..."
+	},
+	"auth": {
+		"email": "Email",
+		"emailPlaceholder": "you@email.com",
+		"password": "Password",
+		"passwordPlaceholder": "••••••••",
+		"forgot": "Forgot?",
+		"logIn": "Log in",
+		"loggingIn": "Logging in…",
+		"loginFailed": "Failed to log in",
+		"welcomeBack": "Welcome back",
+		"logInToArtmate": "Log in to Artmate",
+		"sessionExpired": "Your session expired. Log back in to keep going.",
+		"continueWith42": "Continue with 42",
+		"or": "OR",
+		"newToArtmate": "New to Artmate?",
+		"createAccount": "Create account",
+		"joinArtmate": "Join Artmate",
+		"createYourAccount": "Create your account",
+		"alreadyOnArtmate": "Already on Artmate?",
+		"name": "Name",
+		"namePlaceholder": "Jane Doe",
+		"signingUpAs": "I am signing up as",
+		"artist": "Artist",
+		"hirer": "Hirer",
+		"creatingAccount": "Creating account…",
+		"createAccountAsArtist": "Create account as artist",
+		"createAccountAsHirer": "Create account as hirer",
+		"registerFailed": "Failed to create account",
+		"agreeToTerms": "By continuing you agree to our <terms>Terms</terms> & <privacy>Privacy Policy</privacy>.",
+		"errors": {
+			"emailRequired": "Email is required",
+			"emailInvalid": "Enter a valid email",
+			"emailTooLong": "That email address is too long",
+			"passwordRequired": "Password is required",
+			"passwordTooShort": "Password must be at least {{passwordMin}} characters",
+			"passwordNeedsLowercase": "Password must contain a lowercase letter",
+			"passwordNeedsUppercase": "Password must contain an uppercase letter",
+			"passwordNeedsDigit": "Password must contain a digit",
+			"passwordNeedsSymbol": "Password must contain a symbol",
+			"passwordTooLong": "Password is too long",
+			"nameRequired": "Name is required",
+			"nameTooLong": "Keep the name under {{usernameMax}} characters",
+			"currentPasswordRequired": "Enter your current password",
+			"confirmPasswordRequired": "Confirm your new password",
+			"passwordsDoNotMatch": "Passwords do not match"
+		}
+	},
+	"legal": {
+		"privacyPolicy": "Privacy Policy",
+		"termsOfService": "Terms of Service",
+		"legalNavLabel": "Legal",
+		"lastUpdatedLabel": "Last updated:",
+		"privacy": {
+			"title": "Privacy Policy",
+			"intro": "This Privacy Policy explains what information Artmate collects, why we collect it, and what you can do about it. Artmate is a platform that connects people offering creative work (“hirers”) with the artists who carry it out. By creating an account you agree to the handling of your information as described below.",
+			"sections": {
+				"collect": {
+					"heading": "Information we collect",
+					"paragraphs": ["We only collect what the platform needs to work:"],
+					"items": [
+						{
+							"label": "Account details",
+							"text": "the email address, display name and password you provide when registering, and whether your account is an artist or a hirer. Passwords are never stored in readable form (see “How we protect your information”)."
+						},
+						{
+							"label": "Profile information",
+							"text": "anything you choose to add to your profile, such as your location, disciplines, availability, rate, an avatar, and portfolio files you upload."
+						},
+						{
+							"label": "Activity on the platform",
+							"text": "the opportunities you post, the swipes you make, the matches they produce, and the messages you exchange with people you have matched with."
+						},
+						{
+							"label": "Technical data",
+							"text": "basic information your browser sends with each request (such as your IP address), used to keep sessions secure and to apply rate limits against abuse."
+						}
+					]
+				},
+				"use": {
+					"heading": "How we use your information",
+					"paragraphs": ["Your information is used to provide the service, specifically to:"],
+					"items": [
+						{
+							"text": "create and secure your account and keep you signed in;"
+						},
+						{
+							"text": "show your profile to relevant hirers or artists so that mutual matches can happen;"
+						},
+						{
+							"text": "match opportunities with candidates and enable chat between matched users;"
+						},
+						{
+							"text": "send in-app notifications about activity relevant to you;"
+						},
+						{
+							"text": "protect the platform against fraud, abuse and automated attacks."
+						}
+					],
+					"closing": "We do not sell your personal information, and we do not use it to show third-party advertising."
+				},
+				"visibility": {
+					"heading": "What other users can see",
+					"paragraphs": [
+						"Artmate is a matching platform, so some information is meant to be seen by others. Your profile — display name, avatar, disciplines, location, availability and any portfolio files you add — is visible to the users you can be matched with. Messages you send are visible to the user you matched with. Your email address and password are never shown to other users."
+					]
+				},
+				"protect": {
+					"heading": "How we protect your information",
+					"paragraphs": [
+						"Passwords are stored only as a salted hash, never in plain text, so they cannot be read even by us. All connections between your browser and Artmate use HTTPS. Authentication uses short-lived access tokens and a separate refresh token stored in a secure, browser-managed cookie. Access to other users’ data is restricted by role and ownership checks on the server."
+					]
+				},
+				"retention": {
+					"heading": "Data retention",
+					"paragraphs": [
+						"We keep your information for as long as your account exists. When you delete your account, your personal information, profile and uploaded files are removed, and content tied to your account (such as your gigs, swipes and matches) is deleted along with it. Some minimal technical logs may persist briefly for security purposes before being discarded."
+					]
+				},
+				"rights": {
+					"heading": "Your rights",
+					"paragraphs": [
+						"You can view and update most of your information at any time from your profile and settings. You can delete your account, which removes your personal data as described above. If you have questions about your data or want to exercise any rights available to you under applicable law, contact us using the details below."
+					]
+				},
+				"children": {
+					"heading": "Children",
+					"paragraphs": [
+						"Artmate is not directed at children. You must be old enough to enter into a binding agreement in your country to create an account, and you should not use Artmate if you are under that age."
+					]
+				},
+				"changes": {
+					"heading": "Changes to this policy",
+					"paragraphs": [
+						"We may update this Privacy Policy as the platform evolves. When we make material changes we will update the “Last updated” date at the top of this page. Continuing to use Artmate after a change means you accept the updated policy."
+					]
+				},
+				"contact": {
+					"heading": "Contact",
+					"paragraphs": [
+						"Artmate is a non-commercial project built as part of the 42 curriculum. For any question about this policy or your data, contact the project team through the repository or the address provided in the project’s README."
+					]
+				}
+			}
+		},
+		"terms": {
+			"title": "Terms of Service",
+			"intro": "These Terms of Service (“Terms”) govern your use of Artmate, a platform that connects hirers offering creative work with the artists who carry it out. By creating an account or using Artmate, you agree to these Terms. If you do not agree, please do not use the platform.",
+			"sections": {
+				"who": {
+					"heading": "Who can use Artmate",
+					"paragraphs": [
+						"You must be old enough to form a binding agreement in your country to use Artmate. You agree to provide accurate account information and to keep your login credentials secure. You are responsible for activity that happens under your account."
+					]
+				},
+				"account": {
+					"heading": "Your account",
+					"paragraphs": [
+						"You register as either an artist or a hirer. You may update your profile at any time and delete your account whenever you choose. We may suspend or remove accounts that breach these Terms, that are used for abuse, or that put other users or the platform at risk."
+					]
+				},
+				"content": {
+					"heading": "Content you provide",
+					"paragraphs": [
+						"You keep ownership of the content you add to Artmate — your profile information, portfolio files, opportunities and messages. By posting content, you grant Artmate the limited permission needed to store and display it for the purpose of operating the platform (for example, showing your profile to users you can be matched with). You are responsible for ensuring you have the right to share anything you upload."
+					]
+				},
+				"acceptable": {
+					"heading": "Acceptable use",
+					"paragraphs": ["When using Artmate, you agree not to:"],
+					"items": [
+						{
+							"text": "impersonate others or misrepresent your identity, skills or intentions;"
+						},
+						{
+							"text": "post content that is unlawful, infringing, hateful, harassing, or otherwise harmful;"
+						},
+						{
+							"text": "use the platform to send spam, or to access, scrape or disrupt it by automated means;"
+						},
+						{
+							"text": "attempt to break, bypass or probe the platform’s security or other users’ accounts;"
+						},
+						{
+							"text": "use Artmate for any purpose that is illegal where you live."
+						}
+					]
+				},
+				"matches": {
+					"heading": "Matches and arrangements between users",
+					"paragraphs": [
+						"Artmate introduces artists and hirers and provides chat once there is a mutual match. Any agreement, payment, or working arrangement that results is strictly between the users involved. Artmate is not a party to those arrangements, does not employ artists or hirers, and does not guarantee the quality, legality, or outcome of any work arranged through the platform."
+					]
+				},
+				"availability": {
+					"heading": "Service availability",
+					"paragraphs": [
+						"Artmate is a student project provided on an “as is” and “as available” basis. We do not promise that it will be uninterrupted, error-free, or permanently available, and we may change or discontinue features at any time."
+					]
+				},
+				"liability": {
+					"heading": "Limitation of liability",
+					"paragraphs": [
+						"To the fullest extent permitted by law, Artmate and its contributors are not liable for any indirect or consequential loss arising from your use of the platform, including any dispute, loss, or damage resulting from arrangements made between users. Your use of Artmate is at your own risk."
+					]
+				},
+				"changes": {
+					"heading": "Changes to these Terms",
+					"paragraphs": [
+						"We may update these Terms as the platform evolves. When we make material changes we will update the “Last updated” date at the top of this page. Continuing to use Artmate after a change means you accept the updated Terms."
+					]
+				},
+				"contact": {
+					"heading": "Contact",
+					"paragraphs": [
+						"Artmate is a non-commercial project built as part of the 42 curriculum. For any question about these Terms, contact the project team through the repository or the address provided in the project’s README."
+					]
+				}
+			}
+		}
+	},
+	"password": {
+		"minLength": "At least 12 characters",
+		"lowercase": "A lowercase letter",
+		"uppercase": "An uppercase letter",
+		"digit": "A digit",
+		"symbol": "A symbol",
+		"notCommon": "Not a common password",
+		"notPersonal": "Doesn't contain your name or email"
+	},
+	"welcome": {
+		"headline": "Where good work finds",
+		"headlineAccent": "good people.",
+		"subtitle": "The home for muralists, illustrators and set-makers — and the people who commission them.",
+		"tagMural": "mural / lisbon",
+		"tagLettering": "lettering",
+		"tagSetDesign": "set design",
+		"quote": "“I booked three murals in my first month here.”",
+		"quoteAuthor": "Nélida R. · muralist, Porto"
+	},
+	"filters": {
+		"discipline": "Discipline",
+		"availability": "Availability",
+		"location": "Location",
+		"minimumRate": "Minimum rate",
+		"applyFilters": "Apply filters",
+		"lockedToOpportunity": "Locked to this opportunity.",
+		"lockedToProfile": "Locked to your profile.",
+		"notSpecified": "Not specified",
+		"any": "Any",
+		"availableNow": "Available now",
+		"availableSoon": "Available soon",
+		"ratePlaceholder": "e.g. 500"
+	},
+	"discover": {
+		"title": "Discover artists",
+		"reviewingForOpportunity": "Reviewing for opportunity",
+		"reviewingFor": "Reviewing for",
+		"selectOpportunity": "Select opportunity",
+		"postGigToStart": "Post a gig to start discovering artists",
+		"newOpportunity": "New opportunity",
+		"couldntLoadArtists": "Couldn't load artists",
+		"loadingArtists": "Loading artists…",
+		"loadFailed": "Couldn't load artists. Please try again.",
+		"loadOpportunitiesFailed": "Couldn't load your opportunities.",
+		"notEligible": "{{name}} isn't eligible for this opportunity's category."
+	},
+	"opportunities": {
+		"title": "Opportunities",
+		"noGigsRightNow": "No gigs to show right now",
+		"tryAgainInAMoment": "Give it another try in a moment.",
+		"tryAgain": "Try again",
+		"loadingGigs": "Loading gigs…"
+	},
+	"deck": {
+		"noMoreMatches": "No more matches",
+		"noMoreGigs": "No more gigs",
+		"checkBackLater": "Check back later.",
+		"allCaughtUp": "You’re all caught up",
+		"checkBackForArtists": "Check back later for new artists.",
+		"checkBackForGigs": "Check back later for new gigs.",
+		"undo": "Undo",
+		"pass": "Pass",
+		"interested": "Interested",
+		"remoteOk": "Remote OK",
+		"remote": "Remote",
+		"onSite": "On-site",
+		"verifiedHirer": "Verified hirer",
+		"filters": "Filters",
+		"new": "New",
+		"passOn": "Pass on {{name}}",
+		"viewDetailsFor": "View details for {{name}}",
+		"startsOnGigCategory": "Starts on this opportunity’s own category — check more to browse other disciplines too. A like still only counts within the gig’s real category.",
+		"previewHint": "This is exactly how artists will see it in their feed — fill in the form and watch it update here."
+	},
+	"preview": {
+		"yourBrand": "Your brand",
+		"locationTbd": "Location TBD",
+		"titlePlaceholder": "Your opportunity title goes here",
+		"durationTbd": "Duration TBD"
+	},
+	"matches": {
+		"title": "Matches",
+		"possibleMatches": "Possible matches",
+		"yourMatches": "Your matches",
+		"interestedCount_zero": "No one is interested yet",
+		"interestedCount_one": "{{count}} person is interested in you",
+		"interestedCount_other": "{{count}} people are interested in you",
+		"confirmedCount_zero": "No confirmed matches yet",
+		"confirmedCount_one": "{{count}} confirmed match",
+		"confirmedCount_other": "{{count}} confirmed matches",
+		"loading": "Loading…",
+		"allGigs": "All gigs",
+		"filterByOpportunity": "Filter by opportunity",
+		"noInterestYet": "No one’s shown interest yet",
+		"noInterestForGig": "No interest for this gig yet",
+		"keepSwiping": "Keep swiping — new interests show up here.",
+		"interestedIn": "Interested in {{title}}",
+		"matchedOn": "Matched on {{title}}",
+		"couldntLoadInterests": "Couldn’t load your interests",
+		"couldntLoadMatches": "Couldn’t load your matches",
+		"loadInterestsFailed": "Couldn't load your interests.",
+		"loadMatchesFailed": "Couldn't load your matches.",
+		"removeFailed": "Couldn't remove this match.",
+		"loadingInterests": "Loading interests…",
+		"loadingMatches": "Loading matches…",
+		"tryAgain": "Try again",
+		"decline": "Decline {{name}}",
+		"accept": "Accept {{name}}",
+		"online": "Online",
+		"chat": "Chat",
+		"goToChat": "Go to chat with {{name}}",
+		"removeMatchWith": "Remove match with {{name}}",
+		"removeTitle": "Remove match with {{name}}?",
+		"removeBody": "This ends the match and deletes your chat history with them. This can’t be undone.",
+		"cancel": "Cancel",
+		"removing": "Removing…",
+		"removeMatch": "Remove match",
+		"close": "close",
+		"subtitle": "People interested in you, and the matches you’ve already made.",
+		"noMatchesYet": "No matches yet",
+		"acceptOrSwipe": "Accept an interest above, or keep swiping to find one."
+	},
+	"messages": {
+		"title": "Messages",
+		"selectConversation": "Select a conversation",
+		"sayHello": "Say hello 👋",
+		"unread": "{{count}} unread",
+		"backToConversations": "Back to conversations",
+		"online": "Online",
+		"loadEarlier": "Load earlier messages",
+		"loading": "Loading…",
+		"messageLabel": "Message",
+		"messagePlaceholder": "Message {{name}}",
+		"sendFailed": "Couldn't send that message.",
+		"delete": "Delete",
+		"subtitle": "Chat with the people you’ve matched with.",
+		"couldntLoadMessages": "Couldn’t load your messages",
+		"loadingConversations": "Loading conversations…",
+		"pickFromLeft": "Pick someone from the left to see your messages.",
+		"loadingMessages": "Loading messages…",
+		"couldntLoadConversation": "Couldn’t load this conversation.",
+		"startConversation": "You matched on {{title}} — start the conversation.",
+		"noMatchesYet": "No matches yet",
+		"onceYouMatch": "Once you match with someone, they’ll show up here.",
+		"couldntLoadShort": "Couldn’t load messages."
+	},
+	"friends": {
+		"title": "Friends",
+		"count_zero": "No friends yet",
+		"count_one": "{{count}} friend",
+		"count_other": "{{count}} friends",
+		"loading": "Loading…",
+		"loadingFriends": "Loading friends…",
+		"loadFailed": "Couldn't load your friends.",
+		"noFriendsYet": "No friends yet",
+		"addFromProfile": "Add someone from their profile to see them here.",
+		"remove": "Remove {{name}}",
+		"locationTbd": "Location TBD",
+		"artist": "Artist",
+		"hirer": "Hirer",
+		"friends": "Friends",
+		"removeFriend": "Remove friend",
+		"requestSent": "Request Sent",
+		"addFriend": "Add Friend",
+		"sentYouRequest": "Sent you a friend request",
+		"declineRequest": "Decline friend request",
+		"acceptRequest": "Accept friend request",
+		"alreadyFriends": "You're already friends.",
+		"alreadyResponded": "You already responded to this request.",
+		"decline": "Decline",
+		"accept": "Accept"
+	},
+	"notifications": {
+		"title": "Notifications",
+		"unread_zero": "No unread notifications",
+		"unread_one": "{{count}} unread",
+		"unread_other": "{{count}} unread",
+		"loading": "Loading…",
+		"markAllRead": "Mark all as read",
+		"markAsRead": "Mark as read",
+		"couldntLoad": "Couldn’t load notifications",
+		"tryAgain": "Try again",
+		"loadingNotifications": "Loading notifications…",
+		"noneYet": "No notifications yet",
+		"willShowHere": "Matches, messages, and updates will show up here.",
+		"couldntLoadShort": "Couldn’t load notifications.",
+		"allCaughtUp": "You’re all caught up.",
+		"matchedWith": "You matched with {{name}}!",
+		"someone": "Someone",
+		"sentMessage": "{{name}} sent you a message",
+		"messagePreview": "{{name}}: {{preview}}",
+		"gigClosed": "“{{title}}” was closed",
+		"aGig": "A gig",
+		"interestedInGig": "{{name}} is interested in {{title}}",
+		"yourGig": "your gig",
+		"interestedInYou": "{{name}} is interested in you",
+		"sentFriendRequest": "{{name}} sent you a friend request",
+		"acceptedFriendRequest": "{{name}} accepted your friend request"
+	},
+	"profile": {
+		"back": "Back",
+		"goBack": "Go back",
+		"loading": "Loading",
+		"loadFailed": "Couldn't load this profile.",
+		"locationTbd": "Location TBD",
+		"artist": "Artist",
+		"hirer": "Hirer",
+		"available": "Available",
+		"unavailable": "Unavailable",
+		"noBio": "No bio provided.",
+		"portfolio": "Portfolio",
+		"updated": "Profile updated successfully.",
+		"updateFailed": "Update failed.",
+		"noCategoryYet": "No category yet",
+		"noCategoriesSelected": "No categories selected yet — pick some below.",
+		"editArtistDetails": "Edit artist details",
+		"editOrganizationDetails": "Edit organization details",
+		"categories": "Categories",
+		"bio": "Bio",
+		"location": "Location",
+		"organizationName": "Organization name",
+		"bioPlaceholderArtist": "Tell hirers what you make and how you work.",
+		"bioPlaceholderHirer": "What does your organization do, and what are you looking for?",
+		"locationPlaceholder": "City, country",
+		"availableForWork": "Available for work",
+		"availabilityHint": "Shown as a badge on your public profile.",
+		"saveChanges": "Save changes",
+		"yourPublicProfile": "Your public profile",
+		"noBioYet": "No bio yet — introduce your organization below.",
+		"editHirerDetails": "Edit hirer details",
+		"title": "Profile",
+		"resultTitle": "Profile",
+		"couldntLoadRetry": "Couldn’t load this profile. Please try again.",
+		"avatarHint": "Click the camera to upload a photo, or paste an image URL below.",
+		"account": "Account",
+		"portfolioHint": "Add photos, a reel or a voice note — they show up in the preview above instantly, and on your public profile.",
+		"hirerEditHint": "Shown to artists alongside your opportunities — changes above update instantly.",
+		"artistEditHint": "Changes above update the preview instantly — hit save to publish them.",
+		"categoriesHint": "(pick at least one, up to {{max}})"
+	},
+	"settings": {
+		"title": "Settings",
+		"account": "Account",
+		"appearance": "Appearance",
+		"preferences": "Preferences",
+		"notifications": "Notifications",
+		"nothingToConfigure": "Nothing to configure here yet — check back soon.",
+		"theme": "Theme",
+		"themeHint": "Pick a theme for the whole application. Changes apply instantly.",
+		"livePreview": "Live preview · how this theme looks in your feed",
+		"username": "Username",
+		"email": "Email",
+		"avatarUrl": "Avatar URL",
+		"optional": "optional",
+		"avatarUrlPlaceholder": "https://...",
+		"changePhoto": "Change photo",
+		"saveChanges": "Save changes",
+		"accountUpdated": "Account updated successfully.",
+		"updateFailed": "Update failed.",
+		"chooseImage": "Choose a JPEG, PNG or WebP image.",
+		"uploadFailed": "Upload failed",
+		"notificationsSoon": "Notification settings aren't available yet — check back soon.",
+		"language": "Language",
+		"languageHint": "Choose the language for the whole application. Changes apply instantly."
+	},
+	"portfolio": {
+		"title": "Portfolio",
+		"photo": "Photo",
+		"video": "Video",
+		"audio": "Audio",
+		"add": "Add {{type}}",
+		"remove": "Remove {{name}}",
+		"uploadFailed": "Upload failed",
+		"deleteFailed": "Couldn't delete {{name}}.",
+		"tryAgain": "Please try again."
+	},
+	"gig": {
+		"newOpportunity": "New opportunity",
+		"published": "Opportunity published",
+		"publishedHint": "Artists matching “{{title}}” will start seeing it in their feed.",
+		"viewMyOpportunities": "View my opportunities",
+		"publishing": "Publishing…",
+		"publish": "Publish opportunity",
+		"publishFailed": "Failed to publish opportunity",
+		"basics": "Basics",
+		"title": "Title",
+		"titlePlaceholder": "e.g. Hand-painted mural for our terrace launch",
+		"category": "Category",
+		"selectCategory": "Select category",
+		"loadingCategories": "Loading categories…",
+		"rate": "Rate",
+		"rateHint": "· optional, €",
+		"ratePlaceholder": "e.g. 1200",
+		"brief": "Brief",
+		"description": "Description",
+		"optional": "· optional",
+		"descriptionPlaceholder": "Describe the work, deliverables, and any references artists should know about.",
+		"location": "Location",
+		"locationPlaceholder": "e.g. Lisbon",
+		"locationTbd": "Location TBD",
+		"preview": "Preview · how artists see it",
+		"posted": "Posted",
+		"myOpportunities": "My opportunities",
+		"postedCount_zero": "None posted yet",
+		"postedCount_one": "{{count}} posted",
+		"postedCount_other": "{{count}} posted",
+		"postOpportunity": "Post opportunity",
+		"loading": "Loading…",
+		"noneYet": "You haven’t posted any opportunities yet",
+		"postFirst": "Post your first opportunity",
+		"open": "Open",
+		"closed": "Closed",
+		"searchRelatedArtists": "Search related artists",
+		"updating": "Updating…",
+		"closeOpportunity": "Close opportunity",
+		"reopenOpportunity": "Reopen opportunity",
+		"matchedStaysClosed": "You matched on this opportunity, so it stays closed",
+		"loadFailed": "Couldn't load this opportunity. Please try again.",
+		"updateFailed": "Couldn't update this opportunity.",
+		"loadListFailed": "Couldn't load your opportunities. Please try again.",
+		"couldntLoadOne": "Couldn’t load this opportunity",
+		"couldntLoadList": "Couldn’t load your opportunities"
+	},
+	"onboarding": {
+		"setUpProfile": "Set up your {{role}} profile",
+		"roleHirer": "hirer",
+		"roleArtist": "artist",
+		"hirerIntro": "Organization name is required to get started — everything else below is optional and can be filled in anytime from Settings.",
+		"artistIntro": "Category is required to get started — it's how we match you with opportunities. Everything else below is optional and can be filled in anytime from Settings.",
+		"category": "Category",
+		"selectCategory": "Select category",
+		"organizationName": "Organization name",
+		"bio": "Bio",
+		"location": "Location",
+		"optionalSuffix": "(optional)",
+		"availableForWork": "Available for work",
+		"continue": "Continue",
+		"saveFailed": "Couldn't save your profile. Please try again.",
+		"pickATheme": "Pick a theme",
+		"themeIntro": "Totally optional — changes apply instantly and you can always switch it later in Settings.",
+		"maybeLater": "Maybe later"
+	},
+	"admin": {
+		"welcomeBack": "Welcome back",
+		"whatsHappening": "Here's what's happening across the platform.",
+		"searchUsers": "Search by name, email, role or status",
+		"selectAllOnPage": "Select all users on this page",
+		"selectedCount": "{{count}} selected",
+		"delete": "Delete",
+		"clear": "Clear",
+		"cancel": "Cancel",
+		"noUsersMatch": "No users match your search.",
+		"user": "User",
+		"role": "Role",
+		"joined": "Joined",
+		"editUser": "Edit user",
+		"deleteUser": "Delete user",
+		"cantDeleteSelf": "You can't delete your own account",
+		"deleteTitle_one": "Delete {{count}} user?",
+		"deleteTitle_other": "Delete {{count}} users?",
+		"deleteBody": "This action cannot be undone. The selected users will be permanently removed.",
+		"updateFailed": "Update failed.",
+		"saveChanges": "Save changes",
+		"close": "close",
+		"selectUser": "Select {{name}}"
+	},
+	"a11y": {
+		"close": "Close",
+		"loading": "Loading",
+		"logout": "Logout",
+		"artmateHome": "Artmate home",
+		"legal": "Legal",
+		"previousMedia": "Previous media",
+		"nextMedia": "Next media",
+		"seek": "Seek",
+		"uploadProgress": "Upload progress",
+		"send": "Send"
+	},
+	"files": {
+		"viewFullSize": "View {{name}} full size",
+		"delete": "Delete {{name}}"
+	},
+	"time": {
+		"justNow": "just now",
+		"minutesAgo": "{{count}}m ago",
+		"hoursAgo": "{{count}}h ago",
+		"daysAgo": "{{count}}d ago"
+	},
+	"categories": {
+		"couldNotLoad": "Could not load categories."
+	}
+}

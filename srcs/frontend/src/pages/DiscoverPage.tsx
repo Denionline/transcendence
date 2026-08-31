@@ -13,6 +13,7 @@ import type { Artist } from "../features/artists/types";
 import type { GigDto } from "../features/gigs/types";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
+import { useTranslation } from "react-i18next";
 
 // The discipline facet is a real, live multi-select: checking a category
 // sends it straight to GET /swipes/next (see getNextCandidateForHirer on the
@@ -22,10 +23,13 @@ import FiltersPanel, { FiltersToggle } from "../components/FiltersPanel";
 // category still fails CATEGORY_MISMATCH at swipe time (see
 // verifyCategoryMatch) — broadening the browse doesn't broaden eligibility,
 // it just lets the hirer look. handleSwipe surfaces that failure below.
-const AVAILABILITY_OPTIONS: { value: "available" | "soon" | null; label: string }[] = [
-	{ value: null, label: "Any" },
-	{ value: "available", label: "Available now" },
-	{ value: "soon", label: "Available soon" },
+//	Labels are i18n keys, resolved at render — a module constant is evaluated
+//	once at import, so a translated string here would freeze in whatever
+//	language was active on first load.
+const AVAILABILITY_OPTIONS: { value: "available" | "soon" | null; labelKey: string }[] = [
+	{ value: null, labelKey: "filters.any" },
+	{ value: "available", labelKey: "filters.availableNow" },
+	{ value: "soon", labelKey: "filters.availableSoon" },
 ];
 const DESKTOP_QUERY = "(min-width: 1024px)";
 // GET /swipes/next only ever returns the single next candidate; matching one
@@ -36,6 +40,7 @@ const DESKTOP_QUERY = "(min-width: 1024px)";
 const MAX_FETCH_ATTEMPTS = 50;
 
 export default function DiscoverPage() {
+	const { t } = useTranslation();
 	const isDesktop = useMediaQuery(DESKTOP_QUERY);
 	// Desktop shows a 3-card deck, mobile a single card at a time — fixed at
 	// mount so the initial fetch burst matches whichever layout is live.
@@ -127,7 +132,7 @@ export default function DiscoverPage() {
 			})
 			.catch((err: unknown) => {
 				if (cancelled) return;
-				setError(err instanceof ApiError ? err.message : "Couldn't load your opportunities.");
+				setError(err instanceof ApiError ? err.message : t("discover.loadOpportunitiesFailed"));
 				setStatus("error");
 			});
 		return () => {
@@ -210,7 +215,7 @@ export default function DiscoverPage() {
 			if (!cancelled) setStatus("ready");
 		})().catch((err: unknown) => {
 			if (cancelled) return;
-			setError(err instanceof ApiError ? err.message : "Couldn't load artists. Please try again.");
+			setError(err instanceof ApiError ? err.message : t("discover.loadFailed"));
 			setStatus("error");
 		});
 		return () => {
@@ -255,7 +260,7 @@ export default function DiscoverPage() {
 			// (see verifyCategoryMatch). Worth telling the hirer why nothing
 			// happened instead of just swallowing it like other swipe failures.
 			if (err instanceof ApiError && err.code === "CATEGORY_MISMATCH") {
-				setSwipeNotice(`${artist.name} isn't eligible for this opportunity's category.`);
+				setSwipeNotice(t("discover.notEligible", { name: artist.name }));
 				window.setTimeout(() => setSwipeNotice(null), 4000);
 			}
 			// Any other failure just leaves `matched` false below — the deck
@@ -292,12 +297,9 @@ export default function DiscoverPage() {
 			<FiltersPanel open={filtersOpen} onClose={() => setFiltersOpen(false)}>
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-						Discipline
+						{t("filters.discipline")}
 					</h3>
-					<p className="mb-2 text-xs text-base-content/40">
-						Starts on this opportunity&rsquo;s own category — check more to browse other disciplines
-						too. A like still only counts within the gig&rsquo;s real category.
-					</p>
+					<p className="mb-2 text-xs text-base-content/40">{t("deck.startsOnGigCategory")}</p>
 					<div className="flex flex-wrap gap-1.5">
 						{categories.map((category) => (
 							<button
@@ -319,12 +321,12 @@ export default function DiscoverPage() {
 
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-						Availability
+						{t("filters.availability")}
 					</h3>
 					<div className="flex flex-wrap gap-1.5">
 						{AVAILABILITY_OPTIONS.map((option) => (
 							<button
-								key={option.label}
+								key={option.labelKey}
 								type="button"
 								onClick={() => setAvailability(option.value)}
 								aria-pressed={availability === option.value}
@@ -334,7 +336,7 @@ export default function DiscoverPage() {
 										: "btn-outline border-base-content/15 text-base-content/30"
 								}`}
 							>
-								{option.label}
+								{t(option.labelKey)}
 							</button>
 						))}
 					</div>
@@ -342,14 +344,14 @@ export default function DiscoverPage() {
 
 				<div>
 					<h3 className="mb-1 text-xs font-medium tracking-wide text-base-content/50 uppercase">
-						Location
+						{t("filters.location")}
 					</h3>
-					<p className="mb-2 text-xs text-base-content/40">Locked to this opportunity.</p>
+					<p className="mb-2 text-xs text-base-content/40">{t("filters.lockedToOpportunity")}</p>
 					<input
 						type="text"
 						value={locationQuery}
 						disabled
-						placeholder="Not specified"
+						placeholder={t("filters.notSpecified")}
 						className="input input-sm w-full rounded-full border-base-content/15 bg-transparent disabled:opacity-100"
 					/>
 				</div>
@@ -358,7 +360,7 @@ export default function DiscoverPage() {
 			<div className="min-w-0 flex-1">
 				<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 					<div>
-						<h1 className="text-2xl font-semibold">Discover artists</h1>
+						<h1 className="text-2xl font-semibold">{t("discover.title")}</h1>
 					</div>
 
 					<div className="flex items-center gap-2">
@@ -368,11 +370,11 @@ export default function DiscoverPage() {
 								<div
 									tabIndex={0}
 									role="button"
-									aria-label="Reviewing for opportunity"
+									aria-label={t("discover.reviewingForOpportunity")}
 									className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
 								>
 									<span className="max-w-40 truncate sm:max-w-48">
-										{activeGig?.title ?? "Select opportunity"}
+										{activeGig?.title ?? t("discover.selectOpportunity")}
 									</span>
 									<ChevronDownIcon className="size-3.5 text-base-content/50" aria-hidden="true" />
 								</div>
@@ -380,7 +382,7 @@ export default function DiscoverPage() {
 									tabIndex={0}
 									className="menu dropdown-content z-20 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/10 bg-base-100 p-2 shadow-lg menu-sm"
 								>
-									<li className="menu-title">Reviewing for</li>
+									<li className="menu-title">{t("discover.reviewingFor")}</li>
 									{myOpenGigs.map((gig) => (
 										<li key={gig.id}>
 											<button
@@ -413,23 +415,23 @@ export default function DiscoverPage() {
 
 				{status === "no-gigs" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-						<p className="font-medium">Post a gig to start discovering artists</p>
+						<p className="font-medium">{t("discover.postGigToStart")}</p>
 						<Link to="/opportunities/new" className="btn btn-primary btn-sm mt-2 rounded-full">
-							New opportunity
+							{t("discover.newOpportunity")}
 						</Link>
 					</div>
 				)}
 
 				{status === "error" && (
 					<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-						<p className="font-medium">Couldn&rsquo;t load artists</p>
+						<p className="font-medium">{t("discover.couldntLoadArtists")}</p>
 						<p className="text-error/80">{error}</p>
 					</div>
 				)}
 
 				{status === "loading" && (
 					<div className="flex h-[calc(100vh-19rem)] min-h-105 items-center justify-center text-sm text-base-content/50">
-						Loading artists…
+						{t("discover.loadingArtists")}
 					</div>
 				)}
 

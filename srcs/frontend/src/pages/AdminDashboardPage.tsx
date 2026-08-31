@@ -5,8 +5,10 @@ import { useUsers } from "../features/admin/hooks/useUsers";
 import { ROLE_BADGE } from "../features/admin/constants";
 import { formatDate } from "../lib/format";
 import Avatar from "../components/Avatar";
+import { useTranslation } from "react-i18next";
 
 export default function AdminDashboardPage() {
+	const { t } = useTranslation();
 	const { user } = useAuth();
 	const { users, isLoading, error } = useUsers();
 
@@ -29,10 +31,11 @@ export default function AdminDashboardPage() {
 	return (
 		<div className="flex flex-col gap-4">
 			<div>
-				<h1 className="text-xl font-bold">Welcome back{user ? `, ${user.username}` : ""}</h1>
-				<p className="text-sm text-base-content/60">
-					Here&apos;s what&apos;s happening across the platform.
-				</p>
+				<h1 className="text-xl font-bold">
+					{t("admin.welcomeBack")}
+					{user ? `, ${user.username}` : ""}
+				</h1>
+				<p className="text-sm text-base-content/60">{t("admin.whatsHappening")}</p>
 			</div>
 
 			{error && (

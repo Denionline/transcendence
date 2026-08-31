@@ -2,6 +2,7 @@ import { BadgeCheckIcon, XIcon } from "lucide-react";
 import Modal from "../../../components/Modal";
 import Avatar from "../../../components/Avatar";
 import type { GigListing } from "../gigTypes";
+import { useTranslation } from "react-i18next";
 
 interface GigDetailsModalProps {
 	gig: GigListing | null;
@@ -19,6 +20,7 @@ export default function GigDetailsModal({
 	onPass,
 	onInterested,
 }: GigDetailsModalProps) {
+	const { t } = useTranslation();
 	return (
 		<Modal open={Boolean(gig)} onClose={onClose} labelledBy="gig-details-title">
 			{gig && (
@@ -58,7 +60,8 @@ export default function GigDetailsModal({
 									)}
 								</div>
 								<div className="truncate text-xs text-base-content/50">
-									Verified hirer · {gig.remoteOk ? "Remote OK" : gig.location}
+									{t("deck.verifiedHirer")} ·{" "}
+									{gig.remoteOk ? t("deck.remoteOk") : gig.location || t("preview.locationTbd")}
 								</div>
 							</div>
 						</div>
@@ -81,7 +84,7 @@ export default function GigDetailsModal({
 								{gig.duration}
 							</span>
 							<span className="badge badge-sm badge-outline border-base-content/15">
-								{gig.remoteOk ? "Remote" : "On-site"}
+								{gig.remoteOk ? t("deck.remote") : t("deck.onSite")}
 							</span>
 						</div>
 
@@ -102,7 +105,7 @@ export default function GigDetailsModal({
 									onPass();
 									onClose();
 								}}
-								aria-label={`Pass on ${gig.title}`}
+								aria-label={t("deck.passOn", { name: gig.title })}
 								className="btn btn-circle border border-base-content/15 bg-transparent transition-[background-color,border-color,color,transform] duration-150 hover:scale-110 hover:border-error/50 hover:bg-error/10 hover:text-error"
 							>
 								<XIcon className="size-5" aria-hidden="true" />
@@ -115,7 +118,7 @@ export default function GigDetailsModal({
 								}}
 								className="btn btn-primary flex-1 rounded-full transition-transform duration-150 hover:scale-[1.02]"
 							>
-								Interested
+								{t("deck.interested")}
 							</button>
 						</div>
 					</div>

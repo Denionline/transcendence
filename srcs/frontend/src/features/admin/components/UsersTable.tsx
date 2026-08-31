@@ -1,6 +1,7 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
 import type { ManagedUser } from "../types";
 import UserRow from "./UserRow";
+import { useTranslation } from "react-i18next";
 
 interface UsersTableProps {
 	users: ManagedUser[];
@@ -21,6 +22,7 @@ export default function UsersTable({
 	onEdit,
 	onDelete,
 }: UsersTableProps) {
+	const { t } = useTranslation();
 	const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
 	const pageSelectableIds = users.filter((u) => u.id !== currentUserId).map((u) => u.id);
@@ -64,15 +66,15 @@ export default function UsersTable({
 							ref={headerCheckboxRef}
 							type="checkbox"
 							className="checkbox"
-							aria-label="Select all users on this page"
+							aria-label={t("admin.selectAllOnPage")}
 							checked={allPageSelected}
 							disabled={pageSelectableIds.length === 0}
 							onChange={toggleSelectAllOnPage}
 						/>
 					</th>
-					<th>User</th>
-					<th>Role</th>
-					<th>Joined</th>
+					<th>{t("admin.user")}</th>
+					<th>{t("admin.role")}</th>
+					<th>{t("admin.joined")}</th>
 					<th className="text-right">Actions</th>
 				</tr>
 			</thead>
@@ -88,7 +90,7 @@ export default function UsersTable({
 				{!isLoading && users.length === 0 && (
 					<tr>
 						<td colSpan={5} className="py-10 text-center text-base-content/60">
-							No users match your search.
+							{t("admin.noUsersMatch")}
 						</td>
 					</tr>
 				)}

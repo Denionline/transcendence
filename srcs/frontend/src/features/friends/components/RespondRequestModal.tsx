@@ -4,6 +4,7 @@ import Modal from "../../../components/Modal";
 import Avatar from "../../../components/Avatar";
 import { fetchFriendshipStatus, respondToRequest } from "../api";
 import type { FriendshipStatus } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface RespondRequestModalProps {
 	actor: { id: string; displayName: string; avatarUrl: string | null } | null;
@@ -29,6 +30,7 @@ interface RespondRequestModalProps {
  * pending request the notification was about.
  */
 export default function RespondRequestModal({ actor, onClose }: RespondRequestModalProps) {
+	const { t } = useTranslation();
 	const [pending, setPending] = useState(false);
 	// Keyed by the actor it was fetched for, not just set to null on every
 	// actor change — that let a `setStatus` call fire synchronously inside
@@ -75,7 +77,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 		<Modal open={Boolean(actor)} onClose={onClose} labelledBy="respond-request-title">
 			<div className="flex flex-col items-center gap-4 p-6 text-center">
 				<h2 id="respond-request-title" className="text-lg font-semibold">
-					Friend request
+					{t("common.friendRequest")}
 				</h2>
 				{actor && (
 					<>
@@ -89,7 +91,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 						</Link>
 
 						{status === null ? (
-							<span className="loading loading-spinner loading-sm" aria-label="Loading" />
+							<span className="loading loading-spinner loading-sm" aria-label={t("a11y.loading")} />
 						) : isStillPending ? (
 							<>
 								<p className="text-sm text-base-content/60">wants to be your friend.</p>
@@ -100,7 +102,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 										onClick={() => handleRespond(false)}
 										className="btn rounded-full btn-outline disabled:opacity-40"
 									>
-										Decline
+										{t("friends.decline")}
 									</button>
 									<button
 										type="button"
@@ -108,7 +110,7 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 										onClick={() => handleRespond(true)}
 										className="btn rounded-full btn-primary disabled:opacity-40"
 									>
-										Accept
+										{t("friends.accept")}
 									</button>
 								</div>
 							</>
@@ -116,11 +118,11 @@ export default function RespondRequestModal({ actor, onClose }: RespondRequestMo
 							<>
 								<p className="text-sm text-base-content/60">
 									{status === "accepted"
-										? "You're already friends."
-										: "You already responded to this request."}
+										? t("friends.alreadyFriends")
+										: t("friends.alreadyResponded")}
 								</p>
 								<button type="button" onClick={onClose} className="btn rounded-full btn-outline">
-									Close
+									{t("a11y.close")}
 								</button>
 							</>
 						)}

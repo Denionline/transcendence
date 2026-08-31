@@ -5,6 +5,7 @@ import { fileToMediaItem } from "../../files/toMediaItem";
 import type { ProfileMediaItem } from "../../artists/types";
 import type { FriendshipStatus } from "../../friends/types";
 import type { PublicHirerProfileDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface HirerDetailsModalProps {
 	profile: PublicHirerProfileDto | null;
@@ -27,6 +28,7 @@ export default function HirerDetailsModal({
 	friendshipStatus,
 	onFriendshipStatusChange,
 }: HirerDetailsModalProps) {
+	const { t } = useTranslation();
 	const media: ProfileMediaItem[] = profile
 		? profile.portfolio
 				.map(fileToMediaItem)
@@ -65,7 +67,7 @@ export default function HirerDetailsModal({
 								</div>
 								<div className="truncate text-sm text-base-content/60">
 									{categoryLabel && `${categoryLabel} · `}
-									{profile.location ?? "Location TBD"}
+									{profile.location || t("preview.locationTbd")}
 								</div>
 							</div>
 							<FriendRequestButton

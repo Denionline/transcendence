@@ -4,6 +4,7 @@ import { uploadFile } from "../api";
 import { ACCEPTED_MIME_TYPES } from "../constants";
 import { validationErrorFor } from "../schemas";
 import type { FileDto, FileVisibility } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface FileUploadProps {
 	visibility?: FileVisibility;
@@ -16,6 +17,7 @@ export default function FileUpload({
 	onUploaded,
 	label = "Add to portfolio",
 }: FileUploadProps) {
+	const { t } = useTranslation();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [progress, setProgress] = useState<number | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export default function FileUpload({
 					className="progress progress-primary w-full max-w-sm"
 					value={progress}
 					max={100}
-					aria-label="Upload progress"
+					aria-label={t("a11y.uploadProgress")}
 				/>
 			)}
 

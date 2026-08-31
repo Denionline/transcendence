@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent }
 import { Trash2Icon } from "lucide-react";
 import { formatTime } from "../../../lib/format";
 import type { ChatMessageDto } from "../types";
+import { useTranslation } from "react-i18next";
 
 // How long a touch has to hold still before it counts as a long-press,
 // and how far it can drift in that time before it's read as a scroll instead.
@@ -23,6 +24,7 @@ interface MenuPosition {
 // Desktop opens the menu on right-click; touch opens it on a long-press —
 // both land on the same small floating menu, positioned at the pointer.
 export default function MessageBubble({ message, isMine, onDelete }: MessageBubbleProps) {
+	const { t } = useTranslation();
 	const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
 	const longPressTimer = useRef<number | null>(null);
 	const longPressStart = useRef<MenuPosition | null>(null);
@@ -109,7 +111,7 @@ export default function MessageBubble({ message, isMine, onDelete }: MessageBubb
 						<li>
 							<button type="button" onClick={handleDeleteClick} className="text-error">
 								<Trash2Icon className="size-4" aria-hidden="true" />
-								Delete
+								{t("messages.delete")}
 							</button>
 						</li>
 					</ul>

@@ -11,6 +11,11 @@ const validRegistration = {
 	role: "artist" as const,
 };
 
+//	The schemas emit i18n keys rather than sentences (see schemas.ts), so
+//	these assert on the key. The English wording lives in
+//	src/i18n/locales/en.json, and check:i18n guarantees every key here has a
+//	value in all three languages.
+
 /** The first message for one field, which is what that input shows. */
 function messageFor(schema: ZodType, value: unknown, field: string): string | null {
 	const result = schema.safeParse(value);
@@ -25,17 +30,17 @@ describe("loginSchema", () => {
 
 	test("asks for an email that looks like one", () => {
 		expect(messageFor(loginSchema, { email: "nope", password: "x" }, "email")).toBe(
-			"Enter a valid email",
+			"auth.errors.emailInvalid",
 		);
 		expect(messageFor(loginSchema, { email: "", password: "x" }, "email")).toBe(
-			"Email is required",
+			"auth.errors.emailRequired",
 		);
 	});
 
 	test("asks for a password without judging it — that is the server's job here", () => {
 		expect(loginSchema.safeParse({ email: "a@b.co", password: "short" }).success).toBe(true);
 		expect(messageFor(loginSchema, { email: "a@b.co", password: "" }, "password")).toBe(
-			"Password is required",
+			"auth.errors.passwordRequired",
 		);
 	});
 });
@@ -47,11 +52,11 @@ describe("passwordSchema", () => {
 
 	test("names the class that is missing", () => {
 		const cases: [string, string][] = [
-			["SHORT1!", "Password must be at least 8 characters"],
-			["alllower1!", "Password must contain an uppercase letter"],
-			["ALLUPPER1!", "Password must contain a lowercase letter"],
-			["NoDigits!!", "Password must contain a digit"],
-			["NoSymbols1", "Password must contain a symbol"],
+			["SHORT1!", "auth.errors.passwordTooShort"],
+			["alllower1!", "auth.errors.passwordNeedsUppercase"],
+			["ALLUPPER1!", "auth.errors.passwordNeedsLowercase"],
+			["NoDigits!!", "auth.errors.passwordNeedsDigit"],
+			["NoSymbols1", "auth.errors.passwordNeedsSymbol"],
 		];
 
 		for (const [password, expected] of cases) {
@@ -133,7 +138,7 @@ describe("changePasswordSchema", () => {
 		expect(result.success).toBe(false);
 		if (!result.success) {
 			expect(result.error.issues[0].path).toEqual(["confirmPassword"]);
-			expect(result.error.issues[0].message).toBe("Passwords do not match");
+			expect(result.error.issues[0].message).toBe("auth.errors.passwordsDoNotMatch");
 		}
 	});
 

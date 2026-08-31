@@ -12,6 +12,7 @@ import { ApiError } from "../lib/apiClient";
 import { formatDate, formatRelativeTime } from "../lib/format";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import type { NotificationType } from "../features/notifications/types";
+import { useTranslation } from "react-i18next";
 
 type Status = "loading" | "ready" | "error";
 
@@ -20,13 +21,12 @@ function interestKey(interest: PendingInterestDto): string {
 }
 
 export default function MatchesPage() {
+	const { t } = useTranslation();
 	return (
 		<div className="mx-auto flex max-w-2xl flex-col gap-10">
 			<div>
-				<h1 className="text-2xl font-semibold">Matches</h1>
-				<p className="text-sm text-base-content/50">
-					People interested in you, and the matches you&rsquo;ve already made.
-				</p>
+				<h1 className="text-2xl font-semibold">{t("matches.title")}</h1>
+				<p className="text-sm text-base-content/50">{t("matches.subtitle")}</p>
 			</div>
 
 			<PossibleMatchesSection />
@@ -41,6 +41,7 @@ export default function MatchesPage() {
 // ---------------------------------------------------------------------------
 
 function PossibleMatchesSection() {
+	const { t } = useTranslation();
 	const { user, isLoading: authLoading } = useAuth();
 	const [interests, setInterests] = useState<PendingInterestDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
@@ -61,7 +62,10 @@ function PossibleMatchesSection() {
 			setStatus("ready");
 		})().catch((err: unknown) => {
 			if (cancelled) return;
-			setError(err instanceof ApiError ? err.message : "Couldn't load your interests.");
+			//	Store the i18n key, not the translated sentence: translating here
+			//	would pull `t` into the effect's dependencies, and the effect
+			//	would refetch on every language change. The render resolves it.
+			setError(err instanceof ApiError ? err.message : "matches.loadInterestsFailed");
 			setStatus("error");
 		});
 		return () => {
@@ -129,18 +133,18 @@ function PossibleMatchesSection() {
 
 	const activeGigLabel =
 		activeGigFilter === "all"
-			? "All gigs"
-			: (gigOptions.find((gig) => gig.id === activeGigFilter)?.title ?? "All gigs");
+			? t("matches.allGigs")
+			: (gigOptions.find((gig) => gig.id === activeGigFilter)?.title ?? t("matches.allGigs"));
 
 	return (
 		<section>
 			<div className="mb-4 flex items-start justify-between gap-4">
 				<div>
-					<h2 className="text-lg font-semibold">Possible matches</h2>
+					<h2 className="text-lg font-semibold">{t("matches.possibleMatches")}</h2>
 					<p className="text-sm text-base-content/50">
 						{status === "ready"
-							? `${filteredInterests.length} people are interested in you`
-							: "Loading…"}
+							? t("matches.interestedCount", { count: filteredInterests.length })
+							: t("matches.loading")}
 					</p>
 				</div>
 
@@ -149,7 +153,7 @@ function PossibleMatchesSection() {
 						<div
 							tabIndex={0}
 							role="button"
-							aria-label="Filter by opportunity"
+							aria-label={t("matches.filterByOpportunity")}
 							className="btn btn-sm gap-1.5 rounded-full border-base-content/15 bg-transparent font-normal"
 						>
 							<span className="max-w-40 truncate sm:max-w-48">{activeGigLabel}</span>
@@ -169,7 +173,7 @@ function PossibleMatchesSection() {
 										e.currentTarget.blur();
 									}}
 								>
-									All gigs
+									{t("matches.allGigs")}
 								</button>
 							</li>
 							{gigOptions.map((gig) => (
@@ -194,28 +198,26 @@ function PossibleMatchesSection() {
 
 			{status === "error" && (
 				<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					<p className="font-medium">Couldn&rsquo;t load your interests</p>
-					<p className="text-error/80">{error}</p>
+					<p className="font-medium">{t("matches.couldntLoadInterests")}</p>
+					<p className="text-error/80">{error ? t(error) : null}</p>
 					<button type="button" onClick={retry} className="btn btn-sm mt-2 rounded-full">
-						Try again
+						{t("matches.tryAgain")}
 					</button>
 				</div>
 			)}
 
 			{status === "loading" && (
 				<div className="flex h-40 items-center justify-center text-sm text-base-content/50">
-					Loading interests…
+					{t("matches.loadingInterests")}
 				</div>
 			)}
 
 			{status === "ready" && filteredInterests.length === 0 && (
 				<div className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
 					<p className="font-medium">
-						{activeGigFilter === "all"
-							? "No one’s shown interest yet"
-							: "No interest for this gig yet"}
+						{activeGigFilter === "all" ? t("matches.noInterestYet") : t("matches.noInterestForGig")}
 					</p>
-					<p className="text-sm">Keep swiping — new interests show up here.</p>
+					<p className="text-sm">{t("matches.keepSwiping")}</p>
 				</div>
 			)}
 
@@ -241,7 +243,8 @@ function PossibleMatchesSection() {
 									<div className="min-w-0">
 										<p className="truncate font-medium">{interest.otherUser.displayName}</p>
 										<p className="truncate text-sm text-base-content/50">
-											Interested in {interest.gig.title} · {formatDate(interest.createdAt)}
+											{t("matches.interestedIn", { title: interest.gig.title })} ·{" "}
+											{formatDate(interest.createdAt)}
 										</p>
 									</div>
 								</Link>
@@ -249,7 +252,7 @@ function PossibleMatchesSection() {
 								<div className="flex shrink-0 items-center gap-2">
 									<button
 										type="button"
-										aria-label={`Decline ${interest.otherUser.displayName}`}
+										aria-label={t("matches.decline", { name: interest.otherUser.displayName })}
 										disabled={isResponding}
 										onClick={() => handleRespond(interest, false)}
 										className="btn btn-circle btn-sm btn-outline border-base-content/15 text-base-content/50 hover:border-error hover:bg-error hover:text-error-content disabled:opacity-30"
@@ -258,7 +261,7 @@ function PossibleMatchesSection() {
 									</button>
 									<button
 										type="button"
-										aria-label={`Accept ${interest.otherUser.displayName}`}
+										aria-label={t("matches.accept", { name: interest.otherUser.displayName })}
 										disabled={isResponding}
 										onClick={() => handleRespond(interest, true)}
 										className="btn btn-circle btn-sm btn-primary disabled:opacity-30"
@@ -281,6 +284,7 @@ function PossibleMatchesSection() {
 // ---------------------------------------------------------------------------
 
 function YourMatchesSection() {
+	const { t } = useTranslation();
 	const [matches, setMatches] = useState<MatchDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [error, setError] = useState<string | null>(null);
@@ -306,7 +310,7 @@ function YourMatchesSection() {
 			setStatus("ready");
 		})().catch((err: unknown) => {
 			if (cancelled) return;
-			setError(err instanceof ApiError ? err.message : "Couldn't load your matches.");
+			setError(err instanceof ApiError ? err.message : "matches.loadMatchesFailed");
 			setStatus("error");
 		});
 		return () => {
@@ -348,7 +352,7 @@ function YourMatchesSection() {
 			setMatches((prev) => prev.filter((m) => m.matchId !== matchId));
 			setPendingRemove(null);
 		} catch (err) {
-			setRemoveError(err instanceof ApiError ? err.message : "Couldn't remove this match.");
+			setRemoveError(err instanceof ApiError ? err.message : t("matches.removeFailed"));
 		} finally {
 			setRemovingId(null);
 		}
@@ -357,32 +361,34 @@ function YourMatchesSection() {
 	return (
 		<section>
 			<div className="mb-4">
-				<h2 className="text-lg font-semibold">Your matches</h2>
+				<h2 className="text-lg font-semibold">{t("matches.yourMatches")}</h2>
 				<p className="text-sm text-base-content/50">
-					{status === "ready" ? `${matches.length} confirmed matches` : "Loading…"}
+					{status === "ready"
+						? t("matches.confirmedCount", { count: matches.length })
+						: t("matches.loading")}
 				</p>
 			</div>
 
 			{status === "error" && (
 				<div className="flex flex-col items-start gap-2 rounded-2xl border border-error/30 bg-error/10 p-4 text-sm text-error">
-					<p className="font-medium">Couldn&rsquo;t load your matches</p>
-					<p className="text-error/80">{error}</p>
+					<p className="font-medium">{t("matches.couldntLoadMatches")}</p>
+					<p className="text-error/80">{error ? t(error) : null}</p>
 					<button type="button" onClick={retry} className="btn btn-sm mt-2 rounded-full">
-						Try again
+						{t("matches.tryAgain")}
 					</button>
 				</div>
 			)}
 
 			{status === "loading" && (
 				<div className="flex h-40 items-center justify-center text-sm text-base-content/50">
-					Loading matches…
+					{t("matches.loadingMatches")}
 				</div>
 			)}
 
 			{status === "ready" && matches.length === 0 && (
 				<div className="flex h-40 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-base-content/15 text-center text-base-content/50">
-					<p className="font-medium">No matches yet</p>
-					<p className="text-sm">Accept an interest above, or keep swiping to find one.</p>
+					<p className="font-medium">{t("matches.noMatchesYet")}</p>
+					<p className="text-sm">{t("matches.acceptOrSwipe")}</p>
 				</div>
 			)}
 
@@ -403,7 +409,7 @@ function YourMatchesSection() {
 									{match.otherUser.online && (
 										<span
 											className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-base-100 bg-success"
-											aria-label="Online"
+											aria-label={t("matches.online")}
 										/>
 									)}
 								</div>
@@ -412,7 +418,7 @@ function YourMatchesSection() {
 									<p className="truncate text-sm text-base-content/50">
 										{match.lastMessage
 											? `${match.lastMessage.content} · ${formatRelativeTime(match.lastMessage.createdAt)}`
-											: `Matched on ${match.gig.title}`}
+											: t("matches.matchedOn", { title: match.gig.title })}
 									</p>
 								</div>
 							</div>
@@ -420,18 +426,18 @@ function YourMatchesSection() {
 							<div className="flex shrink-0 items-center gap-2">
 								<Link
 									to={`/messages?matchId=${match.matchId}`}
-									aria-label={`Go to chat with ${match.otherUser.displayName}`}
+									aria-label={t("matches.goToChat", { name: match.otherUser.displayName })}
 									className="btn btn-sm btn-primary gap-1.5 rounded-full"
 								>
 									<MessageCircleIcon className="size-4" aria-hidden="true" />
-									Chat
+									{t("matches.chat")}
 									{match.unreadCount > 0 && (
 										<span className="badge badge-xs badge-neutral">{match.unreadCount}</span>
 									)}
 								</Link>
 								<button
 									type="button"
-									aria-label={`Remove match with ${match.otherUser.displayName}`}
+									aria-label={t("matches.removeMatchWith", { name: match.otherUser.displayName })}
 									onClick={() => {
 										setRemoveError(null);
 										setPendingRemove(match);
@@ -449,11 +455,9 @@ function YourMatchesSection() {
 			<dialog ref={dialogRef} className="modal" onClose={() => setPendingRemove(null)}>
 				<div className="modal-box">
 					<h3 className="text-lg font-bold">
-						Remove match with {pendingRemove?.otherUser.displayName}?
+						{t("matches.removeTitle", { name: pendingRemove?.otherUser.displayName ?? "" })}
 					</h3>
-					<p className="py-4 text-base-content/70">
-						This ends the match and deletes your chat history with them. This can&rsquo;t be undone.
-					</p>
+					<p className="py-4 text-base-content/70">{t("matches.removeBody")}</p>
 					{removeError && <p className="pb-4 text-sm text-error">{removeError}</p>}
 					<div className="modal-action">
 						<button
@@ -462,7 +466,7 @@ function YourMatchesSection() {
 							disabled={removingId !== null}
 							onClick={() => setPendingRemove(null)}
 						>
-							Cancel
+							{t("matches.cancel")}
 						</button>
 						<button
 							type="button"
@@ -470,12 +474,12 @@ function YourMatchesSection() {
 							disabled={removingId !== null}
 							onClick={confirmRemove}
 						>
-							{removingId !== null ? "Removing…" : "Remove match"}
+							{removingId !== null ? t("matches.removing") : t("matches.removeMatch")}
 						</button>
 					</div>
 				</div>
 				<form method="dialog" className="modal-backdrop">
-					<button>close</button>
+					<button>{t("matches.close")}</button>
 				</form>
 			</dialog>
 		</section>

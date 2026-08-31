@@ -1,4 +1,8 @@
+import { useTranslation } from "react-i18next";
+
 export default function NotFoundPage() {
+	const { t } = useTranslation();
+
 	return (
 		<div
 			data-theme="forest"
@@ -165,12 +169,9 @@ export default function NotFoundPage() {
 
 				{/* Copy */}
 				<h1 className="rise rise-4 mt-14 text-3xl font-bold text-base-content sm:text-4xl">
-					This canvas is blank.
+					{t("common.canvasBlank")}
 				</h1>
-				<p className="rise rise-4 mt-4 max-w-md text-base-content/60">
-					The page you&apos;re looking for was moved, renamed, or never framed in the first place.
-					Let&apos;s get you back to the work.
-				</p>
+				<p className="rise rise-4 mt-4 max-w-md text-base-content/60">{t("common.notFoundBody")}</p>
 
 				{/* Actions */}
 				<div className="rise rise-5 mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -178,7 +179,7 @@ export default function NotFoundPage() {
 						href="/discover"
 						className="btn btn-primary rounded-full px-6 shadow-lg shadow-primary/25 transition-transform duration-200 hover:-translate-y-0.5"
 					>
-						Back to Discover
+						{t("common.backToDiscover")}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
@@ -191,7 +192,7 @@ export default function NotFoundPage() {
 						</svg>
 					</a>
 					<a href="/" className="btn btn-ghost rounded-full px-6">
-						Go home
+						{t("common.goHome")}
 					</a>
 				</div>
 			</main>
