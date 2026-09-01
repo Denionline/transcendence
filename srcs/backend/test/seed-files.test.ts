@@ -110,13 +110,6 @@ test("seeded file ids are unique", () => {
 	assert.equal(new Set(ids).size, ids.length, "duplicate id in seed-data.json files");
 });
 
-test("the avatar pool is not empty", () => {
-	//	nextAvatarUrl() does `% avatarFiles.length`. With no avatars that is
-	//	NaN, and every seeded user gets `undefined` as an avatar id.
-	const avatars = seedData.files.filter((entry) => entry.use === "avatar");
-	assert.ok(avatars.length > 0, "seed-data.json has no avatar files");
-});
-
 test("no fixture ships without being seeded", () => {
 	//	An asset nothing references is dead weight in the image and in git.
 	//	`generate.py` and the README are the two deliberate exceptions.

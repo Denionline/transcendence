@@ -3,6 +3,7 @@
 // reads UPLOAD_DIR. See docs/db_seeding.md.
 import "../src/lib/load-dotenv.js";
 
+import { createHash } from "node:crypto";
 import { copyFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,7 +13,6 @@ import { hashPassword } from "../src/lib/password.js";
 import { upsertArtistProfile, upsertHirerProfile } from "../src/modules/profile/profile.service.js";
 import { createGig } from "../src/modules/gigs/gigs.service.js";
 import { handleSwipe } from "../src/modules/swipes/swipe.service.js";
-import { fileUrl } from "../src/modules/files/files.service.js";
 import { extFor, typeForMime } from "../src/lib/file-limits.js";
 import { ensureUploadDir } from "../src/lib/storage.js";
 import { UPLOAD_DIR } from "../src/lib/env.js";
@@ -22,6 +22,15 @@ import seedData from "./seed-data.json" with { type: "json" };
 interface SeedActor {
 	id: string;
 	role: UserRole;
+}
+
+//	A File has no natural key, so re-seeding needs a stable id derived from
+//	something that never changes (who owns it, which fixture, which slot) to
+//	stay idempotent — the same trick seed-data.json's hardcoded ids play, just
+//	computed instead of hand-typed. Hashed, not read as a real UUID.
+function deterministicId(seed: string): string {
+	const hash = createHash("md5").update(seed).digest("hex");
+	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 }
 
 async function seedCategories() {
@@ -35,25 +44,17 @@ async function seedCategories() {
 	console.log(`OK      ${seedData.categories.length} categories`);
 }
 
-//	The File ids are hardcoded in seed-data.json, so an avatar's URL is
-//	knowable before the rows or the bytes exist — which is what lets people
-//	be seeded first and their files after.
-const avatarFiles = seedData.files.filter((file) => file.use === "avatar");
-let avatarCursor = 0;
-
-function nextAvatarUrl(): string {
-	const file = avatarFiles[avatarCursor % avatarFiles.length];
-	avatarCursor += 1;
-	return fileUrl(file.id);
+//	A real photo per account, generated from the email — no fixture files to
+//	ship or run out of variety across 200+ seeded people.
+function avatarUrlFor(email: string): string {
+	return `https://i.pravatar.cc/300?u=${email}`;
 }
 
 async function seedUser(
 	input: { email: string; username: string; role: UserRole },
 	passwordHash: string,
 ) {
-	//	The cursor restarts every run, so re-seeding hands each account the
-	//	same avatar it had before.
-	const avatarUrl = nextAvatarUrl();
+	const avatarUrl = avatarUrlFor(input.email);
 	return await prisma.user.upsert({
 		where: { email: input.email },
 		update: { username: input.username, avatarUrl, role: input.role },
@@ -153,6 +154,71 @@ async function seedFiles(actors: Record<string, SeedActor>) {
 	console.log(`OK      ${seedData.files.length} files`);
 }
 
+const PORTFOLIO_ASSETS: { asset: string; mimeType: string }[] = [
+	{ asset: "portfolio-01.jpg", mimeType: "image/jpeg" },
+	{ asset: "portfolio-02.jpg", mimeType: "image/jpeg" },
+	{ asset: "portfolio-03.jpg", mimeType: "image/jpeg" },
+	{ asset: "demo-reel.mp4", mimeType: "video/mp4" },
+	{ asset: "demo-track.mp3", mimeType: "audio/mpeg" },
+];
+
+//	Every seeded artist and hirer gets a couple more portfolio pieces on top
+//	of whatever seed-data.json's "files" section already gave them —
+//	otherwise almost all 200+ artists would show an empty portfolio. Ids are
+//	deterministic, so re-seeding tops the same accounts up again instead of
+//	piling up duplicates.
+async function seedPortfolios(actors: Record<string, SeedActor>) {
+	await ensureUploadDir();
+
+	const owners = [...seedData.artists, ...seedData.hirers];
+	let fileCount = 0;
+	for (let i = 0; i < owners.length; i++) {
+		const owner = actors[owners[i].email];
+		//	Offsetting the starting index per account, rather than picking the
+		//	same first two assets for everyone, is what makes portfolios look
+		//	varied instead of identical.
+		const picks = [
+			PORTFOLIO_ASSETS[i % PORTFOLIO_ASSETS.length],
+			PORTFOLIO_ASSETS[(i + 2) % PORTFOLIO_ASSETS.length],
+		];
+
+		for (const pick of picks) {
+			const type = typeForMime(pick.mimeType);
+			const extension = extFor(pick.mimeType);
+			if (type === null || extension === null)
+				throw new Error(`seedPortfolios: "${pick.mimeType}" is not in FILE_RULES`);
+
+			const id = deterministicId(`portfolio:${owners[i].email}:${pick.asset}`);
+			const location = `${id}.${extension}`;
+			const source = join(ASSETS_DIR, pick.asset);
+			const { size } = await stat(source);
+			await copyFile(source, join(UPLOAD_DIR, location));
+
+			await prisma.file.upsert({
+				where: { id },
+				update: {
+					location,
+					mimeType: pick.mimeType,
+					sizeBytes: size,
+					visibility: FileVisibility.public,
+				},
+				create: {
+					id,
+					ownerId: owner.id,
+					type,
+					mimeType: pick.mimeType,
+					sizeBytes: size,
+					originalName: pick.asset,
+					location,
+					visibility: FileVisibility.public,
+				},
+			});
+			fileCount++;
+		}
+	}
+	console.log(`OK      ${fileCount} portfolio files across ${owners.length} artists/hirers`);
+}
+
 async function seedGigs(actors: Record<string, SeedActor>) {
 	// No natural key for gigs, so rebuild rather than upsert; cascades to their swipes/matches/chats.
 	const hirerIds = seedData.hirers.map((hirer) => actors[hirer.email].id);
@@ -213,6 +279,7 @@ async function main() {
 	const passwordHash = await hashPassword(seedData.password);
 	const actors = await seedPeople(passwordHash);
 	await seedFiles(actors);
+	await seedPortfolios(actors);
 	const gigs = await seedGigs(actors);
 	const matchIdsByGig = await seedSwipes(actors, gigs);
 	await seedChats(actors, matchIdsByGig);

@@ -85,27 +85,9 @@ PIECES = [
 	("portfolio-03.jpg", piece_orbits, [(60, 18, 38), (168, 72, 63), (247, 224, 190), (255, 241, 214)]),
 ]
 
-AVATARS = [
-	((214, 92, 76), (255, 226, 196)),
-	((58, 106, 148), (218, 238, 246)),
-	((92, 128, 74), (232, 242, 214)),
-	((146, 84, 148), (240, 224, 244)),
-	((202, 152, 60), (250, 238, 210)),
-	((70, 84, 110), (222, 228, 238)),
-]
-
-
 def write_images():
 	for name, render, palette in PIECES:
 		render((800, 600), palette).save(os.path.join(OUT, name), "JPEG", quality=72, optimize=True)
-
-	#	Silhouettes, not faces: nobody's likeness ends up in the repository.
-	for index, (foreground, background) in enumerate(AVATARS, start=1):
-		image = Image.new("RGB", (160, 160), background)
-		draw = ImageDraw.Draw(image)
-		draw.ellipse([44, 30, 116, 102], fill=foreground)
-		draw.ellipse([16, 96, 144, 220], fill=foreground)
-		image.save(os.path.join(OUT, f"avatar-{index:02d}.jpg"), "JPEG", quality=78, optimize=True)
 
 
 def write_video():
