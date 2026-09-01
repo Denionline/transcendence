@@ -292,13 +292,13 @@ in use are marked _core_ and were a shared effort.
 | Swipe & match | Category-filtered swipe deck (gigs for artists, candidate artists for hirers); mutual like on the same gig auto-creates a match and closes the gig. | _core_; history/pagination: carlaugu (#86/#92) |
 | Real-time chat | Per-match 1:1 chat over WebSockets, persisted history with pagination, read receipts, online presence, graceful reconnection. | dximenes (#25/#27), carlaugu (#26) |
 | Friends / connections | Send, accept and decline friend requests; friends list with live online status. | carlaugu (#28), dximenes (#29) |
-| Notifications | Real-time + persisted notifications for new match, new message, gig closed, like, friend invite and invite accepted; notification centre with mark-as-read. | dximenes (#30), leoaguia (#31/#109/#110) |
+| Notifications | Real-time + persisted notifications for new match, new message, gig closed, like, friend invite and invite accepted; notification centre with mark-as-read; live pushes also raised as transient toasts. | dximenes (#30), leoaguia (#31/#109/#110) |
 | Advanced search | Full-text + filtered (category, location, availability), sorted and paginated search over artists, hirers and gigs, with relevance ranking. | dximenes (#24), lgertrud (#103), carlaugu (#88) |
 | Internationalization | English / Portuguese / Spanish, language switcher available everywhere, all user-facing text translated; a CI check keeps the three locale files in sync. | dximenes (#39/#40) |
 | Admin dashboard | Role-gated area: list/view/edit/delete users, change roles, platform stats. | carlaugu (#113); _core_ |
 | Privacy Policy & Terms of Service | Standalone, translated, multi-section legal pages linked from the footer. | lgertrud (#42) |
 | API documentation | OpenAPI 3 document served with Swagger UI at `/api/docs` (raw at `/api/docs.json`). | lgertrud (#34) |
-| Design system / component library | One internal set of reusable, theme-driven React components (10+), a shared token layer (palette, typography, motion keyframes) in `src/index.css`, and a single icon set. | lgertrud, leoaguia |
+| Design system / component library | One internal set of reusable, theme-driven React components (10+), including an app-wide toast system built on daisyUI `alert`; a shared token layer (palette, typography, motion keyframes) in `src/index.css`; a single icon set. | lgertrud, leoaguia |
 
 ---
 
@@ -327,7 +327,7 @@ Points: **Major = 2**, **Minor = 1**. Target: **17 points** (14 required + a
 | 9 | **Support for multiple languages (≥ 3)** | Portuguese and Spanish speakers are a core audience. | i18next with `en` / `pt` / `es` (484 keys each), browser-detection + persisted choice, a switcher in the auth layout and settings, and `scripts/check-translations.mjs` in CI to prevent drift. | dximenes (#39/#40) |
 | 10 | **Remote authentication with OAuth 2.0** | Lower-friction sign-in for 42 students. | "Continue with 42" button on the login and register pages → `GET /api/auth/42` (random `state` in an httpOnly cookie) → 42 authorize → `GET /api/auth/42/callback` verifies `state` (CSRF), exchanges the `code` at `/oauth/token`, reads `/v2/me`, finds-or-creates the user by email, then issues the same session cookies as password login. Failures redirect to `/login?error=oauth`. <!-- TEAM: needs a real registered 42 app in `.env` (`FT_API_UID` / `FT_API_SECRET` / `FT_API_CALLBACK_URL`), the 42 app's redirect URI set to `https://localhost:8443/api/auth/42/callback`, and `FRONTEND_URL=https://localhost:8443`. Verify the full click-through before submission. OAuth users are created with the default `artist` role (no role picker in the OAuth path). --> | _core_ |
 | 11 | **Support for additional browsers** | Not everyone uses Chrome. | Chrome (mandatory) + Firefox + Edge/Safari compatibility pass over every feature; browser-specific issues fixed and any residual limitations recorded here. <!-- TEAM: before submission, add `firefox` + `webkit` projects to `playwright.config.ts` so the e2e suite runs on each, and list any browser-specific limitations found during #41. --> | lgertrud (#41) |
-| 12 | **Custom-made design system** | A swipe app lives or dies by its UI; the whole product is built from one internal component library rather than ad-hoc markup. | An internal library of reusable React components — `srcs/frontend/src/components/` (Avatar, Modal, Logo, FieldError, LabeledField, FiltersPanel, LanguageSwitcher, …) plus per-feature `components/` folders (MessageBubble, NotificationBell, MessagesIcon, PasswordStrengthChecklist, FriendRequestButton, card/deck primitives, …), well over 10 reusable pieces, all theme-driven. A shared visual layer in `src/index.css`: a named colour theme set as the app default, and custom motion primitives reused across the UI (`swipe-card-in`, `modal-pop-in`, `hint-pulse`, `icon-bump`, `fade-in`). Icons come from one set (`lucide-react`) used consistently everywhere. | lgertrud, leoaguia (frontend UI) |
+| 12 | **Custom-made design system** | A swipe app lives or dies by its UI; the whole product is built from one internal component library rather than ad-hoc markup. | An internal library of reusable React components — `srcs/frontend/src/components/` (Avatar, Modal, Logo, FieldError, LabeledField, FiltersPanel, LanguageSwitcher, …) plus per-feature `components/` folders (MessageBubble, NotificationBell, MessagesIcon, PasswordStrengthChecklist, FriendRequestButton, card/deck primitives, …) and an app-wide toast system (`features/toast/`, a `ToastProvider` + `useToast()` hook rendering daisyUI `alert`s — auto-dismiss, hover-to-pause, de-dupe, capped stack), well over 10 reusable pieces, all theme-driven. A shared visual layer in `src/index.css`: a named colour theme set as the app default, and custom motion primitives reused across the UI (`swipe-card-in`, `modal-pop-in`, `hint-pulse`, `icon-bump`, `fade-in`, `toast-in`). Icons come from one set (`lucide-react`) used consistently everywhere. | lgertrud, leoaguia (frontend UI) |
 
 ### Not claimed
 
@@ -382,7 +382,8 @@ Contributions below are grouped from the GitHub issues each member owned.
   notification and message badges (#110), the compact Messages icon with a live
   unread-count badge replacing the header text (#109), and the profile-edit
   migration of the category field from a string to tag selection (#80);
-  co-owner of the design system's reusable components and iconography (module 12).
+  co-owner of the design system's reusable components and iconography (module 12),
+  including the app-wide toast system that surfaces live notifications.
 
 - **mreinald** _(left the team)_ — contributed early backend work before leaving;
   the remaining developers absorbed the open items, including the ad-hoc backend
