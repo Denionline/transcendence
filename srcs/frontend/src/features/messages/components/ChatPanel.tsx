@@ -147,6 +147,7 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		try {
 			await deleteMessage(match.matchId, messageId);
 			setMessages((prev) => prev.filter((m) => m.id !== messageId));
+			toast.success(t("messages.deleted"));
 		} catch {
 			// The message stays in place and its control stays active — the
 			// toast is the only cue the click did anything.

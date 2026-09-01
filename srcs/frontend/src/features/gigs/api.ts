@@ -26,3 +26,22 @@ export function updateGigStatus(id: string, status: "open" | "closed"): Promise<
 		body: JSON.stringify({ status }),
 	});
 }
+
+/** Hard-deletes a gig. The backend allows this for the gig's owner or an admin
+ *  (see gigs.routes.ts); the app only surfaces it from the admin area. */
+export function deleteGig(id: string): Promise<null> {
+	return apiRequest<null>(`/gigs/${id}`, { method: "DELETE" });
+}
+
+/** Every gig on the platform, paged out in full — admin-only listing. */
+export async function listAllGigs(): Promise<GigDto[]> {
+	const pageSize = 100;
+	const first = await apiRequest<GigListResponse>(`/gigs?page=1&pageSize=${pageSize}`);
+	const gigs = [...first.items];
+	const totalPages = Math.ceil(first.total / first.pageSize);
+	for (let page = 2; page <= totalPages; page++) {
+		const next = await apiRequest<GigListResponse>(`/gigs?page=${page}&pageSize=${pageSize}`);
+		gigs.push(...next.items);
+	}
+	return gigs;
+}

@@ -3,6 +3,7 @@ import { SearchIcon, Trash2 } from "lucide-react";
 import type { User } from "../features/auth/types";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { useUsers } from "../features/admin/hooks/useUsers";
+import { useToast } from "../features/toast/hooks/useToast";
 import UsersTable from "../features/admin/components/UsersTable";
 import EditUserDialog from "../features/admin/components/EditUserDialog";
 import { useTranslation } from "react-i18next";
@@ -28,6 +29,7 @@ export default function AdminUsersPage() {
 	const { t } = useTranslation();
 	const { user: currentUser } = useAuth();
 	const { users, isLoading, error, update, remove } = useUsers();
+	const toast = useToast();
 
 	const [search, setSearch] = useState("");
 	const [page, setPage] = useState(1);
@@ -56,13 +58,19 @@ export default function AdminUsersPage() {
 
 	async function confirmDelete() {
 		if (!pendingDeleteIds) return;
-		await remove(pendingDeleteIds);
-		setSelectedIds((prev) => {
-			const next = new Set(prev);
-			pendingDeleteIds.forEach((id) => next.delete(id));
-			return next;
-		});
-		setPendingDeleteIds(null);
+		const count = pendingDeleteIds.length;
+		try {
+			await remove(pendingDeleteIds);
+			setSelectedIds((prev) => {
+				const next = new Set(prev);
+				pendingDeleteIds.forEach((id) => next.delete(id));
+				return next;
+			});
+			setPendingDeleteIds(null);
+			toast.success(t("admin.deletedToast", { count }));
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : t("admin.deleteFailed"));
+		}
 	}
 
 	const selectedCount = selectedIds.size;

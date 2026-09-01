@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { opportunitySchema } from "../features/opportunities/schemas";
 import { createGig } from "../features/gigs/api";
+import { useToast } from "../features/toast/hooks/useToast";
 import { useCategories } from "../features/categories/hooks/useCategories";
 import OpportunityCard from "../features/opportunities/components/OpportunityCard";
 import { ApiError } from "../lib/apiClient";
@@ -39,6 +40,7 @@ export default function NewOpportunityPage() {
 	const { t } = useTranslation();
 	const { user } = useAuth();
 	const navigate = useNavigate();
+	const toast = useToast();
 	const { categories, isLoading: isLoadingCategories } = useCategories();
 	const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
 	const [errors, setErrors] = useState<FieldErrors>({});
@@ -82,6 +84,7 @@ export default function NewOpportunityPage() {
 				rate: result.data.rate === "" ? undefined : Number(result.data.rate),
 			});
 			setPublished(true);
+			toast.success(t("gig.createdToast", { title: result.data.title }));
 		} catch (error) {
 			setFormError(error instanceof ApiError ? error.message : t("gig.publishFailed"));
 		} finally {

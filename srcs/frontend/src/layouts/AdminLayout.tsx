@@ -1,4 +1,11 @@
-import { HomeIcon, LogOutIcon, SettingsIcon, SidebarIcon, UsersIcon } from "lucide-react";
+import {
+	BriefcaseIcon,
+	HomeIcon,
+	LogOutIcon,
+	SettingsIcon,
+	SidebarIcon,
+	UsersIcon,
+} from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import Avatar from "../components/Avatar";
@@ -7,6 +14,7 @@ import { useTranslation } from "react-i18next";
 const NAV_ITEMS = [
 	{ to: "/admin", label: "Dashboard", icon: HomeIcon, end: true },
 	{ to: "/admin/users", label: "Users", icon: UsersIcon, end: false },
+	{ to: "/admin/gigs", label: "Gigs", icon: BriefcaseIcon, end: false },
 	{ to: "/admin/settings", label: "Settings", icon: SettingsIcon, end: false },
 ];
 
