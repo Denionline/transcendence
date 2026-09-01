@@ -389,6 +389,7 @@
 		"messageLabel": "Mensagem",
 		"messagePlaceholder": "Mensagem para {{name}}",
 		"sendFailed": "Não foi possível enviar essa mensagem.",
+		"deleteFailed": "Não foi possível apagar a mensagem.",
 		"delete": "Apagar",
 		"subtitle": "Conversa com as pessoas com quem tiveste correspondência.",
 		"couldntLoadMessages": "Não foi possível carregar as tuas mensagens",
@@ -633,6 +634,16 @@
 	"files": {
 		"viewFullSize": "Ver {{name}} em tamanho real",
 		"delete": "Apagar {{name}}"
+	},
+	"toast": {
+		"dismiss": "Dispensar",
+		"notification": {
+			"new_match": "Tens um match novo!",
+			"gig_closed": "Uma oportunidade em que estavas interessado foi fechada.",
+			"swipe_liked": "Alguém está interessado na tua oportunidade.",
+			"new_invite": "Tens um novo pedido de amizade.",
+			"invite_accepted": "O teu pedido de amizade foi aceite."
+		}
 	},
 	"time": {
 		"justNow": "agora mesmo",

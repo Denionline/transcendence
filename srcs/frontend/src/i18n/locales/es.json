@@ -389,6 +389,7 @@
 		"messageLabel": "Mensaje",
 		"messagePlaceholder": "Mensaje para {{name}}",
 		"sendFailed": "No se pudo enviar ese mensaje.",
+		"deleteFailed": "No se pudo eliminar el mensaje.",
 		"delete": "Eliminar",
 		"subtitle": "Chatea con las personas con las que has coincidido.",
 		"couldntLoadMessages": "No se pudieron cargar tus mensajes",
@@ -633,6 +634,16 @@
 	"files": {
 		"viewFullSize": "Ver {{name}} a tamaño completo",
 		"delete": "Eliminar {{name}}"
+	},
+	"toast": {
+		"dismiss": "Descartar",
+		"notification": {
+			"new_match": "¡Tienes un nuevo match!",
+			"gig_closed": "Una oportunidad que te interesaba se ha cerrado.",
+			"swipe_liked": "Alguien está interesado en tu oportunidad.",
+			"new_invite": "Tienes una nueva solicitud de amistad.",
+			"invite_accepted": "Tu solicitud de amistad fue aceptada."
+		}
 	},
 	"time": {
 		"justNow": "ahora mismo",

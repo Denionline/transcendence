@@ -389,6 +389,7 @@
 		"messageLabel": "Message",
 		"messagePlaceholder": "Message {{name}}",
 		"sendFailed": "Couldn't send that message.",
+		"deleteFailed": "Couldn't delete the message.",
 		"delete": "Delete",
 		"subtitle": "Chat with the people you’ve matched with.",
 		"couldntLoadMessages": "Couldn’t load your messages",
@@ -633,6 +634,16 @@
 	"files": {
 		"viewFullSize": "View {{name}} full size",
 		"delete": "Delete {{name}}"
+	},
+	"toast": {
+		"dismiss": "Dismiss",
+		"notification": {
+			"new_match": "You have a new match!",
+			"gig_closed": "An opportunity you were interested in has closed.",
+			"swipe_liked": "Someone is interested in your opportunity.",
+			"new_invite": "You have a new friend request.",
+			"invite_accepted": "Your friend request was accepted."
+		}
 	},
 	"time": {
 		"justNow": "just now",
