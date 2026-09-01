@@ -298,13 +298,14 @@ in use are marked _core_ and were a shared effort.
 | Admin dashboard | Role-gated area: list/view/edit/delete users, change roles, platform stats. | carlaugu (#113); _core_ |
 | Privacy Policy & Terms of Service | Standalone, translated, multi-section legal pages linked from the footer. | lgertrud (#42) |
 | API documentation | OpenAPI 3 document served with Swagger UI at `/api/docs` (raw at `/api/docs.json`). | lgertrud (#34) |
+| Design system / component library | One internal set of reusable, theme-driven React components (10+), a shared token layer (palette, typography, motion keyframes) in `src/index.css`, and a single icon set. | lgertrud, leoaguia |
 
 ---
 
 ## Modules
 
-Points: **Major = 2**, **Minor = 1**. Target: **16 points** (14 required + a
-2-point buffer in case a module is not validated during evaluation).
+Points: **Major = 2**, **Minor = 1**. Target: **17 points** (14 required + a
+3-bonus).
 
 ### Major modules (5 × 2 = 10 pts)
 
@@ -316,7 +317,7 @@ Points: **Major = 2**, **Minor = 1**. Target: **16 points** (14 required + a
 | 4 | **Standard user management & authentication** | Every user has an editable identity, an avatar and connections. | Editable artist/hirer profiles, avatar with a default fallback, friends with live online status, profile page; email/password auth with hashing + salting. | abessa-m (#35/#37), dximenes (#29/#36) |
 | 5 | **Advanced permissions system** | The platform needs moderation. | `artist` / `hirer` / `admin` roles; `requireRole` middleware; admin-only user CRUD (`GET/PUT/DELETE /api/users`); role-gated admin routes and UI; role-dependent views and actions across the app. | carlaugu (#113); _core_ (admin UI) |
 
-### Minor modules (6 × 1 = 6 pts)
+### Minor modules (7 × 1 = 7 pts)
 
 | # | Module | Why it fits Artmate | How it was implemented | Owner |
 |---|---|---|---|---|
@@ -326,6 +327,7 @@ Points: **Major = 2**, **Minor = 1**. Target: **16 points** (14 required + a
 | 9 | **Support for multiple languages (≥ 3)** | Portuguese and Spanish speakers are a core audience. | i18next with `en` / `pt` / `es` (487 keys each), browser-detection + persisted choice, a switcher in the auth layout and settings, and `scripts/check-translations.mjs` in CI to prevent drift. | dximenes (#39/#40) |
 | 10 | **Remote authentication with OAuth 2.0** | Lower-friction sign-in. | 42 intra authorization-code flow with `state` CSRF protection; account provisioned from the 42 profile; shares the same JWT session issuance as password login. | _core_ |
 | 11 | **Support for additional browsers** | Not everyone uses Chrome. | Chrome (mandatory) + Firefox + Edge/Safari compatibility pass over every feature; browser-specific issues fixed and any residual limitations recorded here. <!-- TEAM: before submission, add `firefox` + `webkit` projects to `playwright.config.ts` so the e2e suite runs on each, and list any browser-specific limitations found during #41. --> | lgertrud (#41) |
+| 12 | **Custom-made design system** | A swipe app lives or dies by its UI; the whole product is built from one internal component library rather than ad-hoc markup. | An internal library of reusable React components — `srcs/frontend/src/components/` (Avatar, Modal, Logo, FieldError, LabeledField, FiltersPanel, LanguageSwitcher, …) plus per-feature `components/` folders (MessageBubble, NotificationBell, MessagesIcon, PasswordStrengthChecklist, FriendRequestButton, card/deck primitives, …), well over 10 reusable pieces, all theme-driven. A shared visual layer in `src/index.css`: a named colour theme set as the app default, and custom motion primitives reused across the UI (`swipe-card-in`, `modal-pop-in`, `hint-pulse`, `icon-bump`, `fade-in`). Icons come from one set (`lucide-react`) used consistently everywhere. | lgertrud, leoaguia (frontend UI) |
 
 ### Not claimed
 
@@ -372,12 +374,15 @@ Contributions below are grouped from the GitHub issues each member owned.
 - **lgertrud** — _Developer._ The Privacy Policy and Terms of Service pages,
   accessible from the footer (#42); the OpenAPI/Swagger API documentation (#34);
   the new filter design (#103); the cross-browser compatibility pass across
-  Chrome, Firefox and Edge/Safari (#41).
+  Chrome, Firefox and Edge/Safari (#41); co-owner of the design system — the
+  shared token layer (palette, typography, motion) and the reusable component
+  library (module 12).
 
 - **leoaguia** — _Developer._ The notifications center UI (#31), animated
   notification and message badges (#110), the compact Messages icon with a live
   unread-count badge replacing the header text (#109), and the profile-edit
-  migration of the category field from a string to tag selection (#80).
+  migration of the category field from a string to tag selection (#80);
+  co-owner of the design system's reusable components and iconography (module 12).
 
 - **mreinald** _(left the team)_ — contributed early backend work before leaving;
   the remaining developers absorbed the open items, including the ad-hoc backend
