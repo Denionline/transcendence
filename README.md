@@ -1,8 +1,4 @@
-*This project has been created as part of the 42 curriculum by abessa-m, dximenes, carlaugu, leoaguia.*
-
-<!-- TEAM: confirm the exact 42 logins above before submission. `mreinald` left the
-     team partway through; their in-progress work was redistributed (see Individual
-     Contributions). -->
+*This project has been created as part of the 42 curriculum by abessa-m, dximenes, carlaugu, leoaguia, lgertrud.*
 
 # Artmate
 
@@ -134,12 +130,13 @@ offline). It runs inside the backend container, so the stack must be up
 
 | Member | Role(s) | Responsibilities |
 |---|---|---|
-| **abessa-m** | Product Owner | Owns the product vision and backlog, prioritizes features, validates completed work, communicates with evaluators and peers. Maintains [`docs/product_vision.md`](docs/product_vision.md). |
-| **dximenes** | Project Manager / Scrum Master | Organizes the weekly sync and planning, tracks progress and deadlines, manages risks and blockers, keeps the team communication flowing. |
-| **carlaugu** | Tech Lead / Architect | Defines the technical architecture and stack, sets code-quality conventions, reviews critical changes, owns the Architecture Decision records in [`docs/mad/`](docs/mad/). |
-| **leoaguia** | Developer | Implements assigned features and modules, reviews teammates' pull requests, tests their own work. |
+| **abessa-m** | Product Owner | Owns the product vision and backlog, prioritizes features, validates completed work, communicates with evaluators and peers. Maintains [`docs/product_vision.md`](docs/product_vision.md). Also contributed as a backend/DB developer. |
+| **dximenes** | Project Manager / Scrum Master | Organizes the weekly sync and planning, tracks progress and deadlines, manages risks and blockers, keeps team communication flowing. Also contributed as a frontend/real-time developer and handled release management. |
+| **carlaugu** | Tech Lead / Architect | Defines the technical architecture and stack, sets code-quality conventions, reviews critical changes, owns the Architecture Decision records in [`docs/mad/`](docs/mad/). Also contributed as a backend developer and owned the E2E suite. |
+| **leoaguia** | Developer | Implements assigned features and modules, reviews teammates' pull requests, tests their own work. Focus: notifications and profile UX. |
+| **lgertrud** | Developer | Implements assigned features and modules, reviews teammates' pull requests, tests their own work. Focus: legal pages, API documentation, cross-browser compatibility. |
 
-> A fifth member, `mreinald`, started as a Developer and left the team partway
+> A sixth member, `mreinald`, started as a Developer and left the team partway
 > through the project; their unfinished work was picked up by the remaining
 > developers (see Individual Contributions).
 
@@ -147,13 +144,14 @@ offline). It runs inside the backend container, so the stack must be up
 
 ## Project Management
 
-- **Work tracking** — GitHub Issues, one issue per unit of work, mirrored in
-  branch names (e.g. `43-docs-final-readme-…`) and closed through pull requests.
+- **Work tracking** — GitHub Issues, one issue per unit of work, assigned to a
+  single owner, mirrored in branch names (e.g. `43-docs-final-readme-…`) and
+  closed through pull requests.
 - **Code review** — every change lands via a pull request reviewed by at least one
   other member before merge to `main`; the CI workflow is a required status check.
-- **Meetings** — weekly Monday sync to review progress, assign issues and clear
-  blockers.
-- **Communication channel** — <!-- TEAM: name it (Discord / Slack / …) --> _Discord_.
+- **Meetings** — weekly sync every **Tuesday** to review progress, assign issues
+  and clear blockers.
+- **Communication channel** — **WhatsApp** group for day-to-day coordination.
 - **Documentation** — architecture and decision notes live in [`docs/`](docs/),
   with dated Architecture Decision records under [`docs/mad/`](docs/mad/).
 
@@ -279,26 +277,27 @@ for uploads: [`docs/mad/20260819-file-uploads.md`](docs/mad/20260819-file-upload
 
 ## Features List
 
-<!-- TEAM: replace each "owner" with the member(s) who built it. -->
+Owners are the GitHub issue assignees. Features built before the issue tracker was
+in use are marked _core_ and were a shared effort.
 
-| Feature | Description | Owner |
+| Feature | Description | Owner (issue) |
 |---|---|---|
-| Email/password auth | Register and log in with email + password; passwords hashed and salted with bcrypt; short-lived access JWT + httpOnly refresh-token cookie scoped to `/api/auth`; per-IP rate limiting and a `LoginAttempt` audit trail. | _owner_ |
-| Login with 42 (OAuth 2.0) | Authorization-code flow against the 42 intra API (`/api/auth/42` → `/api/auth/42/callback`), `state` parameter for CSRF protection, account auto-provisioned from the 42 profile. | _owner_ |
-| Artist / hirer profiles | Create and edit a profile (categories, bio, location, availability, organization name for hirers); public profile page for any user. | _owner_ |
-| Onboarding gate | A fresh artist/hirer account must pick at least one category (and org name for hirers) before the rest of the app unlocks, because matching is keyed on it. | _owner_ |
-| Avatar | Set an avatar; a generated initials avatar is shown when none is set. | _owner_ |
-| Media portfolio | Upload image/audio/video files to a profile, with progress, in-browser preview (HTTP Range for video seeking) and delete. | _owner_ |
-| Gig posting | Hirers create, edit, close and delete gigs (title, description, category, location, rate). | _owner_ |
-| Swipe & match | Category-filtered swipe deck (gigs for artists, candidate artists for hirers); mutual like on the same gig auto-creates a match and closes the gig. | _owner_ |
-| Real-time chat | Per-match 1:1 chat over WebSockets, persisted history with pagination, read receipts, online presence, graceful reconnection. | _owner_ |
-| Friends / connections | Send, accept and decline friend requests; friends list with live online status. | _owner_ |
-| Notifications | Real-time + persisted notifications for new match, new message, gig closed, like, friend invite and invite accepted; notification centre with mark-as-read. | _owner_ |
-| Advanced search | Full-text + filtered (category, location, availability), sorted and paginated search over artists, hirers and gigs, with relevance ranking. | _owner_ |
-| Internationalization | English / Portuguese / Spanish, language switcher available everywhere, all user-facing text translated; a CI check keeps the three locale files in sync. | _owner_ |
-| Admin dashboard | Role-gated area: list/view/edit/delete users, change roles, platform stats. | _owner_ |
-| Privacy Policy & Terms of Service | Standalone, translated, multi-section legal pages linked from the footer. | _owner_ |
-| API documentation | OpenAPI 3 document served with Swagger UI at `/api/docs` (raw at `/api/docs.json`). | _owner_ |
+| Email/password auth | Register and log in with email + password; passwords hashed and salted with bcrypt; short-lived access JWT + httpOnly refresh-token cookie scoped to `/api/auth`; per-IP rate limiting and a `LoginAttempt` audit trail. | _core_; validation hardening: abessa-m (#37) |
+| Login with 42 (OAuth 2.0) | Authorization-code flow against the 42 intra API (`/api/auth/42` → `/api/auth/42/callback`), `state` parameter for CSRF protection, account auto-provisioned from the 42 profile. | _core_ |
+| Artist / hirer profiles | Create and edit a profile (categories, bio, location, availability, organization name for hirers); public profile page for any user. | abessa-m (#91), carlaugu (#88), leoaguia (#80); profile CRUD endpoint #79 absorbed after `mreinald` left |
+| Onboarding gate | A fresh artist/hirer account must pick at least one category (and org name for hirers) before the rest of the app unlocks, because matching is keyed on it. | dximenes (#61) |
+| Avatar | Set an avatar; a generated initials avatar is shown when none is set. | abessa-m (#35), dximenes (#36) |
+| Media portfolio | Upload image/audio/video files to a profile, with progress, in-browser preview (HTTP Range for video seeking) and delete. | abessa-m (#35), dximenes (#36) |
+| Gig posting | Hirers create, edit, close and delete gigs (title, description, category, location, rate). | _core_ |
+| Swipe & match | Category-filtered swipe deck (gigs for artists, candidate artists for hirers); mutual like on the same gig auto-creates a match and closes the gig. | _core_; history/pagination: carlaugu (#86/#92) |
+| Real-time chat | Per-match 1:1 chat over WebSockets, persisted history with pagination, read receipts, online presence, graceful reconnection. | dximenes (#25/#27), carlaugu (#26) |
+| Friends / connections | Send, accept and decline friend requests; friends list with live online status. | carlaugu (#28), dximenes (#29) |
+| Notifications | Real-time + persisted notifications for new match, new message, gig closed, like, friend invite and invite accepted; notification centre with mark-as-read. | dximenes (#30), leoaguia (#31/#109/#110) |
+| Advanced search | Full-text + filtered (category, location, availability), sorted and paginated search over artists, hirers and gigs, with relevance ranking. | dximenes (#24), lgertrud (#103), carlaugu (#88) |
+| Internationalization | English / Portuguese / Spanish, language switcher available everywhere, all user-facing text translated; a CI check keeps the three locale files in sync. | dximenes (#39/#40) |
+| Admin dashboard | Role-gated area: list/view/edit/delete users, change roles, platform stats. | carlaugu (#113); _core_ |
+| Privacy Policy & Terms of Service | Standalone, translated, multi-section legal pages linked from the footer. | lgertrud (#42) |
+| API documentation | OpenAPI 3 document served with Swagger UI at `/api/docs` (raw at `/api/docs.json`). | lgertrud (#34) |
 
 ---
 
@@ -307,49 +306,83 @@ for uploads: [`docs/mad/20260819-file-uploads.md`](docs/mad/20260819-file-upload
 Points: **Major = 2**, **Minor = 1**. Target: **16 points** (14 required + a
 2-point buffer in case a module is not validated during evaluation).
 
-<!-- TEAM: replace each "owner". -->
-
 ### Major modules (5 × 2 = 10 pts)
 
 | # | Module | Why it fits Artmate | How it was implemented | Owner |
 |---|---|---|---|---|
-| 1 | **Use a framework for frontend and backend** | The app needs structured routing/state on the client and a real HTTP + WebSocket server. | React 19 + Vite on the frontend; Express 5 (TypeScript, ESM) on the backend, organized as `modules/<name>/<name>.routes.ts` + `.service.ts`. | _owner_ |
-| 2 | **Real-time features (WebSockets)** | Chat, presence and notifications must be instant and multi-client. | socket.io gateway with JWT-authenticated handshake, per-user and per-match rooms, broadcast on new match/message/notification, presence events, token-expiry disconnect and reconnection handling. | _owner_ |
-| 3 | **Allow users to interact with other users** | Core product loop: discover → match → talk. | Basic chat (send/receive, persisted) inside matches; public profile pages; friends system (add/remove/list with online status). | _owner_ |
-| 4 | **Standard user management & authentication** | Every user has an editable identity, an avatar and connections. | Editable artist/hirer profiles, avatar with a default fallback, friends with live online status, profile page; email/password auth with hashing + salting. | _owner_ |
-| 5 | **Advanced permissions system** | The platform needs moderation. | `artist` / `hirer` / `admin` roles; `requireRole` middleware; admin-only user CRUD (`GET/PUT/DELETE /api/users`); role-gated admin routes and UI; role-dependent views and actions across the app. | _owner_ |
+| 1 | **Use a framework for frontend and backend** | The app needs structured routing/state on the client and a real HTTP + WebSocket server. | React 19 + Vite on the frontend; Express 5 (TypeScript, ESM) on the backend, organized as `modules/<name>/<name>.routes.ts` + `.service.ts`. | _core_ (whole team) |
+| 2 | **Real-time features (WebSockets)** | Chat, presence and notifications must be instant and multi-client. | socket.io gateway with JWT-authenticated handshake, per-user and per-match rooms, broadcast on new match/message/notification, presence events, token-expiry disconnect and reconnection handling. | dximenes (#25), carlaugu (#26) |
+| 3 | **Allow users to interact with other users** | Core product loop: discover → match → talk. | Basic chat (send/receive, persisted) inside matches; public profile pages; friends system (add/remove/list with online status). | carlaugu (#26/#28), dximenes (#27/#29) |
+| 4 | **Standard user management & authentication** | Every user has an editable identity, an avatar and connections. | Editable artist/hirer profiles, avatar with a default fallback, friends with live online status, profile page; email/password auth with hashing + salting. | abessa-m (#35/#37), dximenes (#29/#36) |
+| 5 | **Advanced permissions system** | The platform needs moderation. | `artist` / `hirer` / `admin` roles; `requireRole` middleware; admin-only user CRUD (`GET/PUT/DELETE /api/users`); role-gated admin routes and UI; role-dependent views and actions across the app. | carlaugu (#113); _core_ (admin UI) |
 
 ### Minor modules (6 × 1 = 6 pts)
 
 | # | Module | Why it fits Artmate | How it was implemented | Owner |
 |---|---|---|---|---|
-| 6 | **Use an ORM** | Relational data with non-trivial relations and migrations. | Prisma over PostgreSQL; full migration history in `srcs/backend/prisma/migrations/`. | _owner_ |
-| 7 | **File upload and management** | Artists need a media portfolio. | multer intake; client- and server-side type/size validation; bytes stored in a named Docker volume behind a single storage module; unguessable-id access control; `<img>`/`<audio>`/`<video>` preview with HTTP Range; XHR upload progress; delete (and cleanup on account deletion). | _owner_ |
-| 8 | **Advanced search with filters, sorting and pagination** | Hirers browse a large pool of artists. | `/api/search/{artists,hirers,gigs}` with text search, category/location/availability filters, `newest`/`oldest`/`relevance` sorting, relevance-bucketed pagination, rate-limited. | _owner_ |
-| 9 | **Support for multiple languages (≥ 3)** | Portuguese and Spanish speakers are a core audience. | i18next with `en` / `pt` / `es` (487 keys each), browser-detection + persisted choice, a switcher in the auth layout and settings, and `scripts/check-translations.mjs` in CI to prevent drift. | _owner_ |
-| 10 | **Remote authentication with OAuth 2.0** | Lower-friction sign-in. | 42 intra authorization-code flow with `state` CSRF protection; account provisioned from the 42 profile; shares the same JWT session issuance as password login. | _owner_ |
-| 11 | **Support for additional browsers** | Not everyone uses Chrome. | <!-- TEAM: finish this — add Firefox + WebKit projects to `playwright.config.ts`, run the e2e suite on each, and record any browser-specific limitations here. --> Target: Chrome (mandatory) + Firefox + Safari/WebKit, verified with the Playwright e2e suite. | _owner_ |
+| 6 | **Use an ORM** | Relational data with non-trivial relations and migrations. | Prisma over PostgreSQL; full migration history in `srcs/backend/prisma/migrations/`. | abessa-m (#59/#91) |
+| 7 | **File upload and management** | Artists need a media portfolio. | multer intake; client- and server-side type/size validation; bytes stored in a named Docker volume behind a single storage module; unguessable-id access control; `<img>`/`<audio>`/`<video>` preview with HTTP Range; XHR upload progress; delete (and cleanup on account deletion). | abessa-m (#35), dximenes (#36) |
+| 8 | **Advanced search with filters, sorting and pagination** | Hirers browse a large pool of artists. | `/api/search/{artists,hirers,gigs}` with text search, category/location/availability filters, `newest`/`oldest`/`relevance` sorting, relevance-bucketed pagination, rate-limited. | dximenes (#24), lgertrud (#103), carlaugu (#86/#88/#92) |
+| 9 | **Support for multiple languages (≥ 3)** | Portuguese and Spanish speakers are a core audience. | i18next with `en` / `pt` / `es` (487 keys each), browser-detection + persisted choice, a switcher in the auth layout and settings, and `scripts/check-translations.mjs` in CI to prevent drift. | dximenes (#39/#40) |
+| 10 | **Remote authentication with OAuth 2.0** | Lower-friction sign-in. | 42 intra authorization-code flow with `state` CSRF protection; account provisioned from the 42 profile; shares the same JWT session issuance as password login. | _core_ |
+| 11 | **Support for additional browsers** | Not everyone uses Chrome. | Chrome (mandatory) + Firefox + Edge/Safari compatibility pass over every feature; browser-specific issues fixed and any residual limitations recorded here. <!-- TEAM: before submission, add `firefox` + `webkit` projects to `playwright.config.ts` so the e2e suite runs on each, and list any browser-specific limitations found during #41. --> | lgertrud (#41) |
 
 ### Not claimed
 
-- **Public API (Major)** — an OpenAPI/Swagger document is served at `/api/docs`
-  for internal reference, but the dedicated API-key + rate-limited public API is
-  **not** part of the graded scope for this project.
+- **Public API (Major)** — the team decided not to pursue this module. The
+  OpenAPI/Swagger document (#34) still ships at `/api/docs` as internal
+  reference, but the dedicated API-key system (#32) and its rate limiting (#33)
+  were not implemented, so the module is **not** claimed.
 
 ---
 
 ## Individual Contributions
 
-<!-- TEAM: fill in per person — specific features/modules/components, and at least
-     one concrete challenge and how it was solved. Keep it honest; this section is
-     weighed during evaluation. -->
+Contributions below are grouped from the GitHub issues each member owned.
+<!-- TEAM: add, per person, at least one concrete challenge and how it was
+     solved — evaluators weigh this. -->
 
-- **abessa-m** — _Product Owner._ …
-- **dximenes** — _Project Manager / Scrum Master._ …
-- **carlaugu** — _Tech Lead / Architect._ …
-- **leoaguia** — _Developer._ …
-- **mreinald** _(left the team)_ — started work on _…_; on departure it was
-  handed to _…_ and completed.
+- **abessa-m** — _Product Owner + backend/DB developer._ Database schema
+  implementation (#59) and the migration of categories from a free-text string to
+  a normalized `Category` table with many-to-many joins (#91); the file-upload
+  backend — type/size validation, id-based access control, preview metadata,
+  delete and account-deletion cleanup (#35); input-validation hardening across
+  frontend and backend (#37); the demo seed data and its bundled media (#95); QA
+  on the install flow (#51). Owns [`docs/product_vision.md`](docs/product_vision.md).
+
+- **dximenes** — _Project Manager / Scrum Master + frontend/real-time developer._
+  The WebSocket gateway with authenticated handshake and connection lifecycle
+  (#25), the real-time chat interface (#27), online-status indicators (#29), the
+  notifications model and realtime create/update/delete events (#30); search UI
+  with filter chips and pagination (#24); the full i18n setup and EN/PT/ES
+  translations (#39, #40); the upload UI with progress bar, preview and delete
+  (#36); category selection at registration (#61); the search bar and the
+  browser-console cleanup (#118); release management — UAT checklist, bug bash,
+  release candidate tag and final submission checklist (#43, #44, #45).
+
+- **carlaugu** — _Tech Lead / Architect + backend developer._ The 1:1 chat
+  messaging API and persistence (#26), the friends system — add/remove/list and
+  friend requests (#28), the swipe-history endpoint and its pagination (#86,
+  #92), profile-mismatch resolution (#88), chat-message deletion gated to sender
+  or mod/admin (#113); the Playwright E2E suite covering auth, swipe/match, chat
+  and upload (#38). Also scoped the public-API key system and rate limiting
+  (#32, #33) before the team dropped that module. Owns the ADRs in
+  [`docs/mad/`](docs/mad/).
+
+- **lgertrud** — _Developer._ The Privacy Policy and Terms of Service pages,
+  accessible from the footer (#42); the OpenAPI/Swagger API documentation (#34);
+  the new filter design (#103); the cross-browser compatibility pass across
+  Chrome, Firefox and Edge/Safari (#41).
+
+- **leoaguia** — _Developer._ The notifications center UI (#31), animated
+  notification and message badges (#110), the compact Messages icon with a live
+  unread-count badge replacing the header text (#109), and the profile-edit
+  migration of the category field from a string to tag selection (#80).
+
+- **mreinald** _(left the team)_ — contributed early backend work before leaving;
+  the remaining developers absorbed the open items, including the ad-hoc backend
+  fixes tracked in #66 (env loading), #70 (double password check) and #72/#73
+  (auth-middleware consolidation).
 
 ---
 
@@ -398,8 +431,9 @@ who own the corresponding code.
   violations but does not yet block them.
 - **No games** — Artmate is not a gaming project, so the gaming modules (and
   anything that depends on a game) are out of scope.
-- **Additional-browser support** is targeted but the cross-browser e2e matrix is
-  not yet complete (see module 11).
+- **Additional browsers** — features were verified manually across Chrome, Firefox
+  and Edge/Safari (#41); the automated Playwright suite still runs on Chromium
+  only until the `firefox` / `webkit` projects are added (see module 11).
 
 ---
 
