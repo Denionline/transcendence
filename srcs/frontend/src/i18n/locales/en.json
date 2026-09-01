@@ -654,6 +654,8 @@
 		"slug": "Slug",
 		"actions": "Actions",
 		"none": "No categories match your search.",
+		"count_one": "{{count}} category",
+		"count_other": "{{count}} categories",
 		"edit": "Edit",
 		"editNamed": "Edit {{label}}",
 		"delete": "Delete",

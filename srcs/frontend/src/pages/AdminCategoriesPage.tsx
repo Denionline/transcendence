@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PlusIcon, Pencil, Trash2 } from "lucide-react";
+import { PlusIcon, SearchIcon } from "lucide-react";
 import { useAdminCategories } from "../features/admin/hooks/useAdminCategories";
+import CategoriesTable from "../features/admin/components/CategoriesTable";
 import CategoryFormDialog from "../features/admin/components/CategoryFormDialog";
 import { useToast } from "../features/toast/hooks/useToast";
 import type { CategoryDto } from "../features/categories/types";
@@ -62,7 +63,8 @@ export default function AdminCategoriesPage() {
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<h1 className="text-xl font-bold">{t("adminCategories.title")}</h1>
 				<div className="flex flex-wrap items-center gap-2">
-					<label className="input input-sm">
+					<label className="input">
+						<SearchIcon className="text-base-content opacity-50" aria-hidden="true" />
 						<input
 							type="search"
 							placeholder={t("adminCategories.search")}
@@ -72,11 +74,7 @@ export default function AdminCategoriesPage() {
 							maxLength={80}
 						/>
 					</label>
-					<button
-						type="button"
-						className="btn btn-primary btn-sm"
-						onClick={() => setFormTarget("new")}
-					>
+					<button type="button" className="btn btn-primary" onClick={() => setFormTarget("new")}>
 						<PlusIcon className="size-4" aria-hidden="true" />
 						{t("adminCategories.add")}
 					</button>
@@ -92,64 +90,19 @@ export default function AdminCategoriesPage() {
 			)}
 
 			<div className="overflow-x-auto rounded-box border border-base-content/10 bg-base-100">
-				<table className="table">
-					<thead>
-						<tr>
-							<th>{t("adminCategories.label")}</th>
-							<th>{t("adminCategories.slug")}</th>
-							<th className="text-right">{t("adminCategories.actions")}</th>
-						</tr>
-					</thead>
-					<tbody>
-						{isLoading ? (
-							<tr>
-								<td colSpan={3} className="py-10 text-center">
-									<span className="loading loading-spinner loading-md" />
-								</td>
-							</tr>
-						) : filtered.length === 0 ? (
-							<tr>
-								<td colSpan={3} className="py-10 text-center text-sm text-base-content/60">
-									{t("adminCategories.none")}
-								</td>
-							</tr>
-						) : (
-							filtered.map((category) => (
-								<tr key={category.id}>
-									<td className="font-medium">{category.label}</td>
-									<td>
-										<code className="rounded bg-base-200 px-1.5 py-0.5 text-xs">
-											{category.slug}
-										</code>
-									</td>
-									<td>
-										<div className="flex justify-end gap-1">
-											<button
-												type="button"
-												className="btn btn-ghost btn-xs tooltip"
-												data-tip={t("adminCategories.edit")}
-												aria-label={t("adminCategories.editNamed", { label: category.label })}
-												onClick={() => setFormTarget(category)}
-											>
-												<Pencil className="size-4" aria-hidden="true" />
-											</button>
-											<button
-												type="button"
-												className="btn btn-ghost btn-xs text-error tooltip tooltip-left"
-												data-tip={t("adminCategories.delete")}
-												aria-label={t("adminCategories.deleteNamed", { label: category.label })}
-												onClick={() => setPendingDelete(category)}
-											>
-												<Trash2 className="size-4" aria-hidden="true" />
-											</button>
-										</div>
-									</td>
-								</tr>
-							))
-						)}
-					</tbody>
-				</table>
+				<CategoriesTable
+					categories={filtered}
+					isLoading={isLoading}
+					onEdit={setFormTarget}
+					onDelete={setPendingDelete}
+				/>
 			</div>
+
+			{!isLoading && categories.length > 0 && (
+				<span className="text-sm text-base-content/60">
+					{t("adminCategories.count", { count: filtered.length })}
+				</span>
+			)}
 
 			<CategoryFormDialog
 				target={formTarget}
