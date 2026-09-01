@@ -8,6 +8,12 @@ import type { CategoryDto } from "../types";
 // hardcoded lists the frontend used to keep in sync with the database by hand.
 let cache: CategoryDto[] | null = null;
 
+/** Drop the in-memory vocabulary so the next `useCategories()` mount refetches.
+ *  Called after an admin creates, renames or removes a category. */
+export function clearCategoriesCache() {
+	cache = null;
+}
+
 export function useCategories() {
 	const { t } = useTranslation();
 	const [categories, setCategories] = useState<CategoryDto[]>(cache ?? []);

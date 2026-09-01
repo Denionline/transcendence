@@ -2,7 +2,12 @@ import { Router, Request } from "express";
 import { throwError } from "../../lib/http-error.js";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { UserRole } from "../../../generated/prisma/client.js";
-import { createCategory, listCategories, updateCategory } from "./categories.service.js";
+import {
+	createCategory,
+	deleteCategory,
+	listCategories,
+	updateCategory,
+} from "./categories.service.js";
 
 const router = Router();
 
@@ -56,6 +61,22 @@ router.patch("/:id", requireAuth, async (req: Request, res) => {
 	const body = req.body ?? {};
 	const category = await updateCategory(categoryId, { label: body.label, slug: body.slug });
 	res.status(200).json(category);
+});
+
+router.delete("/:id", requireAuth, async (req: Request, res) => {
+	const categoryId = parseId(req.params.id);
+	const caller = req.user!;
+
+	let callerIsAdmin = false;
+	if (caller.role === UserRole.admin) {
+		callerIsAdmin = true;
+	}
+	if (callerIsAdmin === false) {
+		throwError(403, "FORBIDDEN", "only an admin can delete categories");
+	}
+
+	await deleteCategory(categoryId);
+	res.status(204).send();
 });
 
 export default router;

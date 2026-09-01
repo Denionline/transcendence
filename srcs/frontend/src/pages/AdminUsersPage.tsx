@@ -6,24 +6,10 @@ import { useUsers } from "../features/admin/hooks/useUsers";
 import { useToast } from "../features/toast/hooks/useToast";
 import UsersTable from "../features/admin/components/UsersTable";
 import EditUserDialog from "../features/admin/components/EditUserDialog";
+import { getPageWindow } from "../lib/pageWindow";
 import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 8;
-
-/** Windowed page list: first, last, and pages around `current`, with "…" gaps. */
-function getPageWindow(current: number, total: number): (number | "…")[] {
-	if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-	const pages = new Set([1, total, current - 1, current, current + 1]);
-	const sorted = [...pages].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
-
-	const result: (number | "…")[] = [];
-	sorted.forEach((p, i) => {
-		if (i > 0 && p - sorted[i - 1] > 1) result.push("…");
-		result.push(p);
-	});
-	return result;
-}
 
 export default function AdminUsersPage() {
 	const { t } = useTranslation();

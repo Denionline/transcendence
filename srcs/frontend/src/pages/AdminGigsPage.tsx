@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SearchIcon, Trash2 } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useAdminGigs } from "../features/admin/hooks/useAdminGigs";
+import GigsTable from "../features/admin/components/GigsTable";
 import { useToast } from "../features/toast/hooks/useToast";
-import { formatDate } from "../lib/format";
+import { getPageWindow } from "../lib/pageWindow";
 import { useTranslation } from "react-i18next";
+
+const PAGE_SIZE = 10;
 
 export default function AdminGigsPage() {
 	const { t } = useTranslation();
@@ -11,6 +14,7 @@ export default function AdminGigsPage() {
 	const { gigs, isLoading, error, remove } = useAdminGigs();
 
 	const [search, setSearch] = useState("");
+	const [page, setPage] = useState(1);
 	const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
 	const deleteDialogRef = useRef<HTMLDialogElement>(null);
@@ -29,6 +33,10 @@ export default function AdminGigsPage() {
 			),
 		);
 	}, [gigs, search]);
+
+	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+	const currentPage = Math.min(page, totalPages);
+	const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
 	const pendingGig = gigs.find((gig) => gig.id === pendingDeleteId) ?? null;
 
@@ -57,7 +65,10 @@ export default function AdminGigsPage() {
 						placeholder={t("adminGigs.search")}
 						aria-label={t("adminGigs.search")}
 						value={search}
-						onChange={(e) => setSearch(e.target.value)}
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
 						maxLength={120}
 					/>
 				</label>
@@ -70,63 +81,53 @@ export default function AdminGigsPage() {
 			)}
 
 			<div className="overflow-x-auto rounded-box border border-base-content/10 bg-base-100">
-				<table className="table">
-					<thead>
-						<tr>
-							<th>{t("adminGigs.gig")}</th>
-							<th>{t("adminGigs.hirer")}</th>
-							<th>{t("adminGigs.category")}</th>
-							<th>{t("adminGigs.status")}</th>
-							<th>{t("adminGigs.created")}</th>
-							<th className="sr-only">{t("adminGigs.actions")}</th>
-						</tr>
-					</thead>
-					<tbody>
-						{isLoading ? (
-							<tr>
-								<td colSpan={6} className="py-10 text-center">
-									<span className="loading loading-spinner loading-md" />
-								</td>
-							</tr>
-						) : filtered.length === 0 ? (
-							<tr>
-								<td colSpan={6} className="py-10 text-center text-sm text-base-content/60">
-									{t("adminGigs.none")}
-								</td>
-							</tr>
-						) : (
-							filtered.map((gig) => (
-								<tr key={gig.id}>
-									<td className="max-w-xs truncate font-medium">{gig.title}</td>
-									<td className="text-sm text-base-content/70">{gig.hirer?.username ?? "—"}</td>
-									<td className="text-sm">{gig.category.label}</td>
-									<td>
-										<span
-											className={`badge badge-sm ${
-												gig.status === "open" ? "badge-primary" : "badge-ghost"
-											}`}
-										>
-											{gig.status === "open" ? t("gig.open") : t("gig.closed")}
-										</span>
-									</td>
-									<td className="text-sm text-base-content/60">{formatDate(gig.createdAt)}</td>
-									<td className="text-right">
-										<button
-											type="button"
-											className="btn btn-ghost btn-sm text-error tooltip"
-											data-tip={t("adminGigs.deleteGig")}
-											aria-label={t("adminGigs.deleteGig")}
-											onClick={() => setPendingDeleteId(gig.id)}
-										>
-											<Trash2 className="size-4" aria-hidden="true" />
-										</button>
-									</td>
-								</tr>
-							))
-						)}
-					</tbody>
-				</table>
+				<GigsTable gigs={paginated} isLoading={isLoading} onDelete={setPendingDeleteId} />
 			</div>
+
+			{!isLoading && filtered.length > 0 && (
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<span className="text-sm text-base-content/60">
+						{t("adminGigs.showing", {
+							from: (currentPage - 1) * PAGE_SIZE + 1,
+							to: Math.min(currentPage * PAGE_SIZE, filtered.length),
+							total: filtered.length,
+						})}
+					</span>
+					{totalPages > 1 && (
+						<div className="join">
+							<button
+								className="join-item btn btn-sm"
+								disabled={currentPage === 1}
+								onClick={() => setPage((p) => p - 1)}
+							>
+								«
+							</button>
+							{getPageWindow(currentPage, totalPages).map((p, i) =>
+								p === "…" ? (
+									<button key={`ellipsis-${i}`} className="join-item btn btn-sm btn-disabled">
+										…
+									</button>
+								) : (
+									<button
+										key={p}
+										className={`join-item btn btn-sm ${p === currentPage ? "btn-active" : ""}`}
+										onClick={() => setPage(p)}
+									>
+										{p}
+									</button>
+								),
+							)}
+							<button
+								className="join-item btn btn-sm"
+								disabled={currentPage === totalPages}
+								onClick={() => setPage((p) => p + 1)}
+							>
+								»
+							</button>
+						</div>
+					)}
+				</div>
+			)}
 
 			<dialog ref={deleteDialogRef} className="modal" onClose={() => setPendingDeleteId(null)}>
 				<div className="modal-box">
