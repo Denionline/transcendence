@@ -60,7 +60,10 @@ export default function MessagesPage() {
 		function handleNewMatch() {
 			listMatches()
 				.then((items) => setMatches(items))
-				.catch((err: unknown) => console.error("Failed to refresh matches:", err));
+				.catch(() => {
+					// A failed refresh just means the new match isn't listed yet —
+					// the next match event or a manual reload will pick it up.
+				});
 		}
 
 		socket.on("new_match", handleNewMatch);

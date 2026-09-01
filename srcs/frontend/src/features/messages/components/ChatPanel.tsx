@@ -135,8 +135,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		hasUnreadRef.current = false;
 		markMessagesRead(match.matchId)
 			.then(() => refreshUnreadCount())
-			.catch((err: unknown) => {
-				console.error("Failed to mark messages as read:", err);
+			.catch(() => {
+				// Mark-as-read failed — restore the flag so the next focus retries.
 				hasUnreadRef.current = true;
 			});
 	}
@@ -145,8 +145,9 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		try {
 			await deleteMessage(match.matchId, messageId);
 			setMessages((prev) => prev.filter((m) => m.id !== messageId));
-		} catch (err: unknown) {
-			console.error("Failed to delete message:", err);
+		} catch {
+			// Deletion failed — the message stays in place and its control stays
+			// active so the user can retry.
 		}
 	}
 
