@@ -1,5 +1,5 @@
 import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
-import { CameraIcon, LinkIcon, MailIcon, UserRound, UserRoundIcon } from "lucide-react";
+import { CameraIcon, MailIcon, UserRound, UserRoundIcon } from "lucide-react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Avatar from "../../../components/Avatar";
 import { uploadFile } from "../../files/api";
@@ -164,25 +164,11 @@ export default function AccountSection() {
 					<FieldError message={errors.email} />
 				</LabeledField>
 
-				<LabeledField
-					label={t("settings.avatarUrl")}
-					icon={LinkIcon}
-					hint={t("settings.optional")}
-					className="max-w-sm"
-				>
-					{/* type="text", not "url": an upload above fills this with a
-					    relative /api/files/... path, which the browser's built-in
-					    URL validation would otherwise reject on submit. */}
-					<input
-						type="text"
-						className="input w-full pl-9"
-						placeholder={t("settings.avatarUrlPlaceholder")}
-						value={avatarUrl}
-						onChange={(e) => setAvatarUrl(e.target.value)}
-						aria-invalid={errors.avatarUrl ? "true" : undefined}
-					/>
-					<FieldError message={errors.avatarUrl} />
-				</LabeledField>
+				{errors.avatarUrl && (
+					<div className="max-w-sm">
+						<FieldError message={errors.avatarUrl} />
+					</div>
+				)}
 
 				<div>
 					<button
