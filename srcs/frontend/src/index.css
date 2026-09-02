@@ -45,6 +45,18 @@ body {
 	}
 }
 
+/* Toasts slide up from the corner as they enter the stack. */
+@keyframes toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(12px) scale(0.98);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
 /* A slow, gentle "notice me" breathing loop — used to hint that a card is
  * clickable without relying on hover (mobile has none) or being as jarring
  * as icon-bump, which is a one-shot reaction to an actual event. */

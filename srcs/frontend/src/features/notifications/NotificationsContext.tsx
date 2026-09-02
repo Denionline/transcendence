@@ -1,8 +1,20 @@
-import { type ReactNode, createContext, useEffect, useState } from "react";
+import { type ReactNode, createContext, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { listNotifications, markAllNotificationsRead, markNotificationRead } from "./api";
 import type { NotificationDto } from "./types";
 import { getSocket } from "../../lib/socket";
 import { useAuth } from "../auth/hooks/useAuth";
+import { useToast } from "../toast/hooks/useToast";
+
+// Live pushes worth interrupting the user for. "new_message" is deliberately
+// absent — the messages UI has its own unread badge and dropdown for those.
+const TOASTABLE_NOTIFICATIONS = new Set([
+	"new_match",
+	"gig_closed",
+	"swipe_liked",
+	"new_invite",
+	"invite_accepted",
+]);
 
 type Status = "loading" | "ready" | "error";
 
@@ -29,6 +41,16 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
 	const [bumpToken, setBumpToken] = useState(0);
+
+	//	Read through a ref so the socket effect below doesn't take `toast` / `t`
+	//	as dependencies — `t`'s identity changes on every language switch, which
+	//	would otherwise detach and re-attach the listener each time.
+	const toast = useToast();
+	const { t } = useTranslation();
+	const notifyRef = useRef({ toast, t });
+	useEffect(() => {
+		notifyRef.current = { toast, t };
+	});
 
 	useEffect(() => {
 		// AuthProvider's own session check (fetchMe) hasn't set the access
@@ -69,9 +91,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 		const socket = getSocket();
 		if (!socket) return;
 
-		function handleNotificationEvent() {
-			setRetryToken((t) => t + 1);
-			setBumpToken((t) => t + 1);
+		function handleNotificationEvent(payload?: { type?: string }) {
+			setRetryToken((value) => value + 1);
+			setBumpToken((value) => value + 1);
+
+			const type = payload?.type;
+			if (type && TOASTABLE_NOTIFICATIONS.has(type)) {
+				const { toast: notify, t: translate } = notifyRef.current;
+				notify.info(translate(`toast.notification.${type}`));
+			}
 		}
 
 		socket.on("new_notification", handleNotificationEvent);
@@ -82,7 +110,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 	}, [isLoading, user]);
 
 	function refresh() {
-		setRetryToken((t) => t + 1);
+		setRetryToken((value) => value + 1);
 	}
 
 	async function markRead(id: string) {

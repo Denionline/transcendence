@@ -15,6 +15,7 @@ import type { ChatMessageDto } from "../types";
 import type { MatchDto } from "../../matches/types";
 import { getSocket } from "../../../lib/socket";
 import { useUnreadMessages } from "../hooks/useUnreadMessages";
+import { useToast } from "../../toast/hooks/useToast";
 import { useTranslation } from "react-i18next";
 
 // Close enough to the bottom that an incoming message should still autoscroll
@@ -29,6 +30,7 @@ interface ChatPanelProps {
 
 export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelProps) {
 	const { t } = useTranslation();
+	const toast = useToast();
 	const { refresh: refreshUnreadCount, setActiveMatchId } = useUnreadMessages();
 	const [messages, setMessages] = useState<ChatMessageDto[]>([]);
 	const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -135,8 +137,8 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		hasUnreadRef.current = false;
 		markMessagesRead(match.matchId)
 			.then(() => refreshUnreadCount())
-			.catch((err: unknown) => {
-				console.error("Failed to mark messages as read:", err);
+			.catch(() => {
+				// Mark-as-read failed — restore the flag so the next focus retries.
 				hasUnreadRef.current = true;
 			});
 	}
@@ -145,8 +147,11 @@ export default function ChatPanel({ match, currentUserId, onBack }: ChatPanelPro
 		try {
 			await deleteMessage(match.matchId, messageId);
 			setMessages((prev) => prev.filter((m) => m.id !== messageId));
-		} catch (err: unknown) {
-			console.error("Failed to delete message:", err);
+			toast.success(t("messages.deleted"));
+		} catch {
+			// The message stays in place and its control stays active — the
+			// toast is the only cue the click did anything.
+			toast.error(t("messages.deleteFailed"));
 		}
 	}
 

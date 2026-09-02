@@ -143,6 +143,35 @@ export async function updateCategory(id: string, input: CategoryInput) {
 	}
 }
 
+//	The vocabulary is referenced by artist profiles, hirer profiles and gigs
+//	with `onDelete: Restrict`, so a plain delete of an in-use row throws at the
+//	database. Check first and answer with a clear 409 instead of a 500 — a
+//	category can only be removed once nothing points at it.
+export async function deleteCategory(id: string) {
+	const [artistUses, hirerUses, gigUses] = await prisma.$transaction([
+		prisma.artistCategory.count({ where: { categoryId: id } }),
+		prisma.hirerCategory.count({ where: { categoryId: id } }),
+		prisma.gig.count({ where: { categoryId: id } }),
+	]);
+	const inUse = artistUses + hirerUses + gigUses;
+	if (inUse > 0) {
+		throwError(
+			409,
+			"CATEGORY_IN_USE",
+			`category is used by ${inUse} profile(s) or gig(s) and cannot be deleted`,
+		);
+	}
+
+	try {
+		await prisma.category.delete({ where: { id } });
+	} catch (error) {
+		if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+			throwError(404, "CATEGORY_NOT_FOUND", "category not found");
+		}
+		throw error;
+	}
+}
+
 //	Search accepts a filter over categories that may legitimately name rows
 //	that do not exist; an unknown filter value should narrow the result set,
 //	not fail the request. Unknown slugs are therefore dropped here.

@@ -12,6 +12,8 @@ import type { UserRole } from "./features/auth/types";
 import AppLayout from "./layouts/AppLayout";
 import DiscoverPage from "./pages/DiscoverPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminGigsPage from "./pages/AdminGigsPage";
+import AdminCategoriesPage from "./pages/AdminCategoriesPage";
 import AdminSettingsPage from "./pages/AdminSettingsPage";
 import MessagesPage from "./pages/MessagesPage";
 import MatchesPage from "./pages/MatchesPage";
@@ -98,6 +100,8 @@ export const router = createBrowserRouter([
 		children: [
 			{ path: "/admin", element: <AdminDashboardPage /> },
 			{ path: "/admin/users", element: <AdminUsersPage /> },
+			{ path: "/admin/gigs", element: <AdminGigsPage /> },
+			{ path: "/admin/categories", element: <AdminCategoriesPage /> },
 			{ path: "/admin/settings", element: <AdminSettingsPage /> },
 		],
 	},
