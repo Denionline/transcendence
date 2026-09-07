@@ -7,9 +7,9 @@ interface PublicRouteProps {
 }
 
 export function PublicRoute({ children }: PublicRouteProps) {
-	const { user, isLoading } = useAuth();
+	const { user, isInitializing } = useAuth();
 
-	if (isLoading) {
+	if (isInitializing) {
 		return null;
 	}
 

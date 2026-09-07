@@ -73,11 +73,15 @@ interstitial on first visit, which is documented in the README.
   in development rather than only in production.
 * Good, because `client_max_body_size` rejects an oversize upload at the proxy,
   before multer buffers a byte.
-* Bad, because the Content-Security-Policy has to ship as `Report-Only`: the
+* ~~Bad, because the Content-Security-Policy has to ship as `Report-Only`: the
   Vite dev server serves inline bootstrap scripts and needs `eval` for HMR, so
-  an enforcing policy would break the first page load. Enforcing it is part of
-  the S2 follow-up, and the header is already in place to make that a one-line
-  change.
+  an enforcing policy would break the first page load.~~ **Resolved 2026-09-07
+  (issue #125):** the only inline script (the theme bootstrap in `index.html`)
+  moved to `public/theme-init.js`, and the one `eval` user (zod v4's JIT probe)
+  is switched off with `z.config({ jitless: true })`. Vite 8's dev client and
+  HMR use `src` module scripts and no `eval`, so the header is now the enforcing
+  `Content-Security-Policy` — a one-line flip, as planned. A browser no longer
+  warns that a Report-Only policy without `report-uri`/`report-to` does nothing.
 * Bad, because `HTTPS_PORT` is now embedded in `FRONTEND_URL` and
   `FT_API_CALLBACK_URL`, and the callback also has to be re-registered on the
   42 application — an external system this repository cannot check.
@@ -123,4 +127,5 @@ Superseded reasoning: `STRATEGIES_TO_CHOOSE.md` §A3 judged the nginx work
 planning the Nginx/HTTPS work as a separate task". This is that task.
 
 The remaining follow-up is S2 — serve a built `dist/` from nginx and drop the
-Vite container — which also unlocks the enforcing CSP.
+Vite container. (The enforcing CSP that S2 was also meant to unlock landed
+early, in issue #125 — see the Consequences note above.)

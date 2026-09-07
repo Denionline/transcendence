@@ -8,10 +8,10 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-	const { user, isLoading } = useAuth();
+	const { user, isInitializing } = useAuth();
 	const location = useLocation();
 
-	if (isLoading) {
+	if (isInitializing) {
 		// return <FullPageSpinner />; // or null
 		return null;
 	}

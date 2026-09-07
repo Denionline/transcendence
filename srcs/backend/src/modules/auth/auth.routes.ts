@@ -6,7 +6,7 @@ import {
 	loginWith42,
 	getCurrentUser,
 } from "./auth.service.js";
-import { throwError } from "../../lib/http-error.js";
+import { HttpError, throwError } from "../../lib/http-error.js";
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { rateLimit } from "../../middlewares/rate.limit.middleware.js";
@@ -78,11 +78,27 @@ router.post("/register", registerLimiter, async (req, res) => {
 	res.status(201).json(user);
 });
 
+// A wrong password or a locked-out account is the expected outcome of using a
+// login form, not an exceptional one. Sent as a 4xx it would make the browser
+// log a console error for every mistyped password — which the subject forbids
+// ("no browser console warnings/errors") — so these two land as a 200 whose
+// body carries `ok: false` and the reason. Every other failure (validation, the
+// rate limiter, an unexpected throw) stays a real HTTP error.
+const SOFT_LOGIN_FAILURES = new Set(["INVALID_CREDENTIALS", "ACCOUNT_LOCKED"]);
+
 router.post("/login", loginLimiter, async (req, res) => {
 	const { email, password } = loginBody.parse(req.body);
-	const { refreshToken, ...user } = await userLogin(email, password, req.ip);
-	setSessionCookies(req, res, refreshToken);
-	res.status(200).json(user);
+	try {
+		const { refreshToken, ...user } = await userLogin(email, password, req.ip);
+		setSessionCookies(req, res, refreshToken);
+		res.status(200).json({ ok: true, ...user });
+	} catch (err) {
+		if (err instanceof HttpError && SOFT_LOGIN_FAILURES.has(err.code)) {
+			res.status(200).json({ ok: false, code: err.code, message: err.message });
+			return;
+		}
+		throw err;
+	}
 });
 
 router.post("/logout", async (req, res) => {

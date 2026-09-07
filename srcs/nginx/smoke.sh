@@ -100,7 +100,8 @@ check_contains "X-Content-Type-Options: nosniff"     "x-content-type-options: no
 check_contains "X-Frame-Options: DENY"               "x-frame-options: DENY"                            "$headers"
 check_contains "Referrer-Policy"                     "referrer-policy: strict-origin-when-cross-origin" "$headers"
 check_contains "Cross-Origin-Opener-Policy"          "cross-origin-opener-policy: same-origin"          "$headers"
-check_contains "Content-Security-Policy-Report-Only" "content-security-policy-report-only:"             "$headers"
+check_contains "Content-Security-Policy (enforcing)"  "content-security-policy: default-src 'self'"      "$headers"
+check_absent   "CSP is enforced, not Report-Only"     "content-security-policy-report-only:"             "$headers"
 
 error_headers="$("${CURL[@]}" -D - -o /dev/null "$BASE/api/definitely-not-a-route")"
 check_contains "headers are present on an error response too" "x-frame-options: DENY" "$error_headers"
