@@ -34,4 +34,10 @@ export default tseslint.config(
 		files: ["scripts/**/*.mjs"],
 		languageOptions: { globals: globals.node },
 	},
+	{
+		// Static assets served as-is from public/ — plain browser scripts,
+		// no bundler, no DOM types from tsconfig.
+		files: ["public/**/*.js"],
+		languageOptions: { globals: globals.browser },
+	},
 );
