@@ -1,7 +1,7 @@
 import { type ReactNode, createContext, useCallback, useEffect, useRef, useState } from "react";
 import { listMatches } from "../matches/api";
 import type { MatchDto } from "../matches/types";
-import { getSocket } from "../../lib/socket";
+import { getSocket, roleUsesRealtime } from "../../lib/socket";
 import { useAuth } from "../auth/hooks/useAuth";
 
 type Status = "loading" | "ready" | "error";
@@ -37,6 +37,9 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 	//	The id, not the object: AuthProvider hands back a new `user` identity on
 	//	every session refresh, which would re-run the fetch for the same person.
 	const userId = user?.id ?? null;
+	//	Admins have no matches — GET /api/matches answers them 403, which the
+	//	browser logs as a console error. Only artists and hirers have a chat.
+	const canChat = roleUsesRealtime(user?.role);
 	const [matches, setMatches] = useState<MatchDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
@@ -48,7 +51,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		// token yet while isLoading is true — fetching now would go out
 		// without it and come back 401. Wait for that to settle, and skip
 		// entirely if it settled on "no session".
-		if (isLoading || !userId) return;
+		if (isLoading || !userId || !canChat) return;
 
 		let cancelled = false;
 
@@ -68,7 +71,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [retryToken, isLoading, userId]);
+	}, [retryToken, isLoading, userId, canChat]);
 
 	useEffect(() => {
 		// Mirrors the gate on the data-loading effect above: this provider

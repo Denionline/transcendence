@@ -8,7 +8,7 @@ import {
 	updateProfileRequest,
 	updatePasswordRequest,
 } from "./api";
-import { connectSocket, disconnectSocket } from "../../lib/socket";
+import { connectSocket, disconnectSocket, roleUsesRealtime } from "../../lib/socket";
 import { onSessionExpired } from "./sessionEvents";
 
 interface AuthContextValue {
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				const me = await fetchMe();
 				if (!cancelled) {
 					setUser(me);
-					if (me) connectSocket();
+					if (me && roleUsesRealtime(me.role)) connectSocket();
 				}
 			} catch {
 				if (!cancelled) setUser(null); // no session, that's fine
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await loginRequest(credentials);
 			setUser(user);
 			setSessionExpired(false);
-			connectSocket();
+			if (roleUsesRealtime(user.role)) connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await registerRequest(data);
 			setUser(user);
 			setSessionExpired(false);
-			connectSocket();
+			if (roleUsesRealtime(user.role)) connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);

@@ -3,6 +3,15 @@ import { getAccessToken, refreshAccessToken } from "../features/auth/api";
 
 let socket: Socket | null = null;
 
+// The websocket gateway (backend/src/modules/websocket/websocket.gateway.ts)
+// only admits artists and hirers — an admin handshake is rejected outright,
+// which the browser surfaces as a "WebSocket is closed before the connection
+// is established" console warning. Admins have no chat, matches or realtime
+// feed, so there is nothing to connect for in the first place.
+export function roleUsesRealtime(role: string | null | undefined): boolean {
+	return role === "artist" || role === "hirer";
+}
+
 // One socket per session. The backend's websocket gateway (see
 // backend/src/modules/websocket/websocket.gateway.ts) authenticates the
 // handshake with the same access token as REST calls, joins the caller to a
