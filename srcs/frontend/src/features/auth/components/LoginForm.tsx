@@ -74,14 +74,9 @@ export default function LoginForm() {
 			</fieldset>
 
 			<fieldset className="fieldset">
-				<div className="flex justify-between">
-					<label className="label" htmlFor="login-password">
-						{t("auth.password")}
-					</label>
-					<button type="button" className="text-primary font-semibold hover:underline">
-						{t("auth.forgot")}
-					</button>
-				</div>
+				<label className="label" htmlFor="login-password">
+					{t("auth.password")}
+				</label>
 				<input
 					id="login-password"
 					type="password"

@@ -40,7 +40,6 @@
 		"emailPlaceholder": "tu@email.com",
 		"password": "Contraseña",
 		"passwordPlaceholder": "••••••••",
-		"forgot": "¿Olvidaste?",
 		"logIn": "Iniciar sesión",
 		"loggingIn": "Iniciando sesión…",
 		"loginFailed": "No se pudo iniciar sesión",
