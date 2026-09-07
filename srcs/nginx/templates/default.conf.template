@@ -15,8 +15,8 @@ server {
 	http2 on;
 	server_name _;
 
-	ssl_certificate     /etc/nginx/certs/selfsigned.crt;
-	ssl_certificate_key /etc/nginx/certs/selfsigned.key;
+	ssl_certificate     ${NGINX_SSL_CERT};
+	ssl_certificate_key ${NGINX_SSL_KEY};
 
 	ssl_protocols       TLSv1.2 TLSv1.3;
 	ssl_ciphers         HIGH:!aNULL:!MD5;
@@ -25,14 +25,23 @@ server {
 
 	client_max_body_size ${NGINX_MAX_BODY_SIZE};
 
+	gzip              on;
+	gzip_comp_level   5;
+	gzip_min_length   1024;
+	gzip_proxied      any;
+	gzip_vary         on;
+	gzip_types        text/plain text/css application/javascript application/json image/svg+xml;
+
 	add_header Strict-Transport-Security  "max-age=31536000" always;
 	add_header X-Content-Type-Options     "nosniff" always;
 	add_header X-Frame-Options            "DENY" always;
 	add_header Referrer-Policy            "strict-origin-when-cross-origin" always;
 	add_header Cross-Origin-Opener-Policy "same-origin" always;
-	add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ws: wss:; form-action 'self'" always;
+	add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: blob: https://i.pravatar.cc; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' wss:; form-action 'self'" always;
 
 	server_tokens off;
+
+	root /usr/share/nginx/html;
 
 	location /api/ {
 		include /etc/nginx/snippets/proxy.conf;
@@ -53,10 +62,18 @@ server {
 		access_log off;
 	}
 
+	#	Hashed, content-addressed build assets — safe to cache forever.
+	#	Only `expires` here: an `add_header` would drop the inherited security
+	#	headers for these responses.
+	location /assets/ {
+		expires 1y;
+		access_log off;
+		try_files $uri =404;
+	}
+
+	#	SPA entry point: every unmatched path serves index.html so client-side
+	#	routing (deep links, refresh) works.
 	location / {
-		include /etc/nginx/snippets/proxy.conf;
-		proxy_pass http://frontend:5173;
-		proxy_read_timeout 1d;
-		proxy_send_timeout 1d;
+		try_files $uri $uri/ /index.html;
 	}
 }

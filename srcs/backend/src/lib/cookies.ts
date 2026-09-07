@@ -35,10 +35,18 @@ export function setSessionCookies(req: Request, res: Response, refreshToken: str
 	//	Readable by JavaScript on purpose: it is how the frontend knows a
 	//	refresh is worth attempting before it holds an access token. It carries
 	//	no secret — only the fact that a session cookie exists.
+	//
+	//	SameSite=None, not Strict: this cookie is in scope for
+	//	/api/auth/42/callback, and Firefox logs a console warning for every
+	//	Strict cookie it withholds on the cross-site redirect back from 42.
+	//	None keeps the console clean and costs nothing here — the value is a
+	//	constant "1", there is nothing for SameSite to protect. None requires
+	//	Secure, so a plain-HTTP request (tests only; the app is always served
+	//	over TLS) falls back to Lax, which the browser will accept.
 	res.cookie(SESSION_MARKER_COOKIE, "1", {
 		httpOnly: false,
 		secure,
-		sameSite: "strict",
+		sameSite: secure ? "none" : "lax",
 		path: "/",
 		maxAge: WEEK_MS,
 	});
@@ -56,7 +64,7 @@ export function clearSessionCookies(req: Request, res: Response): void {
 	res.clearCookie(SESSION_MARKER_COOKIE, {
 		httpOnly: false,
 		secure,
-		sameSite: "strict",
+		sameSite: secure ? "none" : "lax",
 		path: "/",
 	});
 }

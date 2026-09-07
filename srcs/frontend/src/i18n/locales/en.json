@@ -44,6 +44,8 @@
 		"logIn": "Log in",
 		"loggingIn": "Logging in…",
 		"loginFailed": "Failed to log in",
+		"tooManyAttempts": "Too many login attempts. Try again in {{time}}.",
+		"tryAgainIn": "Try again in {{time}}",
 		"welcomeBack": "Welcome back",
 		"logInToArtmate": "Log in to Artmate",
 		"sessionExpired": "Your session expired. Log back in to keep going.",

@@ -36,8 +36,10 @@ function handleDisconnect(
 	socket: Socket,
 	expiryTimer: NodeJS.Timeout,
 ) {
-	// eslint-disable-next-line no-console
-	console.log(styleText("red", `[WebSocket] Client off: ${socket.userId}, reason: ${reason}`));
+	if (process.env.NODE_ENV !== "production") {
+		// eslint-disable-next-line no-console
+		console.log(styleText("red", `[WebSocket] Client off: ${socket.userId}, reason: ${reason}`));
+	}
 	const chatRooms = [...socket.rooms].filter((room) => room.startsWith("chat:"));
 	const room = io.sockets.adapter.rooms.get(`user:${socket.userId}`);
 	const remaining = room ? room.size - 1 : 0;
@@ -75,8 +77,10 @@ export function initWebsocket(httpServer: HttpServer) {
 	});
 
 	io.on("connection", async (socket) => {
-		// eslint-disable-next-line no-console
-		console.log(styleText("green", `[WebSocket] Client on: ${socket.userId}`));
+		if (process.env.NODE_ENV !== "production") {
+			// eslint-disable-next-line no-console
+			console.log(styleText("green", `[WebSocket] Client on: ${socket.userId}`));
+		}
 		socket.join("user:" + socket.userId);
 		socket.join(`session:${socket.sessionId}`);
 

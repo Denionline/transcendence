@@ -81,15 +81,16 @@ jobs:
       - name: Validate the compose file
         run: docker compose -f srcs/docker-compose.yml --env-file .env.example config --quiet
       - name: Build the nginx image
-        run: docker build -t proxy-check srcs/nginx
+        run: docker build -t proxy-check -f srcs/nginx/Dockerfile srcs
       - name: Check the rendered nginx config (upstream names must resolve)
         run: |
           docker run --rm \
             -e NGINX_ENVSUBST_FILTER='^NGINX_' \
             -e NGINX_HTTPS_PORT=8443 \
             -e NGINX_MAX_BODY_SIZE=50m \
+            -e NGINX_SSL_CERT=/etc/nginx/certs/selfsigned.crt \
+            -e NGINX_SSL_KEY=/etc/nginx/certs/selfsigned.key \
             --add-host backend:127.0.0.1 \
-            --add-host frontend:127.0.0.1 \
             --entrypoint /bin/sh proxy-check \
             -c '/docker-entrypoint.sh nginx -t'
 
@@ -176,7 +177,7 @@ jobs:
           JWT_REFRESH_SECRET=test-jwt-refresh-secret
           FT_API_UID=test-ft-uid
           FT_API_SECRET=test-ft-secret
-          FT_API_CALLBACK_URL=http://localhost:9000/api/auth/42/callback
+          FT_API_CALLBACK_URL=https://localhost:8443/api/auth/42/callback
           FRONTEND_URL=https://localhost:8443
           EOF
       - name: Start the app

@@ -25,11 +25,13 @@ app.set("trust proxy", 1);
 app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: "100kb", type: "application/json" }));
-app.use((req, _res, next) => {
-	// eslint-disable-next-line no-console
-	console.log(`[Http request] ${req.method} ${req.path}`);
-	next();
-});
+if (process.env.NODE_ENV !== "production") {
+	app.use((req, _res, next) => {
+		// eslint-disable-next-line no-console
+		console.log(`[Http request] ${req.method} ${req.path}`);
+		next();
+	});
+}
 
 // Infrastructure routes
 app.get("/health", (_req, res) => {

@@ -1,0 +1,10 @@
+# Build context for the nginx image is this directory (srcs/). Keep it lean —
+# npm ci recreates node_modules and vite regenerates dist inside the image.
+**/node_modules
+**/dist
+**/.env
+frontend/test-results
+frontend/playwright-report
+frontend/e2e
+backend/generated
+**/*.log
