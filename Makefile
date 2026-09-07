@@ -1,20 +1,14 @@
-# **************************************************************************** #
-#                                    Path's                                    #
-# **************************************************************************** #
+####################################################################### Path's #
 
 DATABASE_PATH			= srcs/database
 FRONTEND_PATH			= srcs/frontend
 BACKEND_PATH			= srcs/backend
 
-# **************************************************************************** #
-#                                    Files                                     #
-# **************************************************************************** #
+######################################################################## Files #
 
 COMPOSE_FILE			= srcs/docker-compose.yml
 
-# **************************************************************************** #
-#                                 Environment                                  #
-# **************************************************************************** #
+################################################################## Environment #
 
 ifeq ($(wildcard .env),)
 $(error .env not found)
@@ -22,30 +16,24 @@ endif
 
 include .env
 
-POSTGRES_HOST_PORT		?= 5432
-
 DBURL					= postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_HOST_PORT)/$(POSTGRES_DB)?schema=public
 
-# **************************************************************************** #
-#                                   Rules                                      #
-# **************************************************************************** #
+######################################################################## Rules #
 
-MAKE					= make --no-print-directory
+MAKE_QUIET				= make --no-print-directory
 RM						= rm -rf
 COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 
-# **************************************************************************** #
-#                                    Comands                                   #
-# **************************************************************************** #
+###################################################################### Comands #
 
-.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help
+.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help dev-deps
 
 all: up
 
 build:
 	$(COMPOSE) build
 
-up: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
+up:
 	$(COMPOSE) up --build -d
 
 down:
@@ -54,18 +42,18 @@ down:
 clean:
 	$(COMPOSE) down
 
-fclean: clean
+fclean:
 	$(COMPOSE) down -v
 
 re:
-	$(MAKE) down
-	$(MAKE) up
+	$(MAKE_QUIET) down
+	$(MAKE_QUIET) up
 
-lint:
+lint: dev-deps
 	npm run lint --prefix $(FRONTEND_PATH)
 	npm run lint --prefix $(BACKEND_PATH)
 
-format:
+format: dev-deps
 	npx prettier --write "srcs/**/*.{ts,tsx,js,json,css}"
 
 
@@ -79,7 +67,9 @@ ps:
 status:
 	$(COMPOSE) ps --status running
 
-# Development
+
+dev-deps: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
+
 srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
 	npm ci --prefix srcs/backend && touch $@
 
@@ -92,9 +82,9 @@ srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/f
 srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
 
-ci:
+ci: dev-deps
 	@echo "TEST    Lint (frontend + backend)"
-	$(MAKE) lint
+	$(MAKE_QUIET) lint
 	@echo "TEST    Frontend build"
 	npm run build --prefix $(FRONTEND_PATH)
 	@echo "TEST    Frontend tests"
@@ -117,8 +107,8 @@ report:
 	echo "    Networks:" ; docker network ls
 
 rebuild:
-	$(MAKE) fclean
-	$(MAKE) up
+	$(MAKE_QUIET) fclean
+	$(MAKE_QUIET) up
 
 oblivion:
 	@echo "\n\n    WARNING: This will delete ALL containers, images and volumes for THIS project!"
@@ -167,6 +157,7 @@ help:
 	@echo "  oblivion    remove this project's containers, images, volumes and node_modules"
 	@echo ""
 	@echo "Code:"
+	@echo "  dev-deps    install host node_modules for local tooling (not needed for 'up')"
 	@echo "  lint        lint frontend and backend"
 	@echo "  format      run prettier over srcs"
 	@echo "  ci          lint, build, typecheck, migrate and test"
