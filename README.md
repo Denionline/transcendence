@@ -161,7 +161,8 @@ offline). It runs inside the backend container, so the stack must be up
 
 ### Frontend
 
-- **React 19** with **Vite** as the build tool and dev server.
+- **React 19** with **Vite** as the build tool; the production bundle is built
+  and served statically by nginx.
 - **React Router** for client-side routing.
 - **Tailwind CSS v4** + **daisyUI** for styling.
 - **i18next** / **react-i18next** for internationalization.
@@ -190,12 +191,15 @@ offline). It runs inside the backend container, so the stack must be up
 
 ### Infrastructure
 
-- **Docker Compose** orchestrates four services: `database`, `backend`,
-  `frontend`, `nginx`.
+- **Docker Compose** orchestrates three services: `database`, `backend`,
+  `nginx`. The backend runs with `NODE_ENV=production`; the database port is
+  published on loopback only.
 - **nginx** is the single entry point: it terminates TLS on `:443`, redirects
-  `:80` → `:443`, proxies `/api` and `/socket.io` to the backend and everything
-  else to the frontend, and sets the security headers (HSTS, `X-Content-Type-Options`,
-  `X-Frame-Options: DENY`, `Referrer-Policy`, a CSP).
+  `:80` → `:443`, proxies `/api` and `/socket.io` to the backend, serves the
+  pre-built React bundle for everything else (with SPA fallback and long-lived
+  caching of hashed assets), and sets the security headers (HSTS,
+  `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, a CSP).
+  The frontend bundle is compiled during the nginx image build.
 
 ### Architecture
 
@@ -210,10 +214,10 @@ offline). It runs inside the backend container, so the stack must be up
 │                ┌─────────┐               |
 |                |  nginx  |               |
 |                └─────────┘               |
-|            :5173|       |:9000           |
-|  ┌────────────────┐    ┌───────────┐     |
-|  |  React + Vite  |    |  Express  |     |
-|  └────────────────┘    └───────────┘     |
+|                        |:9000           |
+|   static React    ┌───────────┐          |
+|   bundle    ►      |  Express  |          |
+|                   └───────────┘          |
 |                         |:5432           |
 |                     ┌──────────────┐     |
 |                     |  PostgreSQL  |     |

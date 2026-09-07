@@ -113,10 +113,13 @@ health_body="$("${CURL[@]}" "$BASE/health")"
 check_contains "/health reaches express" '"status":"ok"' "$health_body"
 
 app_status="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/")"
-check_equal "/ reaches the vite dev server" "200" "$app_status"
+check_equal "/ serves the static frontend bundle" "200" "$app_status"
 
 app_body="$("${CURL[@]}" "$BASE/")"
 check_contains "/ serves the app's HTML shell" "<div id=\"root\">" "$app_body"
+
+deeplink_status="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/gigs")"
+check_equal "an unknown path falls back to index.html (SPA routing)" "200" "$deeplink_status"
 
 api_status="$("${CURL[@]}" -o /dev/null -w '%{http_code}' "$BASE/api/categories")"
 check_equal "/api reaches express" "200" "$api_status"
