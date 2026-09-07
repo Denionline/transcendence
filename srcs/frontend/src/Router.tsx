@@ -34,9 +34,9 @@ export function defaultPathForRole(role: UserRole): string {
 }
 
 function RootRedirect() {
-	const { user, isLoading } = useAuth();
+	const { user, isInitializing } = useAuth();
 
-	if (isLoading) return null;
+	if (isInitializing) return null;
 	if (!user) return <Navigate to="/login" replace />;
 	return <Navigate to={defaultPathForRole(user.role)} replace />;
 }

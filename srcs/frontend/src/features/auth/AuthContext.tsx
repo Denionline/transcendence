@@ -8,12 +8,22 @@ import {
 	updateProfileRequest,
 	updatePasswordRequest,
 } from "./api";
-import { connectSocket, disconnectSocket } from "../../lib/socket";
+import { connectSocket, disconnectSocket, roleUsesRealtime } from "../../lib/socket";
 import { onSessionExpired } from "./sessionEvents";
 
 interface AuthContextValue {
 	user: User | null;
+	// An auth request is in flight: the startup session check, or a
+	// login/register/logout. The auth form buttons use it for their pending
+	// state. It is *not* safe for route guards — see isInitializing.
 	isLoading: boolean;
+	// True only until the one-time startup "is there already a session?" check
+	// resolves. Route guards (PublicRoute, ProtectedRoute, Router) gate on
+	// this, never on isLoading: isLoading flips back to true on every later
+	// login/logout, and a guard that blanks the tree when it does would
+	// unmount whatever form the user is mid-submit on — taking its typed
+	// values and its "invalid credentials" message down with it.
+	isInitializing: boolean;
 	// Set once the access token expired *and* the silent refresh behind it
 	// also failed (see apiClient.ts / notifySessionExpired) — the login page
 	// reads this to explain why the user landed back there unprompted,
@@ -35,6 +45,7 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [isInitializing, setIsInitializing] = useState<boolean>(true);
 	const [sessionExpired, setSessionExpired] = useState(false);
 
 	useEffect(() => {
@@ -45,12 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				const me = await fetchMe();
 				if (!cancelled) {
 					setUser(me);
-					if (me) connectSocket();
+					if (me && roleUsesRealtime(me.role)) connectSocket();
 				}
 			} catch {
 				if (!cancelled) setUser(null); // no session, that's fine
 			} finally {
-				if (!cancelled) setIsLoading(false);
+				if (!cancelled) {
+					setIsLoading(false);
+					setIsInitializing(false);
+				}
 			}
 		}
 
@@ -80,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await loginRequest(credentials);
 			setUser(user);
 			setSessionExpired(false);
-			connectSocket();
+			if (roleUsesRealtime(user.role)) connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -93,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			const user = await registerRequest(data);
 			setUser(user);
 			setSessionExpired(false);
-			connectSocket();
+			if (roleUsesRealtime(user.role)) connectSocket();
 			return user;
 		} finally {
 			setIsLoading(false);
@@ -132,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			value={{
 				user,
 				isLoading,
+				isInitializing,
 				sessionExpired,
 				login,
 				register,

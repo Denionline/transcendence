@@ -34,4 +34,10 @@ export default tseslint.config(
 		files: ["scripts/**/*.mjs"],
 		languageOptions: { globals: globals.node },
 	},
+	{
+		// Static files served verbatim to the browser — plain scripts, not
+		// modules, with the usual browser globals.
+		files: ["public/**/*.js"],
+		languageOptions: { globals: globals.browser },
+	},
 );

@@ -2,7 +2,7 @@ import { type ReactNode, createContext, useCallback, useEffect, useRef, useState
 import { useTranslation } from "react-i18next";
 import { listMatches } from "../matches/api";
 import type { MatchDto } from "../matches/types";
-import { getSocket } from "../../lib/socket";
+import { getSocket, roleUsesRealtime } from "../../lib/socket";
 import { useAuth } from "../auth/hooks/useAuth";
 import { useToast } from "../toast/hooks/useToast";
 
@@ -35,10 +35,13 @@ function byRecentActivity(a: MatchDto, b: MatchDto): number {
 }
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
-	const { user, isLoading } = useAuth();
+	const { user, isInitializing } = useAuth();
 	//	The id, not the object: AuthProvider hands back a new `user` identity on
 	//	every session refresh, which would re-run the fetch for the same person.
 	const userId = user?.id ?? null;
+	//	Admins have no matches — GET /api/matches answers them 403, which the
+	//	browser logs as a console error. Only artists and hirers have a chat.
+	const canChat = roleUsesRealtime(user?.role);
 	const [matches, setMatches] = useState<MatchDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [retryToken, setRetryToken] = useState(0);
@@ -68,10 +71,10 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		// AuthProvider's own session check (fetchMe) hasn't set the access
-		// token yet while isLoading is true — fetching now would go out
+		// token yet while isInitializing is true — fetching now would go out
 		// without it and come back 401. Wait for that to settle, and skip
 		// entirely if it settled on "no session".
-		if (isLoading || !userId) return;
+		if (isInitializing || !userId || !canChat) return;
 
 		let cancelled = false;
 
@@ -91,13 +94,13 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [retryToken, isLoading, userId]);
+	}, [retryToken, isInitializing, userId, canChat]);
 
 	useEffect(() => {
 		// Mirrors the gate on the data-loading effect above: this provider
 		// mounts before AuthProvider's session check resolves, so on first
 		// render connectSocket() hasn't run yet and getSocket() is still null.
-		if (isLoading || !user) return;
+		if (isInitializing || !user) return;
 
 		const socket = getSocket();
 		if (!socket) return;
@@ -164,7 +167,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 			socket.off("new_message", handleNewMessage);
 			socket.off("new_match", handleNewMatch);
 		};
-	}, [isLoading, user, refresh]);
+	}, [isInitializing, user, refresh]);
 
 	// Stable for the same reason as refresh — ChatPanel calls it from a
 	// useEffect keyed on the conversation it's mounted for.

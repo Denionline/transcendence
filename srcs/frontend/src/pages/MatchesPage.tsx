@@ -42,7 +42,7 @@ export default function MatchesPage() {
 
 function PossibleMatchesSection() {
 	const { t } = useTranslation();
-	const { user, isLoading: authLoading } = useAuth();
+	const { user, isInitializing: authLoading } = useAuth();
 	const [interests, setInterests] = useState<PendingInterestDto[]>([]);
 	const [status, setStatus] = useState<Status>("loading");
 	const [error, setError] = useState<string | null>(null);

@@ -100,13 +100,29 @@ export const openApiDocument = {
 				},
 			},
 
+			LoginRejected: {
+				type: "object",
+				description:
+					"A rejected login. Returned with HTTP **200**, not a 4xx — a wrong password is the " +
+					"normal outcome of a login form, and a 4xx there makes the browser log a console " +
+					"error on every attempt. The client keys on `ok: false`.",
+				required: ["ok", "code", "message"],
+				properties: {
+					ok: { type: "boolean", enum: [false] },
+					code: { type: "string", enum: ["INVALID_CREDENTIALS", "ACCOUNT_LOCKED"] },
+					message: { type: "string" },
+				},
+			},
+
 			Session: {
 				type: "object",
 				description:
-					"A logged-in user plus their access token. The refresh token is not in the body — " +
-					"it is set as an httpOnly cookie scoped to `/api/auth`.",
-				required: ["id", "email", "username", "role", "createdAt", "token"],
+					"A successful login: `ok: true`, the logged-in user, and their access token. The " +
+					"refresh token is not in the body — it is set as an httpOnly cookie scoped to " +
+					"`/api/auth`.",
+				required: ["ok", "id", "email", "username", "role", "createdAt", "token"],
 				properties: {
+					ok: { type: "boolean", enum: [true] },
 					id: { type: "string", format: "uuid" },
 					email: { type: "string", format: "email" },
 					username: { type: "string" },
@@ -259,9 +275,11 @@ export const openApiDocument = {
 				tags: ["Auth"],
 				summary: "Log in and obtain an access token",
 				description:
-					"Returns the user plus a short-lived access token, and sets the `refreshToken` " +
-					"httpOnly cookie used by `POST /auth/refresh`. Rate-limited to 10 attempts per " +
-					"15 minutes per IP address.",
+					"On success returns `ok: true`, the user and a short-lived access token, and sets " +
+					"the `refreshToken` httpOnly cookie used by `POST /auth/refresh`. A wrong password " +
+					"or a locked account is **also a 200** (`ok: false`, see `LoginRejected`) rather " +
+					"than a 4xx, so a mistyped password never logs a browser console error. " +
+					"Rate-limited to 10 attempts per 15 minutes per IP address.",
 				security: [],
 				requestBody: {
 					required: true,
@@ -280,15 +298,22 @@ export const openApiDocument = {
 				},
 				responses: {
 					"200": {
-						description: "Authenticated. Copy `token` into **Authorize** to call the rest.",
-						content: { "application/json": { schema: { $ref: "#/components/schemas/Session" } } },
-					},
-					"401": {
-						description: "Wrong email or password.",
-						content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+						description:
+							"Either an authenticated session (`ok: true` — copy `token` into **Authorize** " +
+							"to call the rest) or a rejected login (`ok: false`).",
+						content: {
+							"application/json": {
+								schema: {
+									oneOf: [
+										{ $ref: "#/components/schemas/Session" },
+										{ $ref: "#/components/schemas/LoginRejected" },
+									],
+								},
+							},
+						},
 					},
 					"429": {
-						description: "Too many failed attempts from this IP.",
+						description: "Too many attempts from this IP.",
 						content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
 					},
 				},

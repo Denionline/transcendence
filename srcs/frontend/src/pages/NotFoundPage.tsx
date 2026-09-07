@@ -9,11 +9,13 @@ export default function NotFoundPage() {
 			className="relative min-h-screen overflow-hidden bg-base-100 font-grotesk flex flex-col"
 		>
 			{/* ---------- Component-scoped styles: fonts + keyframes ---------- */}
+			{/* System font stacks, not a Google Fonts @import — pulling a
+			    stylesheet and font files off fonts.googleapis.com /
+			    fonts.gstatic.com trips the style-src / default-src CSP and
+			    floods the console with violation reports on every 404. */}
 			<style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
-
-        .font-grotesk { font-family: 'Space Grotesk', sans-serif; }
-        .font-mono-brand { font-family: 'Space Mono', monospace; }
+        .font-grotesk { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+        .font-mono-brand { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
         /* Organic paint-blob morphing */
         @keyframes blob-morph {

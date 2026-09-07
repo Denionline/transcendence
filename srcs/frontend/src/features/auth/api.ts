@@ -38,10 +38,19 @@ export async function registerRequest(data: RegisterData): Promise<User> {
 }
 
 export async function loginRequest(credentials: Credentials): Promise<User> {
-	const { token, ...user } = await request("/auth/login", {
+	const { ok, code, message, token, ...user } = await request("/auth/login", {
 		method: "POST",
 		body: JSON.stringify(credentials),
 	});
+	// Login answers 200 even for a wrong password or a locked account, so the
+	// browser logs no console error for a 4xx — the failure is in the body.
+	// Surface it as a thrown Error, the same shape a real network failure would
+	// have, so LoginForm's catch renders `message` unchanged.
+	if (ok === false) {
+		const error = new Error(message ?? "Login failed") as Error & { code?: string };
+		error.code = code;
+		throw error;
+	}
 	setAccessToken(token);
 	return user as User;
 }

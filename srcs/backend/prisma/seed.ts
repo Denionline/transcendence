@@ -44,21 +44,18 @@ async function seedCategories() {
 	console.log(`OK      ${seedData.categories.length} categories`);
 }
 
-//	A real photo per account, generated from the email — no fixture files to
-//	ship or run out of variety across 200+ seeded people.
-function avatarUrlFor(email: string): string {
-	return `https://i.pravatar.cc/300?u=${email}`;
-}
-
+//	Seeded accounts have no avatar image — the frontend's Avatar component
+//	renders initials in that case. Pointing at an external photo service
+//	(e.g. i.pravatar.cc) instead would trip the `img-src 'self' data: blob:`
+//	CSP on every page that shows a face.
 async function seedUser(
 	input: { email: string; username: string; role: UserRole },
 	passwordHash: string,
 ) {
-	const avatarUrl = avatarUrlFor(input.email);
 	return await prisma.user.upsert({
 		where: { email: input.email },
-		update: { username: input.username, avatarUrl, role: input.role },
-		create: { ...input, avatarUrl, passwordHash },
+		update: { username: input.username, avatarUrl: null, role: input.role },
+		create: { ...input, avatarUrl: null, passwordHash },
 	});
 }
 
