@@ -399,7 +399,10 @@ function YourMatchesSection() {
 							key={match.matchId}
 							className="flex items-center justify-between gap-4 rounded-2xl border border-base-content/10 p-4"
 						>
-							<div className="flex min-w-0 items-center gap-3">
+							<Link
+								to={`/profile/${match.otherUser.id}`}
+								className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80"
+							>
 								<div className="relative shrink-0">
 									<Avatar
 										username={match.otherUser.displayName}
@@ -421,7 +424,7 @@ function YourMatchesSection() {
 											: t("matches.matchedOn", { title: match.gig.title })}
 									</p>
 								</div>
-							</div>
+							</Link>
 
 							<div className="flex shrink-0 items-center gap-2">
 								<Link
