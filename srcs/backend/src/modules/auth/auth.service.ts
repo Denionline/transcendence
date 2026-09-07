@@ -175,10 +175,16 @@ export async function loginWith42(code: string) {
 	//	URL from before this was done — the CSP blocks that image in the browser.
 	const link = profile.image?.link;
 	const hasExternalAvatar = user.avatarUrl?.startsWith("http") ?? false;
-	if (link && (justCreated || hasExternalAvatar)) {
-		const localUrl = await importFtAvatar(link, user.id);
-		if (localUrl)
+	if (justCreated || hasExternalAvatar) {
+		const localUrl = link ? await importFtAvatar(link, user.id) : null;
+		if (localUrl) {
 			user = await prisma.user.update({ where: { id: user.id }, data: { avatarUrl: localUrl } });
+		} else if (hasExternalAvatar) {
+			//	The download failed but the stored URL is the cross-origin one the
+			//	CSP blocks. Drop it so the account falls back to its initials
+			//	rather than a broken image plus a console violation on every page.
+			user = await prisma.user.update({ where: { id: user.id }, data: { avatarUrl: null } });
+		}
 	}
 
 	return issueSession(user);
