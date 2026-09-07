@@ -18,7 +18,18 @@ export async function request(path: string, options: RequestInit = {}) {
 	});
 	if (!res.ok) {
 		const body = await res.json().catch(() => ({}));
-		throw new Error(body.message ?? "Request failed");
+		const error = new Error(body.message ?? "Request failed") as Error & {
+			status?: number;
+			code?: string;
+			retryAfter?: number;
+		};
+		error.status = res.status;
+		if (typeof body.error === "string") error.code = body.error;
+		// Rate-limited responses (429) carry Retry-After in seconds — the
+		// login form uses it to disable its submit button for that long.
+		const retryAfter = Number(res.headers.get("Retry-After"));
+		if (Number.isFinite(retryAfter) && retryAfter > 0) error.retryAfter = retryAfter;
+		throw error;
 	}
 	return res.status === 204 ? null : res.json();
 }

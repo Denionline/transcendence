@@ -44,6 +44,8 @@
 		"logIn": "Iniciar sesión",
 		"loggingIn": "Iniciando sesión…",
 		"loginFailed": "No se pudo iniciar sesión",
+		"tooManyAttempts": "Demasiados intentos de inicio de sesión. Vuelve a intentarlo en {{time}}.",
+		"tryAgainIn": "Vuelve a intentarlo en {{time}}",
 		"welcomeBack": "Bienvenido de nuevo",
 		"logInToArtmate": "Inicia sesión en Artmate",
 		"sessionExpired": "Tu sesión ha expirado. Vuelve a iniciar sesión para continuar.",
