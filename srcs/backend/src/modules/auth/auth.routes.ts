@@ -7,7 +7,7 @@ import {
 	getCurrentUser,
 } from "./auth.service.js";
 import { HttpError, throwError } from "../../lib/http-error.js";
-import { Router } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import { requireAuth } from "../../middlewares/auth.middleware.js";
 import { rateLimit } from "../../middlewares/rate.limit.middleware.js";
 import crypto from "node:crypto";
@@ -29,6 +29,29 @@ const loginLimiter = rateLimit({
 	max: 10,
 	message: "too many login attempts from this address, try again later",
 });
+
+// rateLimit runs as middleware, so its 429 is thrown before the /login handler's
+// try/catch can reshape it. Intercept it here and hand back the same soft
+// `ok: false` body the handler uses for the other expected login failures (see
+// SOFT_LOGIN_FAILURES) — a 4xx would make the browser log a console error.
+// `retryAfter` (seconds) rides in the body instead of the Retry-After header so
+// the response has nothing that reads as an error.
+function softLoginRateLimit(req: Request, res: Response, next: NextFunction) {
+	loginLimiter(req, res, (err: unknown) => {
+		if (err instanceof HttpError && err.status === 429) {
+			const retryAfter = Number(res.getHeader("Retry-After")) || undefined;
+			res.removeHeader("Retry-After");
+			res.status(200).json({
+				ok: false,
+				code: "TOO_MANY_REQUESTS",
+				message: err.message,
+				retryAfter,
+			});
+			return;
+		}
+		next(err);
+	});
+}
 
 const registerLimiter = rateLimit({
 	windowMs: 60 * 60 * 1000,
@@ -82,11 +105,12 @@ router.post("/register", registerLimiter, async (req, res) => {
 // login form, not an exceptional one. Sent as a 4xx it would make the browser
 // log a console error for every mistyped password — which the subject forbids
 // ("no browser console warnings/errors") — so these two land as a 200 whose
-// body carries `ok: false` and the reason. Every other failure (validation, the
-// rate limiter, an unexpected throw) stays a real HTTP error.
+// body carries `ok: false` and the reason (hitting the rate limit is folded in
+// by softLoginRateLimit above). Every other failure (validation, an unexpected
+// throw) stays a real HTTP error.
 const SOFT_LOGIN_FAILURES = new Set(["INVALID_CREDENTIALS", "ACCOUNT_LOCKED"]);
 
-router.post("/login", loginLimiter, async (req, res) => {
+router.post("/login", softLoginRateLimit, async (req, res) => {
 	const { email, password } = loginBody.parse(req.body);
 	try {
 		const { refreshToken, ...user } = await userLogin(email, password, req.ip);
