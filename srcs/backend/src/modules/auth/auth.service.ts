@@ -42,10 +42,18 @@ function toPublicUser(user: User) {
 // revocability. Shared by both password login (userLogin) and 42 OAuth
 // (loginWith42), so both flows return the same session shape.
 async function issueSession(user: User) {
-	const refreshToken = jwt.sign({ userId: user.id, role: user.role }, R_SECRET, {
-		algorithm: "HS256",
-		expiresIn: "7d",
-	});
+	// `jti` makes every issued token unique. Without it, two logins for the
+	// same user within the same second produce a byte-identical JWT (same
+	// payload, same `iat`), so the second refreshToken.create() hits the
+	// unique constraint on tokenHash and the request 500s.
+	const refreshToken = jwt.sign(
+		{ userId: user.id, role: user.role, jti: crypto.randomUUID() },
+		R_SECRET,
+		{
+			algorithm: "HS256",
+			expiresIn: "7d",
+		},
+	);
 	const token = jwt.sign(
 		{ userId: user.id, role: user.role, sessionId: hashToken(refreshToken) },
 		SECRET,
