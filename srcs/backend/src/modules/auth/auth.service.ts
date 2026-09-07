@@ -3,10 +3,13 @@ import { assertPasswordPolicy, hashPassword, verifyPassword } from "../../lib/pa
 import { assertNotLockedOut, recordLoginAttempt } from "./login-attempts.js";
 import { throwError } from "../../lib/http-error.js";
 import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
+import { FileVisibility } from "../../../generated/prisma/enums.js";
 import { prisma } from "../../lib/prisma.js";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import { authEvents } from "../../lib/auth-events.js";
+import { createFile } from "../files/files.service.js";
+import { sniffMime } from "../../lib/file-signature.js";
 
 const REGISTERABLE_ROLES: UserRole[] = [UserRole.artist, UserRole.hirer];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,6 +108,41 @@ interface FtProfile {
 	image?: { link?: string | null };
 }
 
+const FT_AVATAR_EXTENSIONS: Record<string, string> = {
+	"image/jpeg": "jpg",
+	"image/png": "png",
+	"image/webp": "webp",
+};
+
+//	42 hands us the profile photo as a `cdn.intra.42.fr` URL. Storing that URL
+//	straight on `avatarUrl` makes the browser load a cross-origin image, which
+//	the enforcing CSP (`img-src 'self' data: blob:`) blocks. Instead we pull the
+//	bytes once, server-side, into our own file store — exactly where an uploaded
+//	avatar lives — so the account ends up with a same-origin `/api/files/:id/raw`
+//	URL like every other avatar. A 42 photo is a nice-to-have: any failure here
+//	(network, an unexpected format, too large) just leaves the account on its
+//	generated initials.
+async function importFtAvatar(link: string, ownerId: string): Promise<string | null> {
+	try {
+		const res = await fetch(link, { signal: AbortSignal.timeout(5000) });
+		if (!res.ok) return null;
+		const buffer = Buffer.from(await res.arrayBuffer());
+		const [mime] = sniffMime(buffer) ?? [];
+		const extension = mime ? FT_AVATAR_EXTENSIONS[mime] : undefined;
+		if (!mime || !extension) return null;
+		const file = await createFile({
+			ownerId,
+			buffer,
+			declaredMime: mime,
+			originalName: `42-avatar.${extension}`,
+			visibility: FileVisibility.public,
+		});
+		return file.url;
+	} catch {
+		return null;
+	}
+}
+
 export async function loginWith42(code: string) {
 	const tokenRes = await fetch("https://api.intra.42.fr/oauth/token", {
 		method: "POST",
@@ -126,14 +164,23 @@ export async function loginWith42(code: string) {
 	const profile = (await profileRes.json()) as FtProfile;
 	const email = profile.email.trim().toLowerCase();
 	let user = await prisma.user.findUnique({ where: { email } });
+	const justCreated = !user;
 	if (!user)
 		user = await prisma.user.create({
-			data: {
-				email,
-				username: profile.login,
-				avatarUrl: profile.image?.link ?? null,
-			},
+			data: { email, username: profile.login, avatarUrl: null },
 		});
+
+	//	Fetch the 42 photo into our own file store on the first 42 login, and
+	//	also heal any account still carrying a raw `https://cdn.intra.42.fr/...`
+	//	URL from before this was done — the CSP blocks that image in the browser.
+	const link = profile.image?.link;
+	const hasExternalAvatar = user.avatarUrl?.startsWith("http") ?? false;
+	if (link && (justCreated || hasExternalAvatar)) {
+		const localUrl = await importFtAvatar(link, user.id);
+		if (localUrl)
+			user = await prisma.user.update({ where: { id: user.id }, data: { avatarUrl: localUrl } });
+	}
+
 	return issueSession(user);
 }
 
