@@ -33,7 +33,7 @@ function byRecentActivity(a: MatchDto, b: MatchDto): number {
 }
 
 export function MessagesProvider({ children }: { children: ReactNode }) {
-	const { user, isLoading } = useAuth();
+	const { user, isInitializing } = useAuth();
 	//	The id, not the object: AuthProvider hands back a new `user` identity on
 	//	every session refresh, which would re-run the fetch for the same person.
 	const userId = user?.id ?? null;
@@ -48,10 +48,10 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		// AuthProvider's own session check (fetchMe) hasn't set the access
-		// token yet while isLoading is true — fetching now would go out
+		// token yet while isInitializing is true — fetching now would go out
 		// without it and come back 401. Wait for that to settle, and skip
 		// entirely if it settled on "no session".
-		if (isLoading || !userId || !canChat) return;
+		if (isInitializing || !userId || !canChat) return;
 
 		let cancelled = false;
 
@@ -71,13 +71,13 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [retryToken, isLoading, userId, canChat]);
+	}, [retryToken, isInitializing, userId, canChat]);
 
 	useEffect(() => {
 		// Mirrors the gate on the data-loading effect above: this provider
 		// mounts before AuthProvider's session check resolves, so on first
 		// render connectSocket() hasn't run yet and getSocket() is still null.
-		if (isLoading || !user) return;
+		if (isInitializing || !user) return;
 
 		const socket = getSocket();
 		if (!socket) return;
@@ -116,7 +116,7 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 		return () => {
 			socket.off("new_message", handleNewMessage);
 		};
-	}, [isLoading, user]);
+	}, [isInitializing, user]);
 
 	// Stable identity — consumers (e.g. ChatPanel) call this from a useEffect
 	// dependency array, and a function recreated on every render would make
