@@ -56,8 +56,9 @@ yes, which keeps the platform low-spam for everyone.
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose v2.
 - GNU Make.
-- Node.js ≥ 22 — only for running lint/tests/tooling outside the containers; the
-  app itself builds and runs entirely inside Docker.
+- Node.js ≥ 22 — optional, only for lint/tests/tooling on the host (`make
+  dev-deps`, `make lint`, `make ci`). `make up` needs only Docker; every service
+  builds and runs entirely inside its own image.
 - A `.env` file at the repository root. Copy `.env.example` and fill every value:
 
   | Variable | Purpose |
@@ -119,6 +120,7 @@ offline). It runs inside the backend container, so the stack must be up
 |---|---|
 | `make re` | `down` + `up` |
 | `make rebuild` | `fclean` + `up` (drops volumes) |
+| `make dev-deps` | install host `node_modules` for local tooling (not needed for `make up`) |
 | `make lint` | ESLint over frontend and backend |
 | `make ci` | lint + build + typecheck + migrate + tests (mirrors GitHub Actions) |
 | `make logs` / `make ps` | follow container logs / list containers |
