@@ -1,8 +1,10 @@
 import { type ReactNode, createContext, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { listMatches } from "../matches/api";
 import type { MatchDto } from "../matches/types";
 import { getSocket, roleUsesRealtime } from "../../lib/socket";
 import { useAuth } from "../auth/hooks/useAuth";
+import { useToast } from "../toast/hooks/useToast";
 
 type Status = "loading" | "ready" | "error";
 
@@ -45,6 +47,27 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 	const [retryToken, setRetryToken] = useState(0);
 	const [bumpToken, setBumpToken] = useState(0);
 	const activeMatchIdRef = useRef<string | null>(null);
+	// The socket effect below closes over `matches` only when it attaches, so it
+	// reads the current list through this ref.
+	const matchesRef = useRef<MatchDto[]>(matches);
+	useEffect(() => {
+		matchesRef.current = matches;
+	}, [matches]);
+
+	const toast = useToast();
+	const { t } = useTranslation();
+	const notifyRef = useRef({ toast, t });
+	useEffect(() => {
+		notifyRef.current = { toast, t };
+	});
+
+	// Stable identity — consumers (e.g. ChatPanel) call this from a useEffect
+	// dependency array, and a function recreated on every render would make
+	// that effect re-run on every unread-count change instead of only when
+	// the conversation itself changes.
+	const refresh = useCallback(() => {
+		setRetryToken((t) => t + 1);
+	}, []);
 
 	useEffect(() => {
 		// AuthProvider's own session check (fetchMe) hasn't set the access
@@ -91,6 +114,28 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 			// Already looking at this conversation — it counts as read, so only
 			// refresh the preview text/timestamp, not the badge or animation.
 			const isActiveConversation = payload.matchId === activeMatchIdRef.current;
+			const inAnotherChat =
+				activeMatchIdRef.current !== null && payload.matchId !== activeMatchIdRef.current;
+			// A message for a match not yet in the list (created this session,
+			// chat never opened) — the map below would silently drop it, so
+			// reconcile against the server instead.
+			if (!matchesRef.current.some((match) => match.matchId === payload.matchId)) {
+				refresh();
+				if (!isActiveConversation) setBumpToken((t) => t + 1);
+				if (inAnotherChat) {
+					notifyRef.current.toast.info(notifyRef.current.t("messages.newMessage"));
+				}
+				return;
+			}
+			if (inAnotherChat) {
+				const name = matchesRef.current.find((match) => match.matchId === payload.matchId)
+					?.otherUser.displayName;
+				notifyRef.current.toast.info(
+					name
+						? notifyRef.current.t("messages.newMessageFrom", { name })
+						: notifyRef.current.t("messages.newMessage"),
+				);
+			}
 			setMatches((prev) =>
 				[...prev]
 					.map((match) =>
@@ -111,20 +156,18 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
 			if (!isActiveConversation) setBumpToken((t) => t + 1);
 		}
 
+		function handleNewMatch() {
+			refresh();
+		}
+
 		socket.on("new_message", handleNewMessage);
+		socket.on("new_match", handleNewMatch);
 
 		return () => {
 			socket.off("new_message", handleNewMessage);
+			socket.off("new_match", handleNewMatch);
 		};
-	}, [isInitializing, user]);
-
-	// Stable identity — consumers (e.g. ChatPanel) call this from a useEffect
-	// dependency array, and a function recreated on every render would make
-	// that effect re-run on every unread-count change instead of only when
-	// the conversation itself changes.
-	const refresh = useCallback(() => {
-		setRetryToken((t) => t + 1);
-	}, []);
+	}, [isInitializing, user, refresh]);
 
 	// Stable for the same reason as refresh — ChatPanel calls it from a
 	// useEffect keyed on the conversation it's mounted for.

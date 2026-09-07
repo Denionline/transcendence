@@ -401,7 +401,9 @@
 		"startConversation": "Tiveram correspondência em {{title}} — começa a conversa.",
 		"noMatchesYet": "Ainda sem correspondências",
 		"onceYouMatch": "Assim que tiveres uma correspondência, ela aparece aqui.",
-		"couldntLoadShort": "Não foi possível carregar as mensagens."
+		"couldntLoadShort": "Não foi possível carregar as mensagens.",
+		"newMessage": "Nova mensagem",
+		"newMessageFrom": "Nova mensagem de {{name}}"
 	},
 	"friends": {
 		"title": "Amigos",
@@ -576,7 +578,9 @@
 		"updateFailed": "Não foi possível atualizar esta oportunidade.",
 		"loadListFailed": "Não foi possível carregar as tuas oportunidades. Tenta novamente.",
 		"couldntLoadOne": "Não foi possível carregar esta oportunidade",
-		"couldntLoadList": "Não foi possível carregar as tuas oportunidades"
+		"couldntLoadList": "Não foi possível carregar as tuas oportunidades",
+		"matchedArtist_one": "Artista correspondente",
+		"matchedArtist_other": "Artistas correspondentes"
 	},
 	"onboarding": {
 		"setUpProfile": "Configura o teu perfil de {{role}}",
