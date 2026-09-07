@@ -62,7 +62,7 @@ Artist ◀──like(candidate)── Hirer (reviewing artists who liked that gi
 | Method | Path | Who | Notes |
 |---|---|---|---|
 | POST | `/register` | anyone | Creates the user (this is the User "create") |
-| POST | `/login` | anyone | Returns access token in body (`token`); sets refresh token as httpOnly cookie |
+| POST | `/login` | anyone | Always **200**. Success body `{ ok: true, ...user, token }` (access token) + refresh token as httpOnly cookie. Wrong password / locked account → `200 { ok: false, code, message }` (see below) |
 | POST | `/logout` | logged-in | Clears session |
 | POST | `/refresh` | logged-in (via refresh cookie) | Issues a new access token |
 | GET | `/me` | logged-in | Requires a valid access token — call after `refresh` to restore the session on app mount |
@@ -99,8 +99,16 @@ first (the cookie is sent automatically) to get a new access token, then call
 }
 ```
 
-`login` also includes `"token"` (the access token) in this same response.
+`login` wraps it as `{ ok: true, ...user, token }` — `token` is the access token.
 - `register`/`login` validation: email trimmed/lowercased and regex-checked; password at most 72 **bytes** (bcrypt ignores anything past that); `role` must be `artist` or `hirer` (no self-registering as `admin`).
+
+**`login` never answers a 4xx for a rejected login.** A wrong password
+(`INVALID_CREDENTIALS`) or a locked account (`ACCOUNT_LOCKED`) is the normal
+outcome of a login form, not an exceptional one, and a 4xx there makes the
+browser log a console error on every mistyped password — which the subject
+forbids. Both come back as `200 { ok: false, code, message }`; the client keys
+on `ok`, not the status. Validation errors, the per-IP rate limit and any
+unexpected failure are still real HTTP errors.
 
 ### Password rules and brute-force protection
 
@@ -122,8 +130,9 @@ reset on restart and are per-replica.
 
 **Per-account lockout.** Every login attempt is recorded (`LoginAttempt`: email,
 IP, success, timestamp — 30 days of history). Five failures within 15 minutes
-lock that email until 15 minutes after the last failure → `423 ACCOUNT_LOCKED`,
-with the remaining minutes in the message. A successful login clears the streak.
+lock that email until 15 minutes after the last failure → `ACCOUNT_LOCKED`
+(delivered as `200 { ok: false, ... }`, see above), with the remaining minutes
+in the message. A successful login clears the streak.
 The lockout keys on the submitted email, so unknown emails lock exactly like
 real ones and the response never reveals whether an account exists.
 
@@ -756,7 +765,7 @@ beside the not-found code it precedes.
 | `CATEGORY_NOT_FOUND` | 400 / 404 | **400** when a profile or gig write names a category that is not in the `Category` table (a body-validation failure); **404** when `PATCH /api/categories/:id` targets an id that does not exist |
 | `OAUTH_INVALID_REQUEST` | 400 | 42 redirected back to the callback without a `code` or `state` |
 | `OAUTH_STATE_INVALID` | 400 | The `state` in the callback does not match the cookie set when the flow started — a CSRF guard |
-| `INVALID_CREDENTIALS` | 401 | Wrong email or password on login |
+| `INVALID_CREDENTIALS` | 200 | Wrong email or password on login — delivered as `200 { ok: false, code, message }`, not a 4xx (see Auth section) |
 | `MISSING_TOKEN` | 401 | Authorization header missing/malformed, or refresh cookie missing |
 | `INVALID_TOKEN` | 401 | Access token signature invalid or malformed |
 | `TOKEN_EXPIRED` | 401 | Access token expired |
@@ -790,7 +799,7 @@ beside the not-found code it precedes.
 | `FILE_CONTENT_MISMATCH` | 415 | The bytes are not the type the upload declared — checked against the file's own signature, before anything is written |
 | `UNSUPPORTED_ENCODING` | 415 | Body used a `Content-Encoding` the parser cannot read |
 | `RANGE_NOT_SATISFIABLE` | 416 | `Range` header asks for bytes outside the file |
-| `ACCOUNT_LOCKED` | 423 | Too many failed logins for this email — locked temporarily |
+| `ACCOUNT_LOCKED` | 200 | Too many failed logins for this email — locked temporarily. Like `INVALID_CREDENTIALS`, delivered as `200 { ok: false, code, message }` (see Auth section) |
 | `TOO_MANY_REQUESTS` | 429 | Per-caller rate limit hit — see the `Retry-After` header |
 | `REQUEST_FAILED` | 4xx | A library rejected the request; its status is kept, its message is not |
 | `MESSAGE_FAILED` | 500 | The message passed validation but could not be saved |
