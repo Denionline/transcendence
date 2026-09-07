@@ -38,14 +38,16 @@ COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 #                                    Comands                                   #
 # **************************************************************************** #
 
-.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help
+.PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help dev-deps
 
 all: up
 
 build:
 	$(COMPOSE) build
 
-up: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
+# Starts the stack. Needs only Docker on the host — every service compiles its
+# own dependencies inside its image (see each srcs/*/Dockerfile).
+up:
 	$(COMPOSE) up --build -d
 
 down:
@@ -61,11 +63,11 @@ re:
 	$(MAKE) down
 	$(MAKE) up
 
-lint:
+lint: dev-deps
 	npm run lint --prefix $(FRONTEND_PATH)
 	npm run lint --prefix $(BACKEND_PATH)
 
-format:
+format: dev-deps
 	npx prettier --write "srcs/**/*.{ts,tsx,js,json,css}"
 
 
@@ -80,6 +82,10 @@ status:
 	$(COMPOSE) ps --status running
 
 # Development
+# Installs node_modules on the host for local tooling only (IDE, lint, tests,
+# ci). Not required to run the stack — 'make up' builds everything in Docker.
+dev-deps: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
+
 srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
 	npm ci --prefix srcs/backend && touch $@
 
@@ -92,7 +98,7 @@ srcs/frontend/node_modules/.package-lock.json: srcs/frontend/package.json srcs/f
 srcs/frontend/package-lock.json: srcs/frontend/package.json
 	npm install --prefix srcs/frontend
 
-ci:
+ci: dev-deps
 	@echo "TEST    Lint (frontend + backend)"
 	$(MAKE) lint
 	@echo "TEST    Frontend build"
@@ -167,6 +173,7 @@ help:
 	@echo "  oblivion    remove this project's containers, images, volumes and node_modules"
 	@echo ""
 	@echo "Code:"
+	@echo "  dev-deps    install host node_modules for local tooling (not needed for 'up')"
 	@echo "  lint        lint frontend and backend"
 	@echo "  format      run prettier over srcs"
 	@echo "  ci          lint, build, typecheck, migrate and test"
