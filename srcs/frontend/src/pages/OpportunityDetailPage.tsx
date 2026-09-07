@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeftIcon, SearchIcon } from "lucide-react";
+import { ArrowLeftIcon, MessageCircleIcon, SearchIcon } from "lucide-react";
+import Avatar from "../components/Avatar";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import { getGig, updateGigStatus } from "../features/gigs/api";
 import { listMatches } from "../features/matches/api";
 import { formatDate } from "../lib/format";
 import { ApiError } from "../lib/apiClient";
 import type { GigDto } from "../features/gigs/types";
+import type { MatchDto } from "../features/matches/types";
 import { useTranslation } from "react-i18next";
 
 export default function OpportunityDetailPage() {
@@ -23,7 +25,8 @@ export default function OpportunityDetailPage() {
 	// and there's currently no way to undo a match — so once matched, "Reopen"
 	// has to stay off the table rather than let the hirer bypass a closed
 	// match into a still-open gig.
-	const [hasMatch, setHasMatch] = useState(false);
+	const [gigMatches, setGigMatches] = useState<MatchDto[]>([]);
+	const hasMatch = gigMatches.length > 0;
 
 	useEffect(() => {
 		if (!id) return;
@@ -50,7 +53,7 @@ export default function OpportunityDetailPage() {
 		listMatches()
 			.then((matches) => {
 				if (cancelled) return;
-				setHasMatch(matches.some((match) => match.gig.id === gig.id));
+				setGigMatches(matches.filter((match) => match.gig.id === gig.id));
 			})
 			.catch(() => {
 				// Worst case hasMatch stays false and the page treats this gig as
@@ -128,6 +131,50 @@ export default function OpportunityDetailPage() {
 
 					{gig.description && (
 						<p className="text-sm leading-relaxed text-base-content/70">{gig.description}</p>
+					)}
+
+					{isOwner && gigMatches.length > 0 && (
+						<div className="flex flex-col gap-2 border-t border-base-content/10 pt-4">
+							<p className="text-sm font-medium text-base-content/70">
+								{t("gig.matchedArtist", { count: gigMatches.length })}
+							</p>
+							<ul className="flex flex-col gap-2">
+								{gigMatches.map((match) => (
+									<li
+										key={match.matchId}
+										className="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 p-3"
+									>
+										<Link
+											to={`/profile/${match.otherUser.id}`}
+											className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80"
+										>
+											<div className="relative shrink-0">
+												<Avatar
+													username={match.otherUser.displayName}
+													avatarUrl={match.otherUser.avatarUrl}
+													size="sm"
+												/>
+												{match.otherUser.online && (
+													<span
+														className="absolute right-0 bottom-0 size-2 rounded-full border-2 border-base-100 bg-success"
+														aria-label={t("matches.online")}
+													/>
+												)}
+											</div>
+											<span className="truncate font-medium">{match.otherUser.displayName}</span>
+										</Link>
+										<Link
+											to={`/messages?matchId=${match.matchId}`}
+											aria-label={t("matches.goToChat", { name: match.otherUser.displayName })}
+											className="btn btn-sm btn-primary shrink-0 gap-1.5 rounded-full"
+										>
+											<MessageCircleIcon className="size-4" aria-hidden="true" />
+											{t("matches.chat")}
+										</Link>
+									</li>
+								))}
+							</ul>
+						</div>
 					)}
 
 					{isOwner && (

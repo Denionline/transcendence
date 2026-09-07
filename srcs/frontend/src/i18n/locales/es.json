@@ -578,7 +578,9 @@
 		"updateFailed": "No se pudo actualizar esta oportunidad.",
 		"loadListFailed": "No se pudieron cargar tus oportunidades. Inténtalo de nuevo.",
 		"couldntLoadOne": "No se pudo cargar esta oportunidad",
-		"couldntLoadList": "No se pudieron cargar tus oportunidades"
+		"couldntLoadList": "No se pudieron cargar tus oportunidades",
+		"matchedArtist_one": "Artista coincidente",
+		"matchedArtist_other": "Artistas coincidentes"
 	},
 	"onboarding": {
 		"setUpProfile": "Configura tu perfil de {{role}}",
