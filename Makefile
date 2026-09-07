@@ -1,20 +1,14 @@
-# **************************************************************************** #
-#                                    Path's                                    #
-# **************************************************************************** #
+####################################################################### Path's #
 
 DATABASE_PATH			= srcs/database
 FRONTEND_PATH			= srcs/frontend
 BACKEND_PATH			= srcs/backend
 
-# **************************************************************************** #
-#                                    Files                                     #
-# **************************************************************************** #
+######################################################################## Files #
 
 COMPOSE_FILE			= srcs/docker-compose.yml
 
-# **************************************************************************** #
-#                                 Environment                                  #
-# **************************************************************************** #
+################################################################## Environment #
 
 ifeq ($(wildcard .env),)
 $(error .env not found)
@@ -22,21 +16,15 @@ endif
 
 include .env
 
-POSTGRES_HOST_PORT		?= 5432
-
 DBURL					= postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_HOST_PORT)/$(POSTGRES_DB)?schema=public
 
-# **************************************************************************** #
-#                                   Rules                                      #
-# **************************************************************************** #
+######################################################################## Rules #
 
-MAKE					= make --no-print-directory
+MAKE_QUIET				= make --no-print-directory
 RM						= rm -rf
 COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 
-# **************************************************************************** #
-#                                    Comands                                   #
-# **************************************************************************** #
+###################################################################### Comands #
 
 .PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help dev-deps
 
@@ -45,8 +33,6 @@ all: up
 build:
 	$(COMPOSE) build
 
-# Starts the stack. Needs only Docker on the host — every service compiles its
-# own dependencies inside its image (see each srcs/*/Dockerfile).
 up:
 	$(COMPOSE) up --build -d
 
@@ -56,12 +42,12 @@ down:
 clean:
 	$(COMPOSE) down
 
-fclean: clean
+fclean:
 	$(COMPOSE) down -v
 
 re:
-	$(MAKE) down
-	$(MAKE) up
+	$(MAKE_QUIET) down
+	$(MAKE_QUIET) up
 
 lint: dev-deps
 	npm run lint --prefix $(FRONTEND_PATH)
@@ -81,9 +67,7 @@ ps:
 status:
 	$(COMPOSE) ps --status running
 
-# Development
-# Installs node_modules on the host for local tooling only (IDE, lint, tests,
-# ci). Not required to run the stack — 'make up' builds everything in Docker.
+
 dev-deps: srcs/backend/node_modules/.package-lock.json srcs/frontend/node_modules/.package-lock.json
 
 srcs/backend/node_modules/.package-lock.json: srcs/backend/package.json srcs/backend/package-lock.json
@@ -100,7 +84,7 @@ srcs/frontend/package-lock.json: srcs/frontend/package.json
 
 ci: dev-deps
 	@echo "TEST    Lint (frontend + backend)"
-	$(MAKE) lint
+	$(MAKE_QUIET) lint
 	@echo "TEST    Frontend build"
 	npm run build --prefix $(FRONTEND_PATH)
 	@echo "TEST    Frontend tests"
@@ -123,8 +107,8 @@ report:
 	echo "    Networks:" ; docker network ls
 
 rebuild:
-	$(MAKE) fclean
-	$(MAKE) up
+	$(MAKE_QUIET) fclean
+	$(MAKE_QUIET) up
 
 oblivion:
 	@echo "\n\n    WARNING: This will delete ALL containers, images and volumes for THIS project!"
