@@ -9,7 +9,7 @@ import type { MatchDto } from "../features/matches/types";
 import { useOnlineStatusUpdates } from "../features/matches/useOnlineStatus";
 import { getSocket } from "../lib/socket";
 import { ApiError } from "../lib/apiClient";
-import { formatDate, formatRelativeTime } from "../lib/format";
+import { formatDate } from "../lib/format";
 import { useAuth } from "../features/auth/hooks/useAuth";
 import type { NotificationType } from "../features/notifications/types";
 import { useTranslation } from "react-i18next";
@@ -419,9 +419,7 @@ function YourMatchesSection() {
 								<div className="min-w-0">
 									<p className="truncate font-medium">{match.otherUser.displayName}</p>
 									<p className="truncate text-sm text-base-content/50">
-										{match.lastMessage
-											? `${match.lastMessage.content} · ${formatRelativeTime(match.lastMessage.createdAt)}`
-											: t("matches.matchedOn", { title: match.gig.title })}
+										{t("matches.matchedOn", { title: match.gig.title })}
 									</p>
 								</div>
 							</Link>
