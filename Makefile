@@ -24,6 +24,10 @@ MAKE_QUIET				= make --no-print-directory
 RM						= rm -rf
 COMPOSE					= docker compose --env-file .env -f $(COMPOSE_FILE)
 
+# `make up` seeds the database with demo data by default.
+# Skip it with `make up SEED=0`.
+SEED					?= 1
+
 ###################################################################### Comands #
 
 .PHONY: all build up down clean fclean re lint format logs ps status ci report rebuild oblivion dbaccess dbstats seed help dev-deps
@@ -35,6 +39,10 @@ build:
 
 up:
 	$(COMPOSE) up --build -d
+ifeq ($(SEED),1)
+	@$(COMPOSE) up -d --wait --no-recreate backend
+	$(MAKE_QUIET) seed
+endif
 
 down:
 	$(COMPOSE) down
@@ -145,7 +153,7 @@ dbaccess:
 
 help:
 	@echo "Stack:"
-	@echo "  all/up      start the stack in the background"
+	@echo "  all/up      start the stack in the background (seeds the db; 'make up SEED=0' skips)"
 	@echo "  build       build the images"
 	@echo "  down        stop the stack"
 	@echo "  re          restart (down + up)"
@@ -169,6 +177,6 @@ help:
 	@echo "  report      list all docker containers, images, volumes and networks"
 	@echo ""
 	@echo "Database:"
-	@echo "  seed        apply migrations and load demo data (needs 'make up' first)"
+	@echo "  seed        apply migrations and load demo data (runs automatically on 'make up')"
 	@echo "  dbstats     print row counts per table"
 	@echo "  dbaccess    open a psql shell"

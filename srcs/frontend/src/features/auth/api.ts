@@ -82,9 +82,21 @@ export function hasSessionMarker(): boolean {
 // fetchMe (once, on load) and apiClient's transparent 401 retry (any time an
 // in-memory access token has since expired — see apiClient.ts).
 export async function refreshAccessToken(): Promise<string> {
-	const { token } = await request("/auth/refresh", { method: "POST" });
-	setAccessToken(token);
-	return token;
+	// /auth/refresh answers 200 even when the refresh cookie is missing or
+	// expired, so a returning visitor's page load logs no console error — the
+	// failure is in the body. Rethrow it as the same shape a hard failure had,
+	// so fetchMe() and apiClient's transparent retry keep treating it as
+	// "logged out".
+	const body = await request("/auth/refresh", { method: "POST" });
+	if (body?.ok === false) {
+		const error = new Error(body.message ?? "Your session has expired") as Error & {
+			code?: string;
+		};
+		if (typeof body.code === "string") error.code = body.code;
+		throw error;
+	}
+	setAccessToken(body.token);
+	return body.token;
 }
 
 export async function fetchMe(): Promise<User | null> {

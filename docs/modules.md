@@ -12,12 +12,11 @@
     - A basic chat system (send/receive messages between users).
     - A profile system (view user information).
     - A friends system (add/remove friends, see friends list).
-- A public API to interact with the database with a secured API key, rate
-limiting, documentation, and at least 5 endpoints:
-    - GET /api/{something}
-    - POST /api/{something}
-    - PUT /api/{something}
-    - DELETE /api/{something}.
+- A complete notification system for all creation, update, and deletion actions.
+    - Real-time delivery over WebSockets plus persisted history.
+    - Notification centre with mark-as-read.
+    - Covers new match, new message, gig closed, like, friend invite and invite
+    accepted; live pushes also raised as transient toasts.
 - Standard user management and authentication.
     - Users can update their profile information.
     - Users can upload an avatar (with a default avatar if none provided).
@@ -66,7 +65,6 @@ docs/mad/20260819-file-uploads.md for the decisions and their trade-offs.
 etc.).
  
 ## Modules to consider add later:
-- A complete notification system for all creation, update, and deletion actions.
 - Server-Side Rendering (SSR) for improved performance and SEO.
 - Progressive Web App (PWA) with offline support and installability.
 - Custom-made design system with reusable components, including a proper

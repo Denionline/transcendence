@@ -76,14 +76,14 @@ One-liner: *"Tinder for gigs — artists and hirers match, then talk."*
 | Chat | 1-to-1 real-time chat, message persistence | User interaction (major) + WebSockets (major) |
 | Friends | Connections list from matches, add/remove, online status | User interaction (major) |
 | Portfolio | Upload images/audio/docs, validation, preview, delete, progress | File upload (minor) |
-| Notifications | Real-time match & message notifications | WebSockets (major) |
+| Notifications | Real-time + persisted notifications for create/update/delete actions, notification centre with mark-as-read | Notification system (minor) |
 | Roles | Admin dashboard, user CRUD, roles, role-based views | Advanced permissions (major) |
-| API | Public REST API, ≥5 endpoints, API key, rate limiting, docs | Public API (major) |
 | Data | ORM with clear schema and relations | ORM (minor) |
 | i18n | 3 languages, switcher, all text translatable | Multiple languages (minor) |
 | Browsers | Chrome (mandatory) + Firefox + Safari/Edge tested | Additional browsers (minor) |
+| Design system | Reusable theme-driven component library (10+ components), shared token layer, single icon set | Custom design system (minor) |
 | Stack | Frontend framework + backend framework | Web frameworks (major) |
 | Legal | Privacy Policy + Terms of Service pages, footer links | Mandatory |
 | Infra | Docker single-command deploy, HTTPS, .env + .env.example | Mandatory |
 
-**Module point check:** 6 majors (frameworks, WebSockets, user interaction, public API, standard user management, advanced permissions) = 12 pts, plus 6 minors (ORM, advanced search, file upload, i18n, additional browsers, OAuth) = 6 pts → **18 points total**, a 4-point buffer over the required 14 — good insurance if a module isn't validated during evaluation.
+**Module point check:** 5 majors (frameworks, WebSockets, user interaction, standard user management, advanced permissions) = 10 pts, plus 8 minors (ORM, advanced search, file upload, i18n, additional browsers, OAuth, custom design system, notification system) = 8 pts → **18 points total**, a 4-point buffer over the required 14 — good insurance if a module isn't validated during evaluation.
