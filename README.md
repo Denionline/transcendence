@@ -90,16 +90,19 @@ browser shows a warning on the first visit — accept it to continue. Plain HTTP
 make down
 ```
 
-### Seed demo data (optional)
+### Seed demo data
+
+`make up` seeds the database automatically once the backend is healthy, so the
+stack comes up already populated. Start without seeding with `make up SEED=0`,
+and re-seed a running stack any time with:
 
 ```bash
 make seed
 ```
 
-Populates the database with a demo cast plus its media (avatars, portfolio images,
-an audio clip, a short video — all tracked in the repo so the demo renders
-offline). It runs inside the backend container, so the stack must be up
-(`make up`) first. See [`docs/db_seeding.md`](docs/db_seeding.md).
+It populates the database with a demo cast plus its media (avatars, portfolio
+images, an audio clip, a short video — all tracked in the repo so the demo
+renders offline), and is idempotent. See [`docs/db_seeding.md`](docs/db_seeding.md).
 
 ### Other useful targets
 

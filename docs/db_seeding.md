@@ -4,9 +4,14 @@
 6 categories, an admin, 300 artists (50 per category), 10 hirers posting
 30 gigs, plus swipes/matches/chat threads — and 11 real media files.
 
+**`make up` runs the seed automatically** once the backend is healthy, so a
+cold `make up` comes up already populated. Skip it with `make up SEED=0`;
+run it by hand any time with `make seed` (it is idempotent — see below).
+
 ```bash
-make up      # required: the seed runs inside the backend container
-make seed
+make up            # starts the stack and seeds it
+make up SEED=0     # starts the stack without seeding
+make seed          # re-seed a running stack
 ```
 
 **`make seed` needs a running stack.** It used to run on the host and reach
