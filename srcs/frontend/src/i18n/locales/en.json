@@ -40,7 +40,6 @@
 		"emailPlaceholder": "you@email.com",
 		"password": "Password",
 		"passwordPlaceholder": "••••••••",
-		"forgot": "Forgot?",
 		"logIn": "Log in",
 		"loggingIn": "Logging in…",
 		"loginFailed": "Failed to log in",
