@@ -332,7 +332,7 @@ Points: **Major = 2**, **Minor = 1**. Target: **17 points** (14 required + a
 | 8 | **Advanced search with filters, sorting and pagination** | Hirers browse a large pool of artists. | `/api/search/{artists,hirers,gigs}` with text search, category/location/availability filters, `newest`/`oldest`/`relevance` sorting, relevance-bucketed pagination, rate-limited. | dximenes (#24), lgertrud (#103), carlaugu (#86/#88/#92) |
 | 9 | **Support for multiple languages (≥ 3)** | Portuguese and Spanish speakers are a core audience. | i18next with `en` / `pt` / `es` (484 keys each), browser-detection + persisted choice, a switcher in the auth layout and settings, and `scripts/check-translations.mjs` in CI to prevent drift. | dximenes (#39/#40) |
 | 10 | **Remote authentication with OAuth 2.0** | Lower-friction sign-in for 42 students. | "Continue with 42" button on the login and register pages → `GET /api/auth/42` (random `state` in an httpOnly cookie) → 42 authorize → `GET /api/auth/42/callback` verifies `state` (CSRF), exchanges the `code` at `/oauth/token`, reads `/v2/me`, finds-or-creates the user by email, then issues the same session cookies as password login. Failures redirect to `/login?error=oauth`. <!-- TEAM: needs a real registered 42 app in `.env` (`FT_API_UID` / `FT_API_SECRET` / `FT_API_CALLBACK_URL`), the 42 app's redirect URI set to `https://localhost:8443/api/auth/42/callback`, and `FRONTEND_URL=https://localhost:8443`. Verify the full click-through before submission. OAuth users are created with the default `artist` role (no role picker in the OAuth path). --> | _core_ |
-| 11 | **Support for additional browsers** | Not everyone uses Chrome. | Chrome (mandatory) + Firefox + Edge/Safari compatibility pass over every feature; browser-specific issues fixed and any residual limitations recorded here. <!-- TEAM: before submission, add `firefox` + `webkit` projects to `playwright.config.ts` so the e2e suite runs on each, and list any browser-specific limitations found during #41. --> | lgertrud (#41) |
+| 11 | **Support for additional browsers** | Not everyone uses Chrome. | The Playwright E2E suite (auth, swipe/match, real-time chat, file upload) runs on **three engines** — Chromium, Firefox and WebKit (Safari's engine) — as separate projects in `playwright.config.ts`, and CI installs all three (`playwright install --with-deps chromium firefox webkit`). All flows pass on every engine; browser-specific limitations, if any, are listed under Known Limitations. Backed by the earlier manual cross-browser pass (#41). | lgertrud (#41), carlaugu (#132) |
 | 12 | **Custom-made design system** | A swipe app lives or dies by its UI; the whole product is built from one internal component library rather than ad-hoc markup. | An internal library of reusable React components — `srcs/frontend/src/components/` (Avatar, Modal, Logo, FieldError, LabeledField, FiltersPanel, LanguageSwitcher, …) plus per-feature `components/` folders (MessageBubble, NotificationBell, MessagesIcon, PasswordStrengthChecklist, FriendRequestButton, card/deck primitives, …) and an app-wide toast system (`features/toast/`, a `ToastProvider` + `useToast()` hook rendering daisyUI `alert`s — auto-dismiss, hover-to-pause, de-dupe, capped stack), well over 10 reusable pieces, all theme-driven. A shared visual layer in `src/index.css`: a named colour theme set as the app default, and custom motion primitives reused across the UI (`swipe-card-in`, `modal-pop-in`, `hint-pulse`, `icon-bump`, `fade-in`, `toast-in`). Icons come from one set (`lucide-react`) used consistently everywhere. | lgertrud, leoaguia (frontend UI) |
 
 ### Not claimed
@@ -373,7 +373,8 @@ Contributions below are grouped from the GitHub issues each member owned.
   friend requests (#28), the swipe-history endpoint and its pagination (#86,
   #92), profile-mismatch resolution (#88), chat-message deletion gated to the
   message sender or an admin (#113); the Playwright E2E suite covering auth, swipe/match, chat
-  and upload (#38). Also scoped the public-API key system and rate limiting
+  and upload (#38), later extended to run on Firefox and WebKit alongside Chromium
+  (#132). Also scoped the public-API key system and rate limiting
   (#32, #33) before the team dropped that module. Owns the ADRs in
   [`docs/mad/`](docs/mad/).
 
@@ -441,9 +442,11 @@ who own the corresponding code.
   violations but does not yet block them.
 - **No games** — Artmate is not a gaming project, so the gaming modules (and
   anything that depends on a game) are out of scope.
-- **Additional browsers** — features were verified manually across Chrome, Firefox
-  and Edge/Safari (#41); the automated Playwright suite still runs on Chromium
-  only until the `firefox` / `webkit` projects are added (see module 11).
+- **Additional browsers** — the E2E suite runs on Chromium, Firefox and WebKit
+  and all flows pass on each; no browser-specific behaviour differences were found
+  in the covered flows. WebKit is Safari's engine, so Safari is covered
+  transitively rather than by a real Safari binary. Manual spot-checks on desktop
+  Safari and mobile layouts back this up (#41).
 
 ---
 
