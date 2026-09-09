@@ -81,8 +81,9 @@ One-liner: *"Tinder for gigs — artists and hirers match, then talk."*
 | Data | ORM with clear schema and relations | ORM (minor) |
 | i18n | 3 languages, switcher, all text translatable | Multiple languages (minor) |
 | Browsers | Chrome (mandatory) + Firefox + Safari/Edge tested | Additional browsers (minor) |
+| Design system | Reusable theme-driven component library (10+ components), shared token layer, single icon set | Custom design system (minor) |
 | Stack | Frontend framework + backend framework | Web frameworks (major) |
 | Legal | Privacy Policy + Terms of Service pages, footer links | Mandatory |
 | Infra | Docker single-command deploy, HTTPS, .env + .env.example | Mandatory |
 
-**Module point check:** 5 majors (frameworks, WebSockets, user interaction, standard user management, advanced permissions) = 10 pts, plus 7 minors (ORM, advanced search, file upload, i18n, additional browsers, OAuth, notification system) = 7 pts → **17 points total**, a 3-point buffer over the required 14 — good insurance if a module isn't validated during evaluation.
+**Module point check:** 5 majors (frameworks, WebSockets, user interaction, standard user management, advanced permissions) = 10 pts, plus 8 minors (ORM, advanced search, file upload, i18n, additional browsers, OAuth, custom design system, notification system) = 8 pts → **18 points total**, a 4-point buffer over the required 14 — good insurance if a module isn't validated during evaluation.
