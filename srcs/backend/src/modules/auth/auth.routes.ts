@@ -131,9 +131,28 @@ router.post("/logout", async (req, res) => {
 	res.status(204).send();
 });
 
+// A missing, expired or otherwise invalid refresh cookie is the normal state
+// of a returning visitor whose 7-day session has simply lapsed — the frontend
+// calls this once on every page load. Sent as a 401 it makes the browser log a
+// console error on a plain page load, which the subject forbids ("no browser
+// console warnings/errors"), so it lands as a 200 whose body carries
+// `ok: false`; the stale client-side cookies are cleared at the same time so
+// the next load short-circuits before it ever calls this again. The frontend
+// turns `ok: false` back into a thrown error (see features/auth/api.ts), so
+// fetchMe() and apiClient's retry keep treating it as "logged out". Every
+// other failure (an unexpected throw) stays a real HTTP error.
 router.post("/refresh", async (req, res) => {
-	const result = await refreshAccessToken(req.cookies[REFRESH_COOKIE]);
-	res.status(200).json(result);
+	try {
+		const { token } = await refreshAccessToken(req.cookies[REFRESH_COOKIE]);
+		res.status(200).json({ ok: true, token });
+	} catch (err) {
+		if (err instanceof HttpError && err.status === 401) {
+			clearSessionCookies(req, res);
+			res.status(200).json({ ok: false, code: err.code, message: err.message });
+			return;
+		}
+		throw err;
+	}
 });
 
 router.get("/me", requireAuth, async (req, res) => {
