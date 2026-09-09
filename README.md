@@ -1,13 +1,6 @@
-*This project has been created as part of the 42 curriculum by abessa-m, dximenes, carlaugu, leoaguia, lgertrud.*
+*This project has been created as part of the 42 curriculum by abessa-m, dximenes, carlaugu, lgertrud.*
 
 # Artmate
-
-[![CI](https://github.com/Denionline/transcendence/actions/workflows/ci.yml/badge.svg)](https://github.com/Denionline/transcendence/actions/workflows/ci.yml)
-
-> Repository name: `transcendence` (42 project slug `ft_transcendence`).
-> Product name: **Artmate**.
-
----
 
 ## Description
 
@@ -74,16 +67,10 @@ yes, which keeps the platform low-spam for everyone.
 
   See [`docs/environment.md`](docs/environment.md) for the full reference.
 
-### Build
+### Build and Run
 
 ```bash
 make
-```
-
-### Run
-
-```bash
-make up
 ```
 
 The application is then available at:
@@ -135,12 +122,11 @@ offline). It runs inside the backend container, so the stack must be up
 | **abessa-m** | Product Owner | Owns the product vision and backlog, prioritizes features, validates completed work, communicates with evaluators and peers. Maintains [`docs/product_vision.md`](docs/product_vision.md). Also contributed as a backend/DB developer. |
 | **dximenes** | Project Manager / Scrum Master | Organizes the weekly sync and planning, tracks progress and deadlines, manages risks and blockers, keeps team communication flowing. Also contributed as a frontend/real-time developer and handled release management. |
 | **carlaugu** | Tech Lead / Architect | Defines the technical architecture and stack, sets code-quality conventions, reviews critical changes, owns the Architecture Decision records in [`docs/mad/`](docs/mad/). Also contributed as a backend developer and owned the E2E suite. |
-| **leoaguia** | Developer | Implements assigned features and modules, reviews teammates' pull requests, tests their own work. Focus: notifications and profile UX. |
 | **lgertrud** | Developer | Implements assigned features and modules, reviews teammates' pull requests, tests their own work. Focus: legal pages, API documentation, cross-browser compatibility. |
 
-> A sixth member, `mreinald`, started as a Developer and left the team partway
-> through the project; their unfinished work was picked up by the remaining
-> developers (see Individual Contributions).
+> Two other members, `mreinald` and `leoaguia`, started as Developers and left
+> the team during the project; their unfinished work was picked up by the
+> remaining developers (see Individual Contributions).
 
 ---
 
@@ -290,7 +276,7 @@ in use are marked _core_ and were a shared effort.
 |---|---|---|
 | Email/password auth | Register and log in with email + password; passwords hashed and salted with bcrypt; short-lived access JWT + httpOnly refresh-token cookie scoped to `/api/auth`; per-IP rate limiting and a `LoginAttempt` audit trail. | _core_; validation hardening: abessa-m (#37) |
 | Login with 42 (OAuth 2.0) | Authorization-code flow against the 42 intra API (`/api/auth/42` → `/api/auth/42/callback`), `state` parameter for CSRF protection, account auto-provisioned from the 42 profile. | _core_ |
-| Artist / hirer profiles | Create and edit a profile (categories, bio, location, availability, organization name for hirers); public profile page for any user. | abessa-m (#91), carlaugu (#88), leoaguia (#80); profile CRUD endpoint #79 absorbed after `mreinald` left |
+| Artist / hirer profiles | Create and edit a profile (categories, bio, location, availability, organization name for hirers); public profile page for any user. | abessa-m (#91), carlaugu (#88); #79 and #80 absorbed after `mreinald` and `leoaguia` left |
 | Onboarding gate | A fresh artist/hirer account must pick at least one category (and org name for hirers) before the rest of the app unlocks, because matching is keyed on it. | dximenes (#61) |
 | Avatar | Upload a profile image (JPEG/PNG/WebP) through the file-upload system — no URL entry; a generated initials avatar is shown when none is set. | abessa-m (#35), dximenes (#36) |
 | Media portfolio | Upload image/audio/video files to a profile, with progress, in-browser preview (HTTP Range for video seeking) and delete. | abessa-m (#35), dximenes (#36) |
@@ -298,20 +284,20 @@ in use are marked _core_ and were a shared effort.
 | Swipe & match | Category-filtered swipe deck (gigs for artists, candidate artists for hirers); mutual like on the same gig auto-creates a match and closes the gig. | _core_; history/pagination: carlaugu (#86/#92) |
 | Real-time chat | Per-match 1:1 chat over WebSockets, persisted history with pagination, read receipts, online presence, graceful reconnection. | dximenes (#25/#27), carlaugu (#26) |
 | Friends / connections | Send, accept and decline friend requests; friends list with live online status. | carlaugu (#28), dximenes (#29) |
-| Notifications | Real-time + persisted notifications for new match, new message, gig closed, like, friend invite and invite accepted; notification centre with mark-as-read; live pushes also raised as transient toasts. | dximenes (#30), leoaguia (#31/#109/#110) |
+| Notifications | Real-time + persisted notifications for new match, new message, gig closed, like, friend invite and invite accepted; notification centre with mark-as-read; live pushes also raised as transient toasts. | dximenes (#30); #31/#109/#110 absorbed after `leoaguia` left |
 | Advanced search | Full-text + filtered (category, location, availability), sorted and paginated search over artists, hirers and gigs, with relevance ranking. | dximenes (#24), lgertrud (#103), carlaugu (#88) |
 | Internationalization | English / Portuguese / Spanish, language switcher available everywhere, all user-facing text translated; a CI check keeps the three locale files in sync. | dximenes (#39/#40) |
 | Admin dashboard | Role-gated area: user management (list/view/edit/delete, change roles), a gig-moderation table (list every gig, delete any), and category management (create, rename/re-slug, delete when unused). Create/delete actions across the app confirm with a toast. | carlaugu (#113); _core_ |
 | Privacy Policy & Terms of Service | Standalone, translated, multi-section legal pages linked from the footer. | lgertrud (#42) |
 | API documentation | OpenAPI 3 document served with Swagger UI at `/api/docs` (raw at `/api/docs.json`). | lgertrud (#34) |
-| Design system / component library | One internal set of reusable, theme-driven React components (10+), including an app-wide toast system built on daisyUI `alert`; a shared token layer (palette, typography, motion keyframes) in `src/index.css`; a single icon set. | lgertrud, leoaguia |
+| Design system / component library | One internal set of reusable, theme-driven React components (10+), including an app-wide toast system built on daisyUI `alert`; a shared token layer (palette, typography, motion keyframes) in `src/index.css`; a single icon set. | lgertrud |
 
 ---
 
 ## Modules
 
-Points: **Major = 2**, **Minor = 1**. Target: **17 points** (14 required + a
-3-bonus).
+Points: **Major = 2**, **Minor = 1**. Target: **18 points** (14 required + a
+4-bonus).
 
 ### Major modules (5 × 2 = 10 pts)
 
@@ -323,7 +309,7 @@ Points: **Major = 2**, **Minor = 1**. Target: **17 points** (14 required + a
 | 4 | **Standard user management & authentication** | Every user has an editable identity, an avatar and connections. | Editable artist/hirer profiles; avatar set by **file upload** (image goes through the upload system; a generated initials avatar is the default when none is set); friends with live online status; a profile page; email/password auth with hashing + salting. | abessa-m (#35/#37), dximenes (#29/#36) |
 | 5 | **Advanced permissions system** | The platform needs an operator tier for moderation and account management. | Three roles by design — `artist` / `hirer` / `admin` (no separate moderator or guest tier); `requireRole` middleware; admin-only user CRUD (`GET/PUT/DELETE /api/users`) including changing a user's role; an admin gig-moderation table that can delete any gig (`DELETE /api/gigs/:id` is owner-or-admin); admin category management — create / rename / delete the shared vocabulary (`POST`/`PATCH`/`DELETE /api/categories`, delete refused with `409` while any profile or gig still references it); role-gated admin routes and UI; role-dependent views and actions across the app (e.g. deleting a chat message is allowed for its sender or an admin). | carlaugu (#113); _core_ (admin UI) |
 
-### Minor modules (7 × 1 = 7 pts)
+### Minor modules (8 × 1 = 8 pts)
 
 | # | Module | Why it fits Artmate | How it was implemented | Owner |
 |---|---|---|---|---|
@@ -333,14 +319,8 @@ Points: **Major = 2**, **Minor = 1**. Target: **17 points** (14 required + a
 | 9 | **Support for multiple languages (≥ 3)** | Portuguese and Spanish speakers are a core audience. | i18next with `en` / `pt` / `es` (484 keys each), browser-detection + persisted choice, a switcher in the auth layout and settings, and `scripts/check-translations.mjs` in CI to prevent drift. | dximenes (#39/#40) |
 | 10 | **Remote authentication with OAuth 2.0** | Lower-friction sign-in for 42 students. | "Continue with 42" button on the login and register pages → `GET /api/auth/42` (random `state` in an httpOnly cookie) → 42 authorize → `GET /api/auth/42/callback` verifies `state` (CSRF), exchanges the `code` at `/oauth/token`, reads `/v2/me`, finds-or-creates the user by email, then issues the same session cookies as password login. Failures redirect to `/login?error=oauth`. <!-- TEAM: needs a real registered 42 app in `.env` (`FT_API_UID` / `FT_API_SECRET` / `FT_API_CALLBACK_URL`), the 42 app's redirect URI set to `https://localhost:8443/api/auth/42/callback`, and `FRONTEND_URL=https://localhost:8443`. Verify the full click-through before submission. OAuth users are created with the default `artist` role (no role picker in the OAuth path). --> | _core_ |
 | 11 | **Support for additional browsers** | Not everyone uses Chrome. | Chrome (mandatory) + Firefox + Edge/Safari compatibility pass over every feature; browser-specific issues fixed and any residual limitations recorded here. <!-- TEAM: before submission, add `firefox` + `webkit` projects to `playwright.config.ts` so the e2e suite runs on each, and list any browser-specific limitations found during #41. --> | lgertrud (#41) |
-| 12 | **Custom-made design system** | A swipe app lives or dies by its UI; the whole product is built from one internal component library rather than ad-hoc markup. | An internal library of reusable React components — `srcs/frontend/src/components/` (Avatar, Modal, Logo, FieldError, LabeledField, FiltersPanel, LanguageSwitcher, …) plus per-feature `components/` folders (MessageBubble, NotificationBell, MessagesIcon, PasswordStrengthChecklist, FriendRequestButton, card/deck primitives, …) and an app-wide toast system (`features/toast/`, a `ToastProvider` + `useToast()` hook rendering daisyUI `alert`s — auto-dismiss, hover-to-pause, de-dupe, capped stack), well over 10 reusable pieces, all theme-driven. A shared visual layer in `src/index.css`: a named colour theme set as the app default, and custom motion primitives reused across the UI (`swipe-card-in`, `modal-pop-in`, `hint-pulse`, `icon-bump`, `fade-in`, `toast-in`). Icons come from one set (`lucide-react`) used consistently everywhere. | lgertrud, leoaguia (frontend UI) |
-
-### Not claimed
-
-- **Public API (Major)** — the team decided not to pursue this module. The
-  OpenAPI/Swagger document (#34) still ships at `/api/docs` as internal
-  reference, but the dedicated API-key system (#32) and its rate limiting (#33)
-  were not implemented, so the module is **not** claimed.
+| 12 | **Custom-made design system** | A swipe app lives or dies by its UI; the whole product is built from one internal component library rather than ad-hoc markup. | An internal library of reusable React components — `srcs/frontend/src/components/` (Avatar, Modal, Logo, FieldError, LabeledField, FiltersPanel, LanguageSwitcher, …) plus per-feature `components/` folders (MessageBubble, NotificationBell, MessagesIcon, PasswordStrengthChecklist, FriendRequestButton, card/deck primitives, …) and an app-wide toast system (`features/toast/`, a `ToastProvider` + `useToast()` hook rendering daisyUI `alert`s — auto-dismiss, hover-to-pause, de-dupe, capped stack), well over 10 reusable pieces, all theme-driven. A shared visual layer in `src/index.css`: a named colour theme set as the app default, and custom motion primitives reused across the UI (`swipe-card-in`, `modal-pop-in`, `hint-pulse`, `icon-bump`, `fade-in`, `toast-in`). Icons come from one set (`lucide-react`) used consistently everywhere. | lgertrud |
+| 13 | **Notification system** | Users must know about a new match, message or friend request the moment it happens. | `Notification` model (Prisma/Postgres) written on six event types (new match, message, gig closed, like, invite, invite accepted) and pushed to the user's socket.io room; notification centre with mark-as-read; live pushes also shown as toasts. | dximenes (#30) |
 
 ---
 
@@ -373,23 +353,20 @@ Contributions below are grouped from the GitHub issues each member owned.
   friend requests (#28), the swipe-history endpoint and its pagination (#86,
   #92), profile-mismatch resolution (#88), chat-message deletion gated to the
   message sender or an admin (#113); the Playwright E2E suite covering auth, swipe/match, chat
-  and upload (#38). Also scoped the public-API key system and rate limiting
-  (#32, #33) before the team dropped that module. Owns the ADRs in
+  and upload (#38). Owns the ADRs in
   [`docs/mad/`](docs/mad/).
 
 - **lgertrud** — _Developer._ The Privacy Policy and Terms of Service pages,
   accessible from the footer (#42); the OpenAPI/Swagger API documentation (#34);
   the new filter design (#103); the cross-browser compatibility pass across
-  Chrome, Firefox and Edge/Safari (#41); co-owner of the design system — the
-  shared token layer (palette, typography, motion) and the reusable component
-  library (module 12).
+  Chrome, Firefox and Edge/Safari (#41); owns the design system — the shared
+  token layer (palette, typography, motion) and the reusable component library
+  (module 12).
 
-- **leoaguia** — _Developer._ The notifications center UI (#31), animated
-  notification and message badges (#110), the compact Messages icon with a live
-  unread-count badge replacing the header text (#109), and the profile-edit
-  migration of the category field from a string to tag selection (#80);
-  co-owner of the design system's reusable components and iconography (module 12),
-  including the app-wide toast system that surfaces live notifications.
+- **leoaguia** _(left the team)_ — contributed frontend work before leaving; the
+  remaining developers absorbed the open items, including the notifications-centre
+  UI (#31), the notification and message badges (#109, #110) and the profile-edit
+  category-to-tag migration (#80).
 
 - **mreinald** _(left the team)_ — contributed early backend work before leaving;
   the remaining developers absorbed the open items, including the ad-hoc backend
