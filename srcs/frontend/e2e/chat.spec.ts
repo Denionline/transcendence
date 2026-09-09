@@ -16,6 +16,7 @@ test("a message sent by one side arrives live on the other side's screen", async
 			.filter({ hasText: `Matched on ${gigTitle}` })
 			.getByRole("link", { name: /^Go to chat with / })
 			.click();
+		await expect(page.getByRole("main").getByText("start the conversation")).toBeVisible();
 	}
 
 	await openChat(artistPage);

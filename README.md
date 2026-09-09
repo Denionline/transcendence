@@ -421,9 +421,11 @@ who own the corresponding code.
   violations but does not yet block them.
 - **No games** — Artmate is not a gaming project, so the gaming modules (and
   anything that depends on a game) are out of scope.
-- **Additional browsers** — features were verified manually across Chrome, Firefox
-  and Edge/Safari (#41); the automated Playwright suite still runs on Chromium
-  only until the `firefox` / `webkit` projects are added (see module 11).
+- **Additional browsers** — the E2E suite runs on Chromium, Firefox and WebKit
+  and all flows pass on each; no browser-specific behaviour differences were found
+  in the covered flows. WebKit is Safari's engine, so Safari is covered
+  transitively rather than by a real Safari binary. Manual spot-checks on desktop
+  Safari and mobile layouts back this up (#41).
 
 ---
 
