@@ -133,7 +133,7 @@ offline). It runs inside the backend container, so the stack must be up
 ## Project Management
 
 - **Work tracking** — GitHub Issues, one issue per unit of work, assigned to a
-  single owner, mirrored in branch names (e.g. `43-docs-final-readme-…`) and
+  single owner, mirrored in branch names and
   closed through pull requests.
 - **Code review** — every change lands via a pull request reviewed by at least one
   other member before merge to `main`; the CI workflow is a required status check.
